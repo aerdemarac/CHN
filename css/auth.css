@@ -70,7 +70,7 @@ body {
     align-items: center;
     justify-content: flex-end;
     min-height: 100vh;
-    padding: 24px 32px;
+    padding: 24px 172px;
     background: var(--color-bg) url("../assets/images/login-bg.jpg") left top / cover no-repeat;
 }
 
@@ -267,7 +267,7 @@ body {
 .auth-form__row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 16px;
     font-size: 0.875rem;
 }
