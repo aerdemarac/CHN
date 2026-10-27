@@ -34,7 +34,7 @@
                     <label class="auth-form__label" for="password">Password</label>
                     <div class="auth-form__password">
                         <input class="auth-form__input" type="password" id="password" name="password"
-                               autocomplete="current-password" required>
+                               autocomplete="current-password" placeholder="********" required>
                         <button class="auth-form__toggle" type="button" id="password-toggle"
                                 aria-label="Show password" aria-controls="password" aria-pressed="false">
                             <span class="icon icon--eye" aria-hidden="true"></span>
@@ -44,10 +44,6 @@
                 </div>
 
                 <div class="auth-form__row">
-                    <label class="auth-form__check">
-                        <input type="checkbox" name="remember" value="1">
-                        Remember me
-                    </label>
                     <a class="auth-form__link" href="#">Forgot password?</a>
                 </div>
 
