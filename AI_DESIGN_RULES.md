@@ -76,6 +76,24 @@ Assume every page already has the following overarching layout wrapper. You DO N
 2. **Top Header (`.topbar`):** Fixed height, white background, sits at the top of the main area. Contains user profile and breadcrumbs.
 3. **Main Content Area (`.content`):** The scrollable area where all features (Dashboard, Appointments, Records) live. Background is `#F4F7FA`.
 
+### Asset and Icon Management Rules
+
+- **Use local assets:** All logos, icons, and image assets used in the project must be stored locally in the project's `assets/` directory.
+- **Search before creating:** Before creating or replacing a logo or icon, search for an existing official asset online.
+- **Download assets:** If a suitable asset is found online, download it and save it in the appropriate local directory. Do not rely on external image URLs or hotlink images.
+- **Directory structure:**
+  - `assets/icons/` — UI icons and small graphical symbols.
+  - `assets/logos/` — Brand logos and organization logos.
+  - `assets/images/` — Illustrations, photographs, and other visual assets.
+- **Prefer SVG:** Use SVG for logos and interface icons whenever available. Use PNG when SVG is unavailable or unsuitable.
+- **Use official sources:** Prefer official brand websites, official repositories, or trusted sources such as Simple Icons and Bootstrap Icons.
+- **Document assets:** Use descriptive filenames, such as `hospital.svg`, `user-profile.svg`, and `chn-logo.svg`.
+- **No unnecessary dependencies:** Do not introduce an icon library or external dependency when an appropriate local asset already exists.
+- **Respect licensing:** Check the asset's license and usage restrictions before downloading and using it.
+- **Verify files:** Ensure downloaded assets are valid, render correctly, and work through local paths.
+- **No placeholders:** Do not leave broken image URLs, temporary placeholders, or references to assets that were never downloaded.
+- **Report changes:** When finishing a task, list any new assets downloaded and their locations.
+
 ### Project Layout Structure:
 ```text
 project/
