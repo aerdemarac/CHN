@@ -48,7 +48,7 @@ You are ONLY allowed to use the following hex codes. DO NOT invent new shades, d
   - H3: `1.25rem` (20px)
   - Body: `1rem` (16px)
   - Small / Badges: `0.875rem` (14px)
-- **Iconography:** Use **FontAwesome 6 (Free)**. Prefer clean, universally recognized medical/UI icons (e.g., `fa-solid fa-user-md`, `fa-regular fa-calendar`). Keep icon sizes proportionate to text (usually `1rem` or `1.25rem`).
+- **Iconography:** Use local **SVG icons** (stored in `assets/icons/`, sourced from trusted sets like **Bootstrap Icons** or official sources). Do not introduce font icon libraries or external CDN dependencies. Keep icon sizes proportionate to text (usually `1rem` or `1.25rem`).
 
 ## 5. Spacing System (CSS Scale)
 Do not use arbitrary margin/padding values. Stick to this 4px-based scale:
