@@ -193,6 +193,19 @@ body {
     color: var(--color-text-muted);
 }
 
+select.auth-form__input {
+    min-height: calc(1.5em + 26px);
+    cursor: pointer;
+}
+
+select.auth-form__input:invalid {
+    color: var(--color-text-muted);
+}
+
+select.auth-form__input option {
+    color: var(--color-text);
+}
+
 .auth-form__input:focus-visible {
     outline: 2px solid var(--color-secondary);
     outline-offset: 2px;
@@ -200,6 +213,18 @@ body {
 
 .auth-form__input[aria-invalid="true"] {
     border-color: var(--color-danger);
+}
+
+.auth-form__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.auth-form__hint {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
 }
 
 .auth-form__error {
@@ -274,16 +299,23 @@ body {
 
 .auth-form__check {
     display: inline-flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
+    font-size: 0.875rem;
     cursor: pointer;
 }
 
 .auth-form__check input {
+    flex-shrink: 0;
     width: 1rem;
     height: 1rem;
-    margin: 0;
+    margin: 4px 0 0;
     accent-color: var(--color-secondary);
+}
+
+.auth-form__check input[aria-invalid="true"] {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
 }
 
 .auth-form__check input:focus-visible {
@@ -349,5 +381,9 @@ body {
 
     .auth__emergency {
         position: static;
+    }
+
+    .auth-form__grid {
+        grid-template-columns: 1fr;
     }
 }
