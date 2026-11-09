@@ -75,6 +75,12 @@ function initRegisterForm() {
         const checks = [
             [form.first_name, 'first-name-error', (value) => getNameError(value, 'first name')],
             [form.last_name, 'last-name-error', (value) => getNameError(value, 'last name')],
+            [form.birth_date, 'birth-date-error', (value) => {
+                if (form.birth_date.validity.badInput) return 'Please enter a valid date of birth.';
+                if (!value) return 'Please enter your date of birth.';
+                if (!form.birth_date.validity.valid) return 'Please enter a valid date of birth.';
+                return '';
+            }],
             [form.nationality, 'nationality-error', (value) => {
                 if (!value) return 'Please select your nationality.';
                 return '';
@@ -102,12 +108,6 @@ function initRegisterForm() {
                 if (!phonePattern.test(value) || digits < 7 || digits > 15) return 'Please enter a valid phone number.';
                 return '';
             }],
-            [form.birth_date, 'birth-date-error', (value) => {
-                if (form.birth_date.validity.badInput) return 'Please enter a valid date of birth.';
-                if (!value) return 'Please enter your date of birth.';
-                if (!form.birth_date.validity.valid) return 'Please enter a valid date of birth.';
-                return '';
-            }],
             [form.password, 'password-error', () => {
                 if (!password) return 'Please enter a password.';
                 if (password.length < 8 || !/\p{L}/u.test(password) || !/\d/.test(password)) {
@@ -118,10 +118,6 @@ function initRegisterForm() {
             [form.password_confirm, 'password-confirm-error', () => {
                 if (!form.password_confirm.value) return 'Please confirm your password.';
                 if (form.password_confirm.value !== password) return 'Passwords do not match.';
-                return '';
-            }],
-            [form.terms, 'terms-error', () => {
-                if (!form.terms.checked) return 'You must accept the Terms of Use and Privacy Policy.';
                 return '';
             }],
         ];

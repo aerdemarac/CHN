@@ -18,7 +18,7 @@ $pinnedCountries = ['XN', 'TR'];
         <img src="assets/logos/chn-logo.png" alt="CHN">
     </div>
 
-    <main class="auth__main">
+    <main class="auth__main auth__main--wide">
         <section class="auth-card" aria-labelledby="register-title">
             <header class="auth-card__header">
                 <img class="auth-card__logo" src="assets/logos/chn-logo.png" alt="Cyprus Health-Care Network">
@@ -26,21 +26,28 @@ $pinnedCountries = ['XN', 'TR'];
                 <p class="auth-card__subtitle">Register to book appointments and access your medical records.</p>
             </header>
 
-            <form class="auth-form" id="register-form" action="backend/register.php" method="post" novalidate>
+            <form class="auth-form auth-form--wide" id="register-form" action="backend/register.php" method="post" novalidate>
                 <div class="auth-form__grid">
-                    <div class="auth-form__field">
+                    <div class="auth-form__field auth-form__field--third">
                         <label class="auth-form__label" for="first-name">First name</label>
                         <input class="auth-form__input" type="text" id="first-name" name="first_name"
                                autocomplete="given-name" maxlength="50" required>
                         <p class="auth-form__error" id="first-name-error" role="alert"></p>
                     </div>
 
-                    <div class="auth-form__field">
+                    <div class="auth-form__field auth-form__field--third">
                         <label class="auth-form__label" for="last-name">Last name</label>
                         <input class="auth-form__input" type="text" id="last-name" name="last_name"
                                autocomplete="family-name" maxlength="50" required>
                         <p class="auth-form__error" id="last-name-error" role="alert"></p>
                     </div>
+                </div>
+
+                <div class="auth-form__field auth-form__field--third">
+                    <label class="auth-form__label" for="birth-date">Date of birth</label>
+                    <input class="auth-form__input" type="date" id="birth-date" name="birth_date"
+                           autocomplete="bday" min="1900-01-01" max="<?= date('Y-m-d') ?>" required>
+                    <p class="auth-form__error" id="birth-date-error" role="alert"></p>
                 </div>
 
                 <div class="auth-form__field">
@@ -63,7 +70,7 @@ $pinnedCountries = ['XN', 'TR'];
                     <input class="auth-form__input" type="text" id="national-id" name="national_id"
                            autocomplete="off" spellcheck="false" maxlength="32"
                            aria-describedby="national-id-hint national-id-error" required>
-                    <p class="auth-form__hint" id="national-id-hint">T.C. Kimlik No for Türkiye; otherwise your national ID or passport number.</p>
+                    <p class="auth-form__hint" id="national-id-hint">T.C. Kimlik No, national ID or passport number.</p>
                     <p class="auth-form__error" id="national-id-error" role="alert"></p>
                 </div>
 
@@ -82,13 +89,6 @@ $pinnedCountries = ['XN', 'TR'];
                 </div>
 
                 <div class="auth-form__field">
-                    <label class="auth-form__label" for="birth-date">Date of birth</label>
-                    <input class="auth-form__input" type="date" id="birth-date" name="birth_date"
-                           autocomplete="bday" min="1900-01-01" max="<?= date('Y-m-d') ?>" required>
-                    <p class="auth-form__error" id="birth-date-error" role="alert"></p>
-                </div>
-
-                <div class="auth-form__field">
                     <label class="auth-form__label" for="password">Password</label>
                     <div class="auth-form__password">
                         <input class="auth-form__input" type="password" id="password" name="password"
@@ -99,7 +99,7 @@ $pinnedCountries = ['XN', 'TR'];
                             <span class="icon icon--eye" aria-hidden="true"></span>
                         </button>
                     </div>
-                    <p class="auth-form__hint" id="password-hint">At least 8 characters, including a letter and a number.</p>
+                    <p class="auth-form__hint" id="password-hint">At least 8 characters with a letter and a number.</p>
                     <p class="auth-form__error" id="password-error" role="alert"></p>
                 </div>
 
@@ -114,14 +114,6 @@ $pinnedCountries = ['XN', 'TR'];
                         </button>
                     </div>
                     <p class="auth-form__error" id="password-confirm-error" role="alert"></p>
-                </div>
-
-                <div class="auth-form__field">
-                    <label class="auth-form__check">
-                        <input type="checkbox" id="terms" name="terms" value="1" required>
-                        I accept the Terms of Use and Privacy Policy.
-                    </label>
-                    <p class="auth-form__error" id="terms-error" role="alert"></p>
                 </div>
 
                 <button class="btn btn--primary" type="submit">Create account</button>
