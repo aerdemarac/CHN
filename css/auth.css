@@ -366,6 +366,7 @@ select.auth-form__input option {
 @media (min-width: 1024px) {
     .auth__main--wide {
         max-width: 720px;
+        margin-right: -120px;
     }
 
     .auth__main--wide .auth-card__header {
