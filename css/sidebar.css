@@ -1,0 +1,5 @@
+/* Legacy file kept for compatibility with existing branches.
+ * Shared CHN Sidebar styles now live in css/style.css.
+ * New pages should link css/style.css instead of this file.
+ */
+@import url("./style.css");
