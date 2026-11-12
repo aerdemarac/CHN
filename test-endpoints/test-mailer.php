@@ -1,6 +1,6 @@
 <?php
 
-require_once 'backend/mailer.php';
+require_once __DIR__ . '/../backend/mailer.php';
 
 $result = sendEmail(
     'aerdemarac@gmail.com',

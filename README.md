@@ -65,6 +65,12 @@ Contains the desktop application files.
 
 The Electron application uses the shared PHP API rather than a separate backend.
 
+### `test-endpoints/`
+Contains php files aiming to test freshly introduced features
+
+- `test-mailer.php` - PHPMailer Test Demonstration
+- `top-and-sidebar-test.php` - Demo dashboard containing refined side and topbar implementations
+
 ### `.gitignore`
 Specifies files that should not be committed, such as local secrets, environment files, and dependencies.
 
