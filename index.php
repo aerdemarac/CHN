@@ -11,6 +11,25 @@ $dashboardRole = isset($_GET['role']) && is_string($_GET['role']) && isset($dash
     : 'patient';
 
 $dashboardToday = new DateTimeImmutable('today');
+$dashboardTodayKey = $dashboardToday->format('Y-m-d');
+
+$dashboardTiers = [
+    'orange' => ['label' => 'Orange', 'note' => 'Needs care',    'order' => 0],
+    'yellow' => ['label' => 'Yellow', 'note' => 'Important',     'order' => 1],
+    'green'  => ['label' => 'Green',  'note' => 'No vital risk', 'order' => 2],
+];
+
+$dashboardAppointmentStatuses = [
+    'pending'   => ['label' => 'Pending',   'badge' => 'warning'],
+    'confirmed' => ['label' => 'Confirmed', 'badge' => 'success'],
+    'cancelled' => ['label' => 'Cancelled', 'badge' => 'danger'],
+    'completed' => ['label' => 'Completed', 'badge' => 'neutral'],
+];
+
+$dashboardCaseStates = [
+    'open'   => ['label' => 'Open',   'badge' => 'info'],
+    'closed' => ['label' => 'Closed', 'badge' => 'neutral'],
+];
 
 function dashboardEscape(string $value): string
 {
@@ -52,23 +71,40 @@ function dashboardRelativeDay(string $date, DateTimeImmutable $today): string
     return 'In ' . $days . ' days';
 }
 
-$dashboardTiers = [
-    'orange' => ['label' => 'Orange', 'note' => 'Needs care'],
-    'yellow' => ['label' => 'Yellow', 'note' => 'Important'],
-    'green'  => ['label' => 'Green',  'note' => 'No vital risk'],
-];
+function dashboardTierBadge(string $tier, array $tiers): string
+{
+    if (!isset($tiers[$tier])) {
+        return '';
+    }
 
-$dashboardAppointmentStatuses = [
-    'pending'   => ['label' => 'Pending',   'badge' => 'warning'],
-    'confirmed' => ['label' => 'Confirmed', 'badge' => 'success'],
-    'cancelled' => ['label' => 'Cancelled', 'badge' => 'danger'],
-    'completed' => ['label' => 'Completed', 'badge' => 'neutral'],
-];
+    return '<span class="tier-badge tier-badge--' . dashboardEscape($tier) . '">'
+        . dashboardEscape($tiers[$tier]['label'] . ' · ' . $tiers[$tier]['note'])
+        . '</span>';
+}
 
-$dashboardCaseStates = [
-    'open'   => ['label' => 'Open',   'badge' => 'info'],
-    'closed' => ['label' => 'Closed', 'badge' => 'neutral'],
-];
+function dashboardStatusBadge(string $value, array $statuses): string
+{
+    $status = $statuses[$value] ?? ['label' => $value, 'badge' => 'neutral'];
+
+    return '<span class="badge badge--' . dashboardEscape($status['badge']) . '">'
+        . dashboardEscape($status['label'])
+        . '</span>';
+}
+
+function dashboardSortCases(array $cases, array $tiers): array
+{
+    usort($cases, function (array $a, array $b) use ($tiers): int {
+        return [
+            $a['case_state'] === 'open' ? 0 : 1,
+            $tiers[$a['tier_color']]['order'] ?? 9,
+        ] <=> [
+            $b['case_state'] === 'open' ? 0 : 1,
+            $tiers[$b['tier_color']]['order'] ?? 9,
+        ];
+    });
+
+    return $cases;
+}
 
 $dashboardUsers = [
     'patient' => ['name' => 'Elif',    'surname' => 'Arslan',    'display' => 'Elif Arslan'],
@@ -78,6 +114,9 @@ $dashboardUsers = [
 ];
 
 $dashboardUser = $dashboardUsers[$dashboardRole];
+$dashboardGreeting = $dashboardRole === 'doctor'
+    ? 'Dr. ' . $dashboardUser['surname']
+    : $dashboardUser['name'];
 
 if ($dashboardRole === 'patient') {
     $dashboardAppointments = [
@@ -119,7 +158,7 @@ if ($dashboardRole === 'patient') {
         ],
     ];
 
-    $dashboardCases = [
+    $dashboardCases = dashboardSortCases([
         [
             'case_id'         => 1011,
             'department_name' => 'Internal Medicine',
@@ -141,9 +180,7 @@ if ($dashboardRole === 'patient') {
             'case_state'      => 'open',
             'treatment_desc'  => 'Topical treatment, follow-up in four weeks.',
         ],
-    ];
-
-    $dashboardTodayKey = $dashboardToday->format('Y-m-d');
+    ], $dashboardTiers);
 
     $dashboardUpcoming = array_values(array_filter(
         $dashboardAppointments,
@@ -156,15 +193,124 @@ if ($dashboardRole === 'patient') {
             <=> [$b['appointment_date'], $b['appointment_time']]
     );
 
-    usort(
-        $dashboardCases,
-        fn (array $a, array $b): int => ($a['case_state'] === 'open' ? 0 : 1) <=> ($b['case_state'] === 'open' ? 0 : 1)
-    );
-
     $dashboardOpenCases = count(array_filter($dashboardCases, fn (array $item): bool => $item['case_state'] === 'open'));
     $dashboardCompletedVisits = count(array_filter(
         $dashboardAppointments,
         fn (array $item): bool => $item['appointment_status'] === 'completed'
+    ));
+} elseif ($dashboardRole === 'doctor') {
+    $dashboardDepartment = 'Cardiology';
+
+    $dashboardCases = dashboardSortCases([
+        [
+            'case_id'        => 1027,
+            'patient_name'   => 'Sophia Ioannou',
+            'tier_color'     => 'green',
+            'case_state'     => 'closed',
+            'treatment_desc' => 'Routine screening completed, no findings.',
+        ],
+        [
+            'case_id'        => 1033,
+            'patient_name'   => 'Hasan Çelik',
+            'tier_color'     => 'yellow',
+            'case_state'     => 'closed',
+            'treatment_desc' => 'Medication adjusted, condition stable.',
+        ],
+        [
+            'case_id'        => 1042,
+            'patient_name'   => 'Elif Arslan',
+            'tier_color'     => 'orange',
+            'case_state'     => 'open',
+            'treatment_desc' => 'Blood pressure monitoring and medication review.',
+        ],
+        [
+            'case_id'        => 1049,
+            'patient_name'   => 'Andreas Georgiou',
+            'tier_color'     => 'green',
+            'case_state'     => 'open',
+            'treatment_desc' => 'Post-operative check, recovering well.',
+        ],
+        [
+            'case_id'        => 1051,
+            'patient_name'   => 'Mehmet Yıldız',
+            'tier_color'     => 'yellow',
+            'case_state'     => 'open',
+            'treatment_desc' => 'Irregular heartbeat, 24-hour Holter test requested.',
+        ],
+        [
+            'case_id'        => 1056,
+            'patient_name'   => 'Maria Kouppa',
+            'tier_color'     => 'orange',
+            'case_state'     => 'open',
+            'treatment_desc' => 'Chest pain under observation, ECG scheduled.',
+        ],
+        [
+            'case_id'        => 1060,
+            'patient_name'   => 'Ayşe Demir',
+            'tier_color'     => 'yellow',
+            'case_state'     => 'open',
+            'treatment_desc' => 'Shortness of breath on exertion, echocardiogram planned.',
+        ],
+    ], $dashboardTiers);
+
+    $dashboardCasesById = array_column($dashboardCases, null, 'case_id');
+    $dashboardOpenCaseRows = array_values(array_filter(
+        $dashboardCases,
+        fn (array $item): bool => $item['case_state'] === 'open'
+    ));
+
+    $dashboardAppointments = [
+        [
+            'appointment_id'     => 611,
+            'case_id'            => 1060,
+            'appointment_date'   => $dashboardTodayKey,
+            'appointment_time'   => '15:00:00',
+            'appointment_status' => 'pending',
+        ],
+        [
+            'appointment_id'     => 608,
+            'case_id'            => 1056,
+            'appointment_date'   => $dashboardTodayKey,
+            'appointment_time'   => '09:00:00',
+            'appointment_status' => 'completed',
+        ],
+        [
+            'appointment_id'     => 609,
+            'case_id'            => 1051,
+            'appointment_date'   => $dashboardTodayKey,
+            'appointment_time'   => '10:30:00',
+            'appointment_status' => 'confirmed',
+        ],
+        [
+            'appointment_id'     => 610,
+            'case_id'            => 1049,
+            'appointment_date'   => $dashboardTodayKey,
+            'appointment_time'   => '13:15:00',
+            'appointment_status' => 'confirmed',
+        ],
+        [
+            'appointment_id'     => 612,
+            'case_id'            => 1042,
+            'appointment_date'   => dashboardDate(2),
+            'appointment_time'   => '10:30:00',
+            'appointment_status' => 'confirmed',
+        ],
+    ];
+
+    $dashboardTodayAppointments = array_values(array_filter(
+        $dashboardAppointments,
+        fn (array $item): bool => $item['appointment_date'] === $dashboardTodayKey
+            && $item['appointment_status'] !== 'cancelled'
+    ));
+    usort(
+        $dashboardTodayAppointments,
+        fn (array $a, array $b): int => $a['appointment_time'] <=> $b['appointment_time']
+    );
+
+    $dashboardOpenCases = count($dashboardOpenCaseRows);
+    $dashboardNeedsCare = count(array_filter(
+        $dashboardOpenCaseRows,
+        fn (array $item): bool => $item['tier_color'] === 'orange'
     ));
 }
 
@@ -182,6 +328,7 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
     <link rel="stylesheet" href="css/index.css">
     <script src="js/sidebar.js" defer></script>
     <script src="js/topbar.js" defer></script>
+    <script src="js/index.js" defer></script>
 </head>
 <body>
 <?php require __DIR__ . '/include/left-sidebar.php'; ?>
@@ -208,17 +355,24 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
 
         <div class="page-header">
             <div>
-                <h1 class="page-header__title">Welcome back, <?= dashboardEscape($dashboardUser['name']) ?></h1>
+                <h1 class="page-header__title">Welcome back, <?= dashboardEscape($dashboardGreeting) ?></h1>
                 <p class="page-header__subtitle">
                     <?= dashboardEscape($dashboardToday->format('l, j F Y')) ?>
                     <?php if ($dashboardRole === 'patient'): ?>
                         · Here is an overview of your appointments and medical cases.
+                    <?php elseif ($dashboardRole === 'doctor'): ?>
+                        · <?= dashboardEscape($dashboardDepartment) ?>
+                        · You have <?= count($dashboardTodayAppointments) ?> appointments today.
                     <?php endif; ?>
                 </p>
             </div>
             <?php if ($dashboardRole === 'patient'): ?>
                 <div class="page-header__actions">
                     <?= dashboardButton('Book appointment', 'appointments.php', 'btn btn--primary') ?>
+                </div>
+            <?php elseif ($dashboardRole === 'doctor'): ?>
+                <div class="page-header__actions">
+                    <?= dashboardButton('Add diagnosis', 'medical-records.php', 'btn btn--primary') ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -271,11 +425,7 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                     <?php else: ?>
                         <ul class="dashboard-list">
                             <?php foreach ($dashboardUpcoming as $dashboardItem): ?>
-                                <?php
-                                    $dashboardWhen = new DateTimeImmutable($dashboardItem['appointment_date'] . ' ' . $dashboardItem['appointment_time']);
-                                    $dashboardStatus = $dashboardAppointmentStatuses[$dashboardItem['appointment_status']]
-                                        ?? ['label' => $dashboardItem['appointment_status'], 'badge' => 'neutral'];
-                                ?>
+                                <?php $dashboardWhen = new DateTimeImmutable($dashboardItem['appointment_date'] . ' ' . $dashboardItem['appointment_time']); ?>
                                 <li class="dashboard-item dashboard-item--appointment">
                                     <time class="dashboard-date" datetime="<?= dashboardEscape($dashboardWhen->format('Y-m-d\TH:i')) ?>">
                                         <span class="dashboard-date__month"><?= dashboardEscape($dashboardWhen->format('M')) ?></span>
@@ -289,7 +439,7 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                                             · <?= dashboardEscape(dashboardRelativeDay($dashboardItem['appointment_date'], $dashboardToday)) ?>
                                         </p>
                                     </div>
-                                    <span class="badge badge--<?= dashboardEscape($dashboardStatus['badge']) ?>"><?= dashboardEscape($dashboardStatus['label']) ?></span>
+                                    <?= dashboardStatusBadge($dashboardItem['appointment_status'], $dashboardAppointmentStatuses) ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -316,11 +466,6 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                     <?php else: ?>
                         <ul class="dashboard-list">
                             <?php foreach ($dashboardCases as $dashboardItem): ?>
-                                <?php
-                                    $dashboardTier = $dashboardTiers[$dashboardItem['tier_color']] ?? null;
-                                    $dashboardState = $dashboardCaseStates[$dashboardItem['case_state']]
-                                        ?? ['label' => $dashboardItem['case_state'], 'badge' => 'neutral'];
-                                ?>
                                 <li class="dashboard-item dashboard-item--wrap">
                                     <div class="dashboard-item__body">
                                         <p class="dashboard-item__title">
@@ -330,12 +475,8 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                                         <p class="dashboard-item__meta"><?= dashboardEscape($dashboardItem['treatment_desc']) ?></p>
                                     </div>
                                     <div class="dashboard-item__tags">
-                                        <?php if ($dashboardTier !== null): ?>
-                                            <span class="tier-badge tier-badge--<?= dashboardEscape($dashboardItem['tier_color']) ?>">
-                                                <?= dashboardEscape($dashboardTier['label']) ?> · <?= dashboardEscape($dashboardTier['note']) ?>
-                                            </span>
-                                        <?php endif; ?>
-                                        <span class="badge badge--<?= dashboardEscape($dashboardState['badge']) ?>"><?= dashboardEscape($dashboardState['label']) ?></span>
+                                        <?= dashboardTierBadge($dashboardItem['tier_color'], $dashboardTiers) ?>
+                                        <?= dashboardStatusBadge($dashboardItem['case_state'], $dashboardCaseStates) ?>
                                     </div>
                                 </li>
                             <?php endforeach; ?>
@@ -347,12 +488,143 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                     </footer>
                 </section>
             </div>
+        <?php elseif ($dashboardRole === 'doctor'): ?>
+            <section class="grid grid--3" aria-label="Summary">
+                <div class="stat-card">
+                    <div class="stat-card__icon">
+                        <span class="icon icon--calendar" aria-hidden="true"></span>
+                    </div>
+                    <div>
+                        <p class="stat-card__label">Appointments today</p>
+                        <p class="stat-card__value"><?= count($dashboardTodayAppointments) ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon stat-card__icon--primary">
+                        <span class="icon icon--cases" aria-hidden="true"></span>
+                    </div>
+                    <div>
+                        <p class="stat-card__label">Open cases in <?= dashboardEscape($dashboardDepartment) ?></p>
+                        <p class="stat-card__value"><?= $dashboardOpenCases ?></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card__icon stat-card__icon--warning">
+                        <span class="icon icon--records" aria-hidden="true"></span>
+                    </div>
+                    <div>
+                        <p class="stat-card__label">Orange tier · Needs care</p>
+                        <p class="stat-card__value"><?= $dashboardNeedsCare ?></p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-split dashboard-section">
+                <section class="card dashboard-card" aria-labelledby="dashboard-today-title">
+                    <header class="card__header">
+                        <div>
+                            <h2 class="card__title" id="dashboard-today-title">Today's appointments</h2>
+                            <p class="card__subtitle"><?= dashboardEscape($dashboardToday->format('l, j F')) ?></p>
+                        </div>
+                    </header>
+
+                    <?php if ($dashboardTodayAppointments === []): ?>
+                        <div class="empty-state">
+                            <p class="empty-state__title">No appointments today</p>
+                            <p class="empty-state__text">New bookings will appear here.</p>
+                        </div>
+                    <?php else: ?>
+                        <ul class="dashboard-list">
+                            <?php foreach ($dashboardTodayAppointments as $dashboardItem): ?>
+                                <?php
+                                    $dashboardWhen = new DateTimeImmutable($dashboardItem['appointment_date'] . ' ' . $dashboardItem['appointment_time']);
+                                    $dashboardCase = $dashboardCasesById[$dashboardItem['case_id']] ?? null;
+                                ?>
+                                <li class="dashboard-item dashboard-item--appointment">
+                                    <time class="dashboard-date dashboard-date--time" datetime="<?= dashboardEscape($dashboardWhen->format('Y-m-d\TH:i')) ?>">
+                                        <?= dashboardEscape($dashboardWhen->format('H:i')) ?>
+                                    </time>
+                                    <div class="dashboard-item__body">
+                                        <p class="dashboard-item__title"><?= dashboardEscape($dashboardCase['patient_name'] ?? 'Unknown patient') ?></p>
+                                        <p class="dashboard-item__meta">Case #<?= (int) $dashboardItem['case_id'] ?></p>
+                                        <?php if ($dashboardCase !== null): ?>
+                                            <div class="dashboard-item__tags dashboard-item__tags--below">
+                                                <?= dashboardTierBadge($dashboardCase['tier_color'], $dashboardTiers) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?= dashboardStatusBadge($dashboardItem['appointment_status'], $dashboardAppointmentStatuses) ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+
+                    <footer class="card__footer">
+                        <?= dashboardButton('All appointments', 'appointments.php', 'btn btn--outline btn--sm') ?>
+                    </footer>
+                </section>
+
+                <section class="card dashboard-card" aria-labelledby="dashboard-department-title">
+                    <header class="card__header">
+                        <div>
+                            <h2 class="card__title" id="dashboard-department-title">Open cases</h2>
+                            <p class="card__subtitle"><?= dashboardEscape($dashboardDepartment) ?> · most urgent on top.</p>
+                        </div>
+                        <div class="dashboard-filters">
+                            <input type="search" class="form-control dashboard-filters__search" id="dashboard-case-search"
+                                   placeholder="Search patient or case" aria-label="Search patient or case" autocomplete="off">
+                            <select class="form-control dashboard-filters__select" id="dashboard-case-tier" aria-label="Filter by tier">
+                                <option value="">All tiers</option>
+                                <?php foreach ($dashboardTiers as $dashboardTierKey => $dashboardTierItem): ?>
+                                    <option value="<?= dashboardEscape($dashboardTierKey) ?>"><?= dashboardEscape($dashboardTierItem['label']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </header>
+
+                    <?php if ($dashboardOpenCaseRows === []): ?>
+                        <div class="empty-state">
+                            <p class="empty-state__title">No open cases in your department</p>
+                            <p class="empty-state__text">New cases will appear here.</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive dashboard-table">
+                            <table class="table" id="dashboard-cases-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Patient</th>
+                                        <th scope="col">Tier</th>
+                                        <th scope="col">Latest treatment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($dashboardOpenCaseRows as $dashboardItem): ?>
+                                        <tr data-tier="<?= dashboardEscape($dashboardItem['tier_color']) ?>">
+                                            <td>
+                                                <span class="dashboard-table__name"><?= dashboardEscape($dashboardItem['patient_name']) ?></span>
+                                                <span class="dashboard-table__sub">Case #<?= (int) $dashboardItem['case_id'] ?></span>
+                                            </td>
+                                            <td><?= dashboardTierBadge($dashboardItem['tier_color'], $dashboardTiers) ?></td>
+                                            <td class="dashboard-table__text"><?= dashboardEscape($dashboardItem['treatment_desc']) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="dashboard-filters__empty" id="dashboard-cases-empty" role="status" hidden>No cases match your search.</p>
+                    <?php endif; ?>
+
+                    <footer class="card__footer">
+                        <?= dashboardButton('Medical records', 'medical-records.php', 'btn btn--outline btn--sm') ?>
+                    </footer>
+                </section>
+            </div>
         <?php else: ?>
             <section class="card">
                 <div class="empty-state">
                     <h2 class="empty-state__title"><?= dashboardEscape($dashboardRoles[$dashboardRole]) ?> dashboard</h2>
-                    <p class="empty-state__text">This view is being built. The patient view is ready to preview.</p>
-                    <a class="btn btn--outline btn--sm" href="?role=patient">Open patient view</a>
+                    <p class="empty-state__text">This view is being built. The patient and doctor views are ready to preview.</p>
+                    <a class="btn btn--outline btn--sm" href="?role=doctor">Open doctor view</a>
                 </div>
             </section>
         <?php endif; ?>
