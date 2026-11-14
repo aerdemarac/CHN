@@ -10,13 +10,13 @@ $chnUserRole = 'Patient';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHN | Top Bar &amp; UI Preview</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script src="js/sidebar.js" defer></script>
-    <script src="js/topbar.js" defer></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/sidebar.js" defer></script>
+    <script src="../js/topbar.js" defer></script>
 </head>
 <body>
-<?php require __DIR__ . '/include/left-sidebar.php'; ?>
-<?php require __DIR__ . '/include/top-bar.php'; ?>
+<?php require __DIR__ . '/../include/left-sidebar.php'; ?>
+<?php require __DIR__ . '/../include/top-bar.php'; ?>
 
 <main class="content" id="main-content" tabindex="-1">
     <div class="content__inner">
@@ -34,7 +34,7 @@ $chnUserRole = 'Patient';
         <div class="grid grid--3">
             <div class="stat-card">
                 <div class="stat-card__icon">
-                    <span class="icon" style="--icon: url('assets/icons/calendar3.svg')" aria-hidden="true"></span>
+                    <span class="icon" style="--icon: url('../assets/icons/calendar3.svg')" aria-hidden="true"></span>
                 </div>
                 <div>
                     <p class="stat-card__label">Upcoming Appointments</p>
@@ -44,7 +44,7 @@ $chnUserRole = 'Patient';
 
             <div class="stat-card">
                 <div class="stat-card__icon stat-card__icon--success">
-                    <span class="icon" style="--icon: url('assets/icons/file-medical.svg')" aria-hidden="true"></span>
+                    <span class="icon" style="--icon: url('../assets/icons/file-medical.svg')" aria-hidden="true"></span>
                 </div>
                 <div>
                     <p class="stat-card__label">Ready Test Results</p>
@@ -54,7 +54,7 @@ $chnUserRole = 'Patient';
 
             <div class="stat-card">
                 <div class="stat-card__icon stat-card__icon--warning">
-                    <span class="icon" style="--icon: url('assets/icons/clipboard2-pulse.svg')" aria-hidden="true"></span>
+                    <span class="icon" style="--icon: url('../assets/icons/clipboard2-pulse.svg')" aria-hidden="true"></span>
                 </div>
                 <div>
                     <p class="stat-card__label">Active Medical Cases</p>
