@@ -102,9 +102,14 @@ $chnUnreadNotifications = count(array_filter(
 ));
 
 $chnLanguages = [
-    'en' => ['code' => 'EN', 'label' => 'English'],
     'tr' => ['code' => 'TR', 'label' => 'Türkçe'],
+    'en' => ['code' => 'EN', 'label' => 'English'],
     'el' => ['code' => 'EL', 'label' => 'Ελληνικά'],
+    'ru' => ['code' => 'RU', 'label' => 'Русский'],
+    'yo' => ['code' => 'YO', 'label' => 'Yorùbá'],
+    'de' => ['code' => 'DE', 'label' => 'Deutsch'],
+    'fr' => ['code' => 'FR', 'label' => 'Français'],
+    'es' => ['code' => 'ES', 'label' => 'Español'],
 ];
 
 $chnActiveLang = 'en';
@@ -126,7 +131,7 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
     .topbar {
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-end !important;
+        justify-content: flex-start !important;
         flex-wrap: nowrap !important;
         min-height: 68px !important;
         padding: 12px 106px 12px 8px !important;
@@ -134,13 +139,13 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
     .topbar > .topbar__actions {
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-end !important;
+        justify-content: flex-start !important;
         flex-wrap: nowrap !important;
         flex: 0 0 auto !important;
         width: max-content !important;
         max-width: none !important;
         gap: 4px !important;
-        margin-left: auto !important;
+        margin-left: 0 !important;
     }
     .topbar__user, .topbar__user:hover {
         background: transparent !important;
