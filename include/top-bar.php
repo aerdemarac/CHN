@@ -90,6 +90,17 @@ $chnEscapedName = htmlspecialchars((string) $chnResolvedName, ENT_QUOTES, 'UTF-8
 $chnEscapedRole = htmlspecialchars((string) $chnResolvedRole, ENT_QUOTES, 'UTF-8');
 $chnEscapedInitials = htmlspecialchars($chnInitials, ENT_QUOTES, 'UTF-8');
 
+// Optional notifications from a trusted backend (no database required for UI preview).
+// Example array item: ['title' => 'Appointment update', 'message' => '...', 'time' => 'Today', 'read' => false]
+// Do not place patient-sensitive details in notification previews.
+$chnNotifications = is_array($chnNotifications ?? null)
+    ? array_values(array_filter($chnNotifications, 'is_array'))
+    : [];
+$chnUnreadNotifications = count(array_filter(
+    $chnNotifications,
+    static fn(array $notice): bool => empty($notice['read'])
+));
+
 $chnLanguages = [
     'en' => ['code' => 'EN', 'label' => 'English'],
     'tr' => ['code' => 'TR', 'label' => 'Türkçe'],
@@ -105,35 +116,92 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
     $chnActiveLang = $_SESSION['lang'];
 }
 ?>
+<style id="chn-topbar-mobile-single-row-v7">
+/* Only mobile: desktop Cyprus Healthcare Network heading remains visible.
+   Component-local fallback also works if style.css is cached by the browser. */
+@media screen and (max-width: 767px) {
+    .topbar > .topbar__brand {
+        display: none !important;
+    }
+    .topbar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        flex-wrap: nowrap !important;
+        min-height: 68px !important;
+        padding: 12px 106px 12px 8px !important;
+    }
+    .topbar > .topbar__actions {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        flex-wrap: nowrap !important;
+        flex: 0 0 auto !important;
+        width: max-content !important;
+        max-width: none !important;
+        gap: 4px !important;
+        margin-left: auto !important;
+    }
+    .topbar__user, .topbar__user:hover {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    .topbar__user .topbar__caret,
+    .topbar__user .topbar__user-info {
+        display: none !important;
+    }
+}
+</style>
 <header class="topbar" aria-label="Top header">
-    <nav class="topbar__left" aria-label="Breadcrumb">
-        <ol class="topbar__breadcrumb-list">
-            <li class="topbar__breadcrumb-item topbar__breadcrumb-item--root">
-                <?php if ($chnHasHomePage): ?>
-                    <a class="topbar__breadcrumb-link"
-                       href="<?= htmlspecialchars($chnBaseUrl . 'index.php', ENT_QUOTES, 'UTF-8') ?>">
-                        <span class="icon icon--home" aria-hidden="true"></span>
-                        <span>CHN</span>
-                    </a>
-                <?php else: ?>
-                    <span class="topbar__breadcrumb-brand">
-                        <span class="icon icon--home" aria-hidden="true"></span>
-                        <span>CHN</span>
-                    </span>
-                <?php endif; ?>
-            </li>
-            <li class="topbar__breadcrumb-sep" aria-hidden="true">/</li>
-            <li class="topbar__breadcrumb-item">
-                <span class="topbar__breadcrumb-current" aria-current="page"><?= $chnEscapedTitle ?></span>
-            </li>
-        </ol>
-    </nav>
-
+    <div class="topbar__brand">Cyprus Healthcare Network</div>
     <div class="topbar__actions">
         <a class="btn btn--danger btn--sm topbar__emergency" href="tel:112" aria-label="Call Emergency 112">
             <span class="icon icon--phone" aria-hidden="true"></span>
-            <span class="topbar__emergency-label">Emergency 112</span>
+            <span class="topbar__emergency-label">Emergency</span>
+            <span class="topbar__emergency-number">112</span>
         </a>
+
+        <div class="topbar__dropdown topbar__notification-dropdown" id="chn-notification-dropdown" data-dropdown>
+            <button type="button" class="btn btn--outline btn--sm topbar__notification-toggle"
+                    id="chn-notification-toggle" data-dropdown-toggle
+                    aria-expanded="false"
+                    aria-controls="chn-notification-menu" aria-label="Notifications<?= $chnUnreadNotifications ? ' (' . $chnUnreadNotifications . ' unread)' : '' ?>">
+
+                <img class="topbar__bell-image"
+                     src="<?= htmlspecialchars($chnBaseUrl . 'assets/icons/bell.svg', ENT_QUOTES, 'UTF-8') ?>"
+                     alt="" width="20" height="20" aria-hidden="true">
+                <?php if ($chnUnreadNotifications > 0): ?>
+                    <span class="topbar__notification-count" aria-hidden="true"><?= $chnUnreadNotifications > 99 ? '99+' : $chnUnreadNotifications ?></span>
+                <?php endif; ?>
+            </button>
+            <div class="topbar__menu topbar__menu--notifications" id="chn-notification-menu"
+                 data-dropdown-menu role="region" aria-label="Notifications" hidden>
+                <div class="topbar__notifications-title">Notifications</div>
+                <?php if ($chnNotifications === []): ?>
+                    <p class="topbar__notifications-empty">No notifications yet.</p>
+                <?php else: ?>
+                    <div class="topbar__notification-list">
+                        <?php foreach ($chnNotifications as $chnNotification): ?>
+                            <div class="topbar__notification-item<?= empty($chnNotification['read']) ? ' topbar__notification-item--unread' : '' ?>">
+                                <div class="topbar__notification-heading">
+                                    <strong><?= htmlspecialchars((string)($chnNotification['title'] ?? 'Notification'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                    <?php if (empty($chnNotification['read'])): ?>
+                                        <span class="topbar__notification-dot" aria-label="Unread"></span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if (!empty($chnNotification['message'])): ?>
+                                    <p><?= htmlspecialchars((string)$chnNotification['message'], ENT_QUOTES, 'UTF-8') ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($chnNotification['time'])): ?>
+                                    <small><?= htmlspecialchars((string)$chnNotification['time'], ENT_QUOTES, 'UTF-8') ?></small>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
 
         <div class="topbar__dropdown" id="chn-lang-dropdown" data-dropdown>
             <button type="button" class="btn btn--outline btn--sm topbar__lang-toggle"

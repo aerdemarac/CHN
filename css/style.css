@@ -976,3 +976,316 @@ textarea.form-control {
         transition: none;
     }
 }
+
+/* CHN Top Bar notifications & single-row mobile controls — 14 Nov 2026. */
+.icon--bell { --icon: url("../assets/icons/bell.svg"); }
+
+.topbar__notification-toggle {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+    flex-shrink: 0;
+}
+.topbar__notification-toggle .icon { width: 1.25rem; height: 1.25rem; }
+.topbar__notification-toggle:focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+}
+.topbar__notification-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--color-danger);
+    color: var(--color-surface);
+    border-radius: 50px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+.topbar__menu--notifications {
+    width: 328px;
+    max-width: calc(100vw - 32px);
+    max-height: min(60vh, 440px);
+    overflow-y: auto;
+    padding: 0;
+}
+.topbar__notifications-title {
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+.topbar__notifications-empty {
+    margin: 0;
+    padding: 24px 16px;
+    color: var(--color-text-muted);
+    text-align: center;
+    font-size: 0.875rem;
+}
+.topbar__notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+.topbar__notification-item:last-child { border-bottom: none; }
+.topbar__notification-item--unread { background: rgba(22, 125, 141, 0.06); }
+.topbar__notification-heading {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+.topbar__notification-heading strong { font-weight: 600; }
+.topbar__notification-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 50px;
+    background: var(--color-secondary);
+}
+.topbar__notification-item p { margin: 4px 0; font-size: 0.875rem; }
+.topbar__notification-item small { color: var(--color-text-muted); font-size: 0.75rem; }
+
+/* Breadcrumb is intentionally removed; keep actions aligned to the right on desktop. */
+.topbar { justify-content: flex-end; }
+.topbar__actions { margin-left: auto; }
+.topbar__emergency { gap: 4px; }
+
+@media (max-width: 767px) {
+    /* Same horizontal row as the fixed Sidebar Menu button. */
+    .topbar {
+        min-height: 68px;
+        padding: 12px 120px 12px 16px;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+    }
+    .topbar__actions {
+        width: max-content;
+        min-width: 0;
+        margin-left: 0;
+        display: flex;
+        gap: 8px;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    /* Mobile: phone icon + 112, no "Emergency" text. */
+    .topbar__emergency-label { display: none; }
+    .topbar__emergency {
+        height: 44px;
+        white-space: nowrap;
+        padding: 8px;
+        flex-shrink: 0;
+    }
+    .topbar__emergency-number { display: inline; }
+    .topbar__lang-toggle { height: 44px; padding: 8px 10px; }
+    .topbar__user { height: 44px; }
+    .sidebar__toggle { top: 12px; right: 16px; height: 44px; padding: 8px 12px; }
+
+    /* Open notification dropdown below the row, inside the viewport. */
+    .topbar__notification-dropdown { position: static; }
+    .topbar__menu--notifications {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-width: none;
+    }
+}
+@media (max-width: 399px) and (min-width: 361px) {
+    /* Compact spacing on 361–399px screens without changing Menu label. */
+    .topbar__actions { gap: 4px; }
+    .topbar__emergency { padding: 8px 6px; }
+    .topbar__lang-toggle { padding: 8px; }
+    .topbar__user { padding: 4px 6px 4px 4px; }
+}
+@media (max-width: 360px) {
+    /* Small phones: compact hamburger, preserve room for the 4 controls. */
+    .topbar { padding-left: 8px; padding-right: 76px; }
+    .topbar__actions { gap: 4px; }
+    .sidebar__toggle {
+        right: 8px;
+        width: 44px;
+        justify-content: center;
+        padding: 8px;
+    }
+    .sidebar__toggle-label { display: none; }
+    .topbar__emergency { padding: 8px 6px; }
+    .topbar__notification-toggle { width: 40px; }
+    .topbar__lang-toggle { padding: 8px; }
+    .topbar__user { padding: 4px 5px 4px 4px; }
+    .topbar__menu--notifications { left: 8px; right: 8px; }
+}
+
+/* CHN Top Bar Compact Mobile v3 - matching controls, 14 November 2026. */
+/* SVG bell is inline so it cannot turn into a black CSS-mask square. */
+.topbar__bell-svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (max-width: 767px) {
+    /* Four tools sit tightly to the LEFT of the existing Menu control. */
+    .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        min-height: 68px;
+        padding: 12px 106px 12px 8px; /* 90px Menu + 8px right + 8px gap */
+    }
+    .topbar__actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        flex: 0 0 auto;
+        width: max-content;
+        max-width: none;
+        min-width: 0;
+        gap: 4px;
+        margin-left: auto;
+    }
+    .topbar__actions > .topbar__dropdown {
+        flex: 0 0 auto;
+    }
+    .topbar__emergency {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 56px;
+        width: 56px;
+        min-width: 56px;
+        max-width: 56px;
+        height: 44px;
+        gap: 3px;
+        padding: 0 4px;
+        white-space: nowrap;
+    }
+    .topbar__emergency-label { display: none; }
+    .topbar__emergency-number { display: inline; }
+    .topbar__notification-toggle,
+    .topbar__lang-toggle,
+    .topbar__user {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 44px;
+        width: 44px;
+        min-width: 44px;
+        max-width: 44px;
+        height: 44px;
+        min-height: 44px;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+    }
+    .topbar__notification-toggle .topbar__bell-svg { width: 20px; height: 20px; }
+    .topbar__lang-toggle .topbar__caret,
+    .topbar__user .topbar__caret,
+    .topbar__user-info { display: none; }
+    .topbar__user .topbar__avatar { margin: 0; }
+
+    /* No gap inflation at 393px; Menu stays on the right edge. */
+    .sidebar__toggle {
+        position: fixed;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        top: 12px;
+        right: 8px;
+        width: 90px;
+        min-width: 90px;
+        max-width: 90px;
+        height: 44px;
+        min-height: 44px;
+        padding: 0 6px;
+        gap: 5px;
+        white-space: nowrap;
+    }
+    .sidebar__toggle-label { display: inline; }
+
+    .topbar__notification-dropdown { position: static; }
+    .topbar__menu--notifications {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+/* At narrow phone widths, preserve ALL controls and their 44px touch targets. */
+@media (max-width: 359px) {
+    .topbar { padding-left: 8px; padding-right: 106px; }
+    .topbar__actions { gap: 4px; }
+    .sidebar__toggle {
+        right: 8px;
+        width: 90px;
+        min-width: 90px;
+        max-width: 90px;
+        padding: 0 6px;
+    }
+    .sidebar__toggle-label { display: inline; }
+}
+
+/* CHN notifications: Bootstrap SVG used as an ordinary image.
+   Previous CSS-hidden inline SVG and data: background are no longer used. */
+.topbar__notification-toggle .topbar__bell-image {
+    display: block;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    flex: 0 0 20px;
+    object-fit: contain;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* CHN Top Bar desktop title and mobile avatar cleanup — v6.
+   Do not change the proven Bootstrap bell.svg or notification behavior. */
+.topbar__brand {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--color-primary);
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+}
+
+@media (max-width: 767px) {
+    /* On phones the brand is hidden; keep only the controls. */
+    .topbar__brand { display: none; }
+
+    /* Extra breathing room between avatar and the fixed Menu button. */
+    .topbar { padding-right: 110px; }
+
+    /* Remove only the visual profile outer frame; retain its 44px tap area,
+       avatar and accessible dropdown control. */
+    .topbar__user,
+    .topbar__user:hover {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+    }
+}
