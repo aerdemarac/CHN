@@ -1,4 +1,4 @@
-# CHN - City Hospital Network
+# CHN - Cyprus Healthcare Network 
 
 ## Team Responsibilities
 
@@ -70,6 +70,10 @@ Contains php files aiming to test freshly introduced features
 
 - `test-mailer.php` - PHPMailer Test Demonstration
 - `top-and-sidebar-test.php` - Demo dashboard containing refined side and topbar implementations
+
+### `config/`
+Folder that contains local environment configurations, secret credentials (such as database credentials or SMTP passwords in `.env`), and sensitive settings.
+This directory and its contents are strictly excluded from version control via `.gitignore` to prevent secret leaks to remote repositories.
 
 ### `.gitignore`
 Specifies files that should not be committed, such as local secrets, environment files, and dependencies.

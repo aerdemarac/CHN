@@ -32,8 +32,11 @@ $chnSidebarItems = [
 
 // Only the local preview page opts into this extra menu item.
 if (!empty($chnSidebarShowTestLink)) {
+    $chnPreviewFile = is_file($chnProjectRoot . '/test-endpoints/top-and-sidebar-test.php')
+        ? 'test-endpoints/top-and-sidebar-test.php'
+        : (is_file($chnProjectRoot . '/sidebar-test.php') ? 'sidebar-test.php' : 'test-endpoints/top-and-sidebar-test.php');
     array_unshift($chnSidebarItems,
-        ['label' => 'Sidebar Preview', 'file' => 'sidebar-test.php', 'icon' => 'preview']);
+        ['label' => 'UI Preview', 'file' => $chnPreviewFile, 'icon' => 'preview']);
 }
 ?>
 <a class="chn-skip-link" href="#main-content">Skip to main content</a>
@@ -61,11 +64,12 @@ if (!empty($chnSidebarShowTestLink)) {
                 $chnLabel = htmlspecialchars($chnItem['label'], ENT_QUOTES, 'UTF-8');
                 $chnIcon = htmlspecialchars($chnItem['icon'], ENT_QUOTES, 'UTF-8');
                 $chnExists = is_file($chnProjectRoot . '/' . $chnFile);
-                $chnIsCurrent = $chnCurrentPage === $chnFile;
+                $chnIsCurrent = $chnCurrentPage === basename($chnFile);
+                $chnHref = $chnBaseUrl . implode('/', array_map('rawurlencode', explode('/', $chnFile)));
             ?>
             <?php if ($chnExists): ?>
                 <a class="sidebar__link<?= $chnIsCurrent ? ' sidebar__link--active' : '' ?>"
-                   href="<?= htmlspecialchars($chnBaseUrl . rawurlencode($chnFile), ENT_QUOTES, 'UTF-8') ?>"
+                   href="<?= htmlspecialchars($chnHref, ENT_QUOTES, 'UTF-8') ?>"
                    <?= $chnIsCurrent ? 'aria-current="page"' : '' ?>>
                     <span class="sidebar__icon sidebar__icon--<?= $chnIcon ?>" aria-hidden="true"></span>
                     <span class="sidebar__link-text"><?= $chnLabel ?></span>
