@@ -1,11 +1,11 @@
 -- CHN | Cyprus Health-Care Network
--- DATABASE SCHEMA (v5) - MySQL 8 / MariaDB 10.x
+-- DATABASE SCHEMA (v7) - MySQL 8 / MariaDB 10.x
 -- This is the ONE canonical schema.sql for a NEW, EMPTY installation.
 -- GitHub location: CHN/db/schema.sql
--- IMPORTANT: Do not import this file into a populated v3 database.
+-- IMPORTANT: This schema is for a fresh, empty database only.
 -- It does NOT delete data, but CREATE TABLE will fail if tables already exist.
--- Preserve existing v3 data by using a v3->v4 upgrade script after backup.
--- Rules covered: hospital/department, appointments, diagnoses, active treatments,
+-- If v6 is already installed, use upgrade_v6_to_v7.sql after making a backup.
+-- Rules covered: user roles, per-user notifications, hospital/department, appointments, diagnoses, active treatments,
 -- case closing restrictions, anonymous emergencies, external API requesters,
 -- API call logging and token administration.
 -- Do not insert real patient data or plaintext passwords/API tokens into SQL files.
@@ -22,7 +22,7 @@ CREATE TABLE `user` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL, -- store PHP password_hash() only
-  `role` ENUM('patient','doctor','staff','admin') NOT NULL DEFAULT 'patient',
+  `role` ENUM('patient','doctor','healthcare_staff','admin') NOT NULL DEFAULT 'patient',
   `name` VARCHAR(255) NOT NULL,
   `surname` VARCHAR(255) NOT NULL,
   `gender` VARCHAR(255) NULL,
@@ -354,6 +354,20 @@ CREATE TABLE `api_call_log` (
   KEY `idx_api_call_requested_at` (`requested_at`),
   CONSTRAINT `fk_api_call_auth` FOREIGN KEY (`api_auth_id`)
     REFERENCES `api_auth` (`api_auth_id`) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- 19. NOTIFICATION: exactly 3 columns; one notification belongs to one user.
+-- user_id is linked to user.user_id. The backend filters by signed-in user ID.
+-- No title, created date, or read/unread status is stored.
+CREATE TABLE `notification` (
+  `notification_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT NOT NULL,
+  `message` TEXT NOT NULL,
+  PRIMARY KEY (`notification_id`),
+  KEY `idx_notification_user` (`user_id`),
+  CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`)
+    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
