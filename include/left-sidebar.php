@@ -3,6 +3,7 @@
  * CHN shared sidebar component.
  * Usage from a root PHP page: require __DIR__ . '/include/left-sidebar.php';
  * Optional demo-only link: $chnSidebarShowTestLink = true; (before require)
+ * Set $chnUserRole using a verified backend value before requiring this file.
  * IMPORTANT: Hiding links is NOT authorization. The backend must enforce roles.
  */
 $chnProjectRoot = dirname(__DIR__);
@@ -22,13 +23,10 @@ if ($chnDocumentRoot && $chnCanonicalRoot &&
 }
 
 $chnCurrentPage = basename(parse_url($_SERVER['SCRIPT_NAME'] ?? '/', PHP_URL_PATH) ?: '');
-$chnSidebarItems = [
-    ['label' => 'Dashboard',       'file' => 'index.php',           'icon' => 'dashboard'],
-    ['label' => 'Appointments',    'file' => 'appointments.php',    'icon' => 'appointments'],
-    ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
-    ['label' => 'Medical Cases',   'file' => 'medical-cases.php',   'icon' => 'cases'],
-    ['label' => 'Feedback',        'file' => 'feedback.php',        'icon' => 'feedback'],
-];
+
+// ROLE-BASED CHANGE: Keep menu definitions in one manager file.
+require_once __DIR__ . '/sidebar-menu-manager.php';
+$chnSidebarItems = chnSidebarItemsForRole((string)($chnUserRole ?? 'guest'));
 
 // Only the local preview page opts into this extra menu item.
 if (!empty($chnSidebarShowTestLink)) {
