@@ -132,15 +132,6 @@
     margin: 0 0 12px;
 }
 
-.appointments-step .form-group + .appointments-step__hint,
-.appointments-step .form-group + .appointments-choices {
-    margin-top: 16px;
-}
-
-.appointments-step__extra {
-    margin-top: 12px;
-}
-
 .appointments-select {
     height: calc(1.5em + 26px);
 }

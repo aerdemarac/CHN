@@ -36,13 +36,9 @@
             return;
         }
 
-        var department = document.getElementById('appointments-department');
         var doctorHint = document.getElementById('appointments-doctor-hint');
         var doctorChoices = Array.prototype.slice.call(document.querySelectorAll('#appointments-doctors .appointments-choice'));
         var caseInputs = Array.prototype.slice.call(form.querySelectorAll('input[name="case_id"]'));
-        var caseNew = document.getElementById('appointments-case-new');
-        var descriptionGroup = document.getElementById('appointments-description-group');
-        var description = document.getElementById('appointments-description');
         var calendar = document.getElementById('appointments-calendar');
         var dateInput = document.getElementById('appointments-date');
         var slotInputs = Array.prototype.slice.call(form.querySelectorAll('input[name="appointment_time"]'));
@@ -89,7 +85,6 @@
             setError('caseId', '');
             setError('date', '');
             setError('time', '');
-            description.setAttribute('aria-invalid', 'false');
         }
 
         function isTaken(doctorId, dateKey, slot) {
@@ -115,14 +110,10 @@
             });
         }
 
-        function updateCaseDescription() {
-            descriptionGroup.hidden = !caseNew.checked;
-        }
-
-        function updateDepartment() {
-            var value = department.value;
+        function updateCase() {
+            var caseId = checked('case_id');
+            var value = caseId ? caseId.getAttribute('data-department') : '';
             var visibleDoctors = 0;
-            var visibleCases = 0;
 
             doctorChoices.forEach(function (choice) {
                 var show = value !== '' && choice.getAttribute('data-department') === value;
@@ -134,29 +125,10 @@
                 }
             });
 
-            caseInputs.forEach(function (input) {
-                var choice = input.closest('.appointments-choice');
-                if (input === caseNew) {
-                    return;
-                }
-                var show = value !== '' && choice.getAttribute('data-department') === value;
-                choice.hidden = !show;
-                if (show) {
-                    visibleCases += 1;
-                } else {
-                    input.checked = false;
-                }
-            });
-
-            if (value !== '' && visibleCases === 0) {
-                caseNew.checked = true;
-            }
-
             doctorHint.textContent = value === ''
-                ? 'Choose a department to see its doctors.'
-                : visibleDoctors + (visibleDoctors === 1 ? ' doctor' : ' doctors') + ' in this department.';
+                ? 'Choose a case to see the doctors of its department.'
+                : visibleDoctors + (visibleDoctors === 1 ? ' doctor' : ' doctors') + ' in the department of this case.';
 
-            updateCaseDescription();
             updateSlots();
             updateSummary();
         }
@@ -167,11 +139,11 @@
             var caseId = checked('case_id');
             var time = checked('appointment_time');
 
-            if (doctor) {
-                parts.push(doctor.getAttribute('data-label'));
-            }
             if (caseId) {
                 parts.push(caseId.getAttribute('data-label'));
+            }
+            if (doctor) {
+                parts.push(doctor.getAttribute('data-label'));
             }
             if (dateInput.value !== '') {
                 parts.push(formatDay(dateInput.value));
@@ -334,16 +306,16 @@
             clearErrors();
             dateInput.value = '';
             appointmentId.value = id;
-            department.value = button.getAttribute('data-department-id');
-            updateDepartment();
 
-            var doctor = form.querySelector('input[name="doctor_id"][value="' + button.getAttribute('data-doctor-id') + '"]');
             var caseId = form.querySelector('input[name="case_id"][value="' + button.getAttribute('data-case-id') + '"]');
-            if (doctor) {
-                doctor.checked = true;
-            }
             if (caseId) {
                 caseId.checked = true;
+            }
+            updateCase();
+
+            var doctor = form.querySelector('input[name="doctor_id"][value="' + button.getAttribute('data-doctor-id') + '"]');
+            if (doctor) {
+                doctor.checked = true;
             }
 
             title.textContent = 'Reschedule appointment #' + id;
@@ -351,7 +323,6 @@
             submit.textContent = 'Confirm new time';
             resetButton.hidden = false;
 
-            updateCaseDescription();
             updateSlots();
             updateSummary();
             renderCalendar();
@@ -368,35 +339,25 @@
             subtitle.textContent = defaults.subtitle;
             submit.textContent = defaults.submit;
             resetButton.hidden = true;
-            updateDepartment();
+            updateCase();
             renderCalendar();
         }
 
-        department.addEventListener('change', function () {
-            setError('doctor', '');
-            updateDepartment();
-        });
-
         form.addEventListener('change', function (event) {
             var name = event.target.name;
+            if (name === 'case_id') {
+                setError('caseId', '');
+                setError('doctor', '');
+                updateCase();
+            }
             if (name === 'doctor_id') {
                 setError('doctor', '');
                 updateSlots();
-            }
-            if (name === 'case_id') {
-                setError('caseId', '');
-                updateCaseDescription();
             }
             if (name === 'appointment_time') {
                 setError('time', '');
             }
             updateSummary();
-        });
-
-        description.addEventListener('input', function () {
-            if (description.value.trim() !== '') {
-                setError('caseId', '', description);
-            }
         });
 
         resetButton.addEventListener('click', leaveRescheduleMode);
@@ -410,16 +371,15 @@
             var time = checked('appointment_time');
             var firstInvalid = null;
 
-            if (!doctor) {
-                setError('doctor', department.value === '' ? 'Choose a department and a doctor.' : 'Choose a doctor.');
-                firstInvalid = firstInvalid || department;
-            }
             if (!caseId) {
-                setError('caseId', 'Choose a case or start a new one.');
-                firstInvalid = firstInvalid || caseNew;
-            } else if (caseId === caseNew && description.value.trim() === '') {
-                setError('caseId', 'Describe the problem in a few words.', description);
-                firstInvalid = firstInvalid || description;
+                setError('caseId', 'Choose one of your open cases.');
+                firstInvalid = firstInvalid || caseInputs[0];
+            }
+            if (!doctor) {
+                setError('doctor', caseId ? 'Choose a doctor.' : 'Choose a case first, then a doctor.');
+                firstInvalid = firstInvalid || doctorChoices.map(function (choice) {
+                    return choice.hidden ? null : choice.querySelector('input');
+                }).filter(Boolean)[0] || null;
             }
             if (dateInput.value === '') {
                 setError('date', 'Choose a date.');
@@ -455,7 +415,7 @@
         });
 
         buildCalendar();
-        updateDepartment();
+        updateCase();
     }
 
     function initRowActions() {

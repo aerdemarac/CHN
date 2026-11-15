@@ -41,14 +41,26 @@ function dashboardDate(int $days): string
     return (new DateTimeImmutable('today'))->modify(sprintf('%+d days', $days))->format('Y-m-d');
 }
 
-function dashboardPage(?string $file): ?string
+function dashboardPage(?string $file, string $role): ?string
 {
-    return $file !== null && is_file(dirname(__DIR__) . '/' . $file) ? '../' . $file : null;
+    if ($file === null) {
+        return null;
+    }
+
+    $query = '?' . http_build_query(['role' => $role]);
+
+    if (is_file(dirname(__DIR__) . '/' . $file)) {
+        return '../' . $file . $query;
+    }
+
+    $demo = pathinfo($file, PATHINFO_FILENAME) . '-test.php';
+
+    return is_file(__DIR__ . '/' . $demo) ? $demo . $query : null;
 }
 
-function dashboardButton(string $label, ?string $file, string $class): string
+function dashboardButton(string $label, ?string $file, string $class, string $role): string
 {
-    $page = dashboardPage($file);
+    $page = dashboardPage($file, $role);
 
     if ($page === null) {
         return '<button type="button" class="' . $class . '" disabled>' . dashboardEscape($label) . '</button>';
@@ -524,15 +536,15 @@ require __DIR__ . '/../include/top-bar.php';
             </div>
             <?php if ($dashboardRole === 'patient'): ?>
                 <div class="page-header__actions">
-                    <?= dashboardButton('Book appointment', 'appointments.php', 'btn btn--primary') ?>
+                    <?= dashboardButton('Book appointment', 'appointments.php', 'btn btn--primary', $dashboardRole) ?>
                 </div>
             <?php elseif ($dashboardRole === 'doctor'): ?>
                 <div class="page-header__actions">
-                    <?= dashboardButton('Add diagnosis', 'medical-records.php', 'btn btn--primary') ?>
+                    <?= dashboardButton('Add diagnosis', 'medical-records.php', 'btn btn--primary', $dashboardRole) ?>
                 </div>
             <?php elseif ($dashboardRole === 'admin'): ?>
                 <div class="page-header__actions">
-                    <?= dashboardButton('Create staff account', null, 'btn btn--primary') ?>
+                    <?= dashboardButton('Create staff account', null, 'btn btn--primary', $dashboardRole) ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -575,7 +587,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <h2 class="card__title" id="dashboard-appointments-title">Upcoming appointments</h2>
                             <p class="card__subtitle">Confirmed and pending visits.</p>
                         </div>
-                        <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                     </header>
 
                     <?php if ($dashboardUpcoming === []): ?>
@@ -614,7 +626,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <h2 class="card__title" id="dashboard-cases-title">My medical cases</h2>
                             <p class="card__subtitle">The tier shows how urgent a case is.</p>
                         </div>
-                        <?= dashboardButton('Medical records', 'medical-records.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('Medical records', 'medical-records.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                     </header>
 
                     <?php if ($dashboardCases === []): ?>
@@ -651,7 +663,7 @@ require __DIR__ . '/../include/top-bar.php';
                         <h2 class="card__title" id="dashboard-feedback-title">My feedback</h2>
                         <p class="card__subtitle">Your latest messages and whether they have been answered.</p>
                     </div>
-                    <?= dashboardButton('View all', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                    <?= dashboardButton('View all', 'feedback.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                 </header>
 
                 <?php if ($dashboardFeedback === []): ?>
@@ -729,7 +741,7 @@ require __DIR__ . '/../include/top-bar.php';
                                 · <?= count($dashboardTodayAppointments) ?> <?= count($dashboardTodayAppointments) === 1 ? 'appointment' : 'appointments' ?> in total
                             </p>
                         </div>
-                        <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                     </header>
 
                     <?php if ($dashboardTodayAppointments === []): ?>
@@ -889,7 +901,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <h2 class="card__title" id="dashboard-tiers-title">Open cases by tier</h2>
                             <p class="card__subtitle">All departments · <?= (int) $dashboardTierTotal ?> open cases.</p>
                         </div>
-                        <?= dashboardButton('Medical cases', 'medical-cases.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('Medical cases', 'medical-cases.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                     </header>
 
                     <ul class="dashboard-list">
@@ -914,7 +926,7 @@ require __DIR__ . '/../include/top-bar.php';
                         <h2 class="card__title" id="dashboard-schedule-title">Today's appointments</h2>
                         <p class="card__subtitle">All departments · <?= dashboardEscape($dashboardToday->format('l, j F')) ?></p>
                     </div>
-                    <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm') ?>
+                    <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                 </header>
 
                 <?php if ($dashboardAppointments === []): ?>
@@ -1009,7 +1021,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <h2 class="card__title" id="dashboard-feedback-title">Complaints and feedback</h2>
                             <p class="card__subtitle">Latest messages, open complaints first.</p>
                         </div>
-                        <?= dashboardButton('All feedback', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('All feedback', 'feedback.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                     </header>
 
                     <?php if ($dashboardFeedback === []): ?>
@@ -1032,7 +1044,7 @@ require __DIR__ . '/../include/top-bar.php';
                                     <div class="dashboard-item__tags">
                                         <?php if ($dashboardIsOpen): ?>
                                             <span class="badge badge--warning">Open</span>
-                                            <?= dashboardButton('Respond', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                                            <?= dashboardButton('Respond', 'feedback.php', 'btn btn--outline btn--sm', $dashboardRole) ?>
                                         <?php else: ?>
                                             <span class="badge badge--success">Answered</span>
                                         <?php endif; ?>

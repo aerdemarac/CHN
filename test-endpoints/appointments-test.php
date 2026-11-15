@@ -279,6 +279,7 @@ if ($appointmentsRole === 'patient') {
         $appointmentsCases,
         fn (array $item): bool => $item['patient_id'] === $appointmentsUser['patient_id'] && $item['case_state'] === 'open'
     );
+    $appointmentsCasesLink = appointmentsPageLink('medical-cases.php', $appointmentsRole);
 }
 
 $appointmentsFormatted = function (array $item) use ($appointmentsToday): array {
@@ -358,11 +359,20 @@ require __DIR__ . '/../include/top-bar.php';
                     <header class="card__header">
                         <div>
                             <h2 class="card__title" id="appointments-book-title" tabindex="-1">Book an appointment</h2>
-                            <p class="card__subtitle" id="appointments-book-subtitle">Choose a doctor, the case it is about, then a free time.</p>
+                            <p class="card__subtitle" id="appointments-book-subtitle">Choose one of your open cases, a doctor, then a free time.</p>
                         </div>
                         <button type="button" class="btn btn--outline btn--sm" id="appointments-book-reset" hidden>Stop rescheduling</button>
                     </header>
 
+                    <?php if ($appointmentsPatientCases === []): ?>
+                        <div class="empty-state">
+                            <p class="empty-state__title">No open cases</p>
+                            <p class="empty-state__text">Appointments are booked for an open case. New cases are opened on the Medical Cases page.</p>
+                            <?php if ($appointmentsCasesLink !== null): ?>
+                                <a class="btn btn--outline" href="<?= appointmentsEscape($appointmentsCasesLink) ?>">Go to medical cases</a>
+                            <?php endif; ?>
+                        </div>
+                    <?php else: ?>
                     <form class="appointments-book__form" id="appointments-form" action="../backend/appointments.php" method="post" novalidate>
                         <input type="hidden" name="role" value="<?= appointmentsEscape($appointmentsRole) ?>">
                         <input type="hidden" name="appointment_id" id="appointments-appointment-id" value="">
@@ -370,21 +380,41 @@ require __DIR__ . '/../include/top-bar.php';
                         <div class="appointments-book__grid">
                             <div class="appointments-book__column">
                                 <fieldset class="appointments-step">
-                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">1</span> Doctor</legend>
+                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">1</span> Case</legend>
+                                    <p class="form-hint appointments-step__hint">
+                                        Appointments are booked for one of your open cases. New cases are opened on the
+                                        <?php if ($appointmentsCasesLink !== null): ?>
+                                            <a href="<?= appointmentsEscape($appointmentsCasesLink) ?>">Medical Cases</a> page.
+                                        <?php else: ?>
+                                            Medical Cases page.
+                                        <?php endif; ?>
+                                    </p>
 
-                                    <div class="form-group">
-                                        <label class="form-label" for="appointments-department">Department</label>
-                                        <select class="form-control appointments-select" id="appointments-department" name="department_id">
-                                            <option value="">Choose a department</option>
-                                            <?php foreach ($appointmentsDepartments as $appointmentsDepartmentId => $appointmentsDepartment): ?>
-                                                <option value="<?= (int) $appointmentsDepartmentId ?>">
-                                                    <?= appointmentsEscape($appointmentsDepartment['department_name'] . ' · ' . $appointmentsDepartment['hospital_name']) ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                    <div class="appointments-choices">
+                                        <?php foreach ($appointmentsPatientCases as $appointmentsCaseId => $appointmentsCase): ?>
+                                            <?php $appointmentsDepartment = $appointmentsDepartments[$appointmentsCase['department_id']]; ?>
+                                            <label class="appointments-choice">
+                                                <input type="radio" class="appointments-choice__input" name="case_id" value="<?= (int) $appointmentsCaseId ?>"
+                                                       data-department="<?= (int) $appointmentsCase['department_id'] ?>"
+                                                       data-label="Case #<?= (int) $appointmentsCaseId ?>">
+                                                <span class="appointments-choice__body">
+                                                    <span class="appointments-choice__title">
+                                                        Case #<?= (int) $appointmentsCaseId ?>
+                                                        <?= appointmentsTierBadge($appointmentsCase['tier_color'], $appointmentsTiers) ?>
+                                                    </span>
+                                                    <span class="appointments-choice__meta"><?= appointmentsEscape($appointmentsDepartment['department_name'] . ' · ' . $appointmentsDepartment['hospital_name']) ?></span>
+                                                    <span class="appointments-choice__meta"><?= appointmentsEscape($appointmentsCase['case_description']) ?></span>
+                                                </span>
+                                            </label>
+                                        <?php endforeach; ?>
                                     </div>
+                                    <p class="form-error" id="appointments-case-error" hidden></p>
+                                </fieldset>
 
-                                    <p class="form-hint appointments-step__hint" id="appointments-doctor-hint">Choose a department to see its doctors.</p>
+                                <fieldset class="appointments-step">
+                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">2</span> Doctor</legend>
+
+                                    <p class="form-hint appointments-step__hint" id="appointments-doctor-hint">Choose a case to see the doctors of its department.</p>
                                     <div class="appointments-choices" id="appointments-doctors">
                                         <?php foreach ($appointmentsDoctors as $appointmentsDoctorId => $appointmentsDoctor): ?>
                                             <?php $appointmentsDepartment = $appointmentsDepartments[$appointmentsDoctor['department_id']]; ?>
@@ -400,43 +430,6 @@ require __DIR__ . '/../include/top-bar.php';
                                         <?php endforeach; ?>
                                     </div>
                                     <p class="form-error" id="appointments-doctor-error" hidden></p>
-                                </fieldset>
-
-                                <fieldset class="appointments-step">
-                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">2</span> Case</legend>
-                                    <p class="form-hint appointments-step__hint">Pick an open case of this department, or start a new one.</p>
-
-                                    <div class="appointments-choices">
-                                        <?php foreach ($appointmentsPatientCases as $appointmentsCaseId => $appointmentsCase): ?>
-                                            <label class="appointments-choice" data-department="<?= (int) $appointmentsCase['department_id'] ?>" hidden>
-                                                <input type="radio" class="appointments-choice__input" name="case_id" value="<?= (int) $appointmentsCaseId ?>"
-                                                       data-label="Case #<?= (int) $appointmentsCaseId ?>">
-                                                <span class="appointments-choice__body">
-                                                    <span class="appointments-choice__title">
-                                                        Case #<?= (int) $appointmentsCaseId ?>
-                                                        <?= appointmentsTierBadge($appointmentsCase['tier_color'], $appointmentsTiers) ?>
-                                                    </span>
-                                                    <span class="appointments-choice__meta"><?= appointmentsEscape($appointmentsCase['case_description']) ?></span>
-                                                </span>
-                                            </label>
-                                        <?php endforeach; ?>
-                                        <label class="appointments-choice">
-                                            <input type="radio" class="appointments-choice__input" name="case_id" value="new" id="appointments-case-new"
-                                                   data-label="New case">
-                                            <span class="appointments-choice__body">
-                                                <span class="appointments-choice__title">New condition</span>
-                                                <span class="appointments-choice__meta">A new case is opened for this visit.</span>
-                                            </span>
-                                        </label>
-                                    </div>
-
-                                    <div class="form-group appointments-step__extra" id="appointments-description-group" hidden>
-                                        <label class="form-label" for="appointments-description">What is the problem?</label>
-                                        <textarea class="form-control" id="appointments-description" name="case_description" maxlength="500"
-                                                  aria-describedby="appointments-description-hint"></textarea>
-                                        <p class="form-hint" id="appointments-description-hint">A short description helps the doctor prepare.</p>
-                                    </div>
-                                    <p class="form-error" id="appointments-case-error" hidden></p>
                                 </fieldset>
                             </div>
 
@@ -476,6 +469,7 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
                         </div>
                     </form>
+                    <?php endif; ?>
                 </section>
             <?php endif; ?>
 
@@ -629,7 +623,6 @@ require __DIR__ . '/../include/top-bar.php';
                                                     <?php if ($appointmentsCanReschedule): ?>
                                                         <button type="button" class="btn btn--outline btn--sm"
                                                                 data-appointment-reschedule="<?= (int) $appointmentsItem['appointment_id'] ?>"
-                                                                data-department-id="<?= (int) $appointmentsItem['department_id'] ?>"
                                                                 data-doctor-id="<?= (int) $appointmentsItem['doctor_id'] ?>"
                                                                 data-case-id="<?= (int) $appointmentsItem['case_id'] ?>">Reschedule</button>
                                                     <?php endif; ?>
