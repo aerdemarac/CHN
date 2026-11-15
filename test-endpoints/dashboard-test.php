@@ -479,10 +479,10 @@ $chnUserName = $dashboardUser['display'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHN | Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
     <script src="../js/sidebar.js" defer></script>
     <script src="../js/topbar.js" defer></script>
-    <script src="../js/index.js" defer></script>
+    <script src="../js/dashboard.js" defer></script>
 </head>
 <body>
 <?php
