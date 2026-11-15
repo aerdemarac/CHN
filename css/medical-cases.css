@@ -44,3 +44,15 @@
     .medical-cases__filters, .medical-cases__metadata { grid-template-columns: minmax(0, 1fr); }
     .medical-cases__empty { padding: 16px; }
 }
+
+.medical-cases__creation { margin-bottom: 24px; scroll-margin-top: 96px; }
+.medical-cases__creation-help { color: var(--color-text-muted); font-size: 0.875rem; margin: 0 0 16px; }
+.medical-cases__create-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.medical-cases__create-grid > div { min-width: 0; }
+.medical-cases__create-grid .form-label { display: block; }
+.medical-cases__create-description { grid-column: 1 / -1; }
+@media (max-width: 767px) {
+    .medical-cases__create-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.medical-cases__review-field { max-width: 480px; margin: 16px 0; }
+.medical-cases__review-field .form-label { display: block; }

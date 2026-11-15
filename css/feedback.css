@@ -1,0 +1,29 @@
+/* Feedback & Support only; use the existing CHN shell and design tokens. */
+.feedback .content__inner, .feedback .card { min-width: 0; }
+.feedback__notice, .feedback__toolbar { margin-bottom: 24px; }
+.feedback__toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.feedback__toolbar > div { flex: 0 1 280px; min-width: 0; }
+.feedback__toolbar .form-label { display: block; }
+.feedback__help { margin: 0 0 16px; font-size: 0.875rem; color: var(--color-text-muted); }
+.feedback__muted { color: var(--color-text-muted); }
+.feedback__input-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.feedback__input-meta .form-hint { margin: 0; }
+.feedback__counter { color: var(--color-text-muted); font-size: 0.875rem; }
+.feedback__counter.is-invalid { color: var(--color-danger); }
+.feedback__form-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.feedback__result { margin: 16px 0 0; color: var(--color-text-muted); overflow-wrap: anywhere; }
+.feedback__result:empty { margin: 0; }
+.feedback__count { margin: 0 0 16px; }
+.feedback__entries { list-style: none; padding: 0; margin: 0; }
+.feedback__entries > li + li { margin-top: 16px; }
+.feedback__entry { padding: 24px; border: 1px solid var(--color-border); border-radius: var(--radius); }
+.feedback__entry-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.feedback__entry-title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-primary); }
+.feedback__message { margin: 16px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.feedback__response { margin-top: 16px; padding: 16px; background: var(--color-bg); border-radius: var(--radius); }
+.feedback__response-title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-primary); }
+.feedback__pending { margin: 0; font-size: 0.875rem; color: var(--color-text-muted); }
+@media (max-width: 767px) {
+    .feedback .card, .feedback__entry { padding: 16px; }
+    .feedback__toolbar > div { flex-basis: 100%; }
+}
