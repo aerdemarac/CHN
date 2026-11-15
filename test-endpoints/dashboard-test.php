@@ -204,6 +204,32 @@ if ($dashboardRole === 'patient') {
         $dashboardAppointments,
         fn (array $item): bool => $item['appointment_status'] === 'completed'
     ));
+
+    $dashboardFeedback = [
+        [
+            'feedback_id'   => 282,
+            'feedback_msg'  => 'A reminder the day before my appointment would be very helpful.',
+            'feedback_date' => dashboardDate(-20),
+            'response_date' => dashboardDate(-18),
+        ],
+        [
+            'feedback_id'   => 304,
+            'feedback_msg'  => 'The appointment confirmation email arrived two hours late.',
+            'feedback_date' => dashboardDate(-1),
+            'response_date' => null,
+        ],
+        [
+            'feedback_id'   => 261,
+            'feedback_msg'  => 'Booking my first appointment was quick and easy, thank you.',
+            'feedback_date' => dashboardDate(-41),
+            'response_date' => dashboardDate(-40),
+        ],
+    ];
+    usort(
+        $dashboardFeedback,
+        fn (array $a, array $b): int => $b['feedback_date'] <=> $a['feedback_date']
+    );
+    $dashboardFeedback = array_slice($dashboardFeedback, 0, 2);
 } elseif ($dashboardRole === 'doctor') {
     $dashboardDepartment = 'Cardiology';
 
@@ -377,7 +403,7 @@ if ($dashboardRole === 'patient') {
         'admin'   => 4,
     ];
     $dashboardUserTotal = array_sum($dashboardUserCounts);
-    $dashboardPrivilegedTotal = $dashboardUserTotal - $dashboardUserCounts['patient'];
+    $dashboardEstablishmentStaffTotal = $dashboardUserTotal - $dashboardUserCounts['patient'];
 
     $dashboardFeedback = [
         [
@@ -502,7 +528,7 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                 </div>
             <?php elseif ($dashboardRole === 'admin'): ?>
                 <div class="page-header__actions">
-                    <?= dashboardButton('Create privileged account', null, 'btn btn--primary') ?>
+                    <?= dashboardButton('Create establishment staff account', null, 'btn btn--primary') ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -614,6 +640,50 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
 
                 </section>
             </div>
+
+            <section class="card dashboard-section" aria-labelledby="dashboard-feedback-title">
+                <header class="card__header">
+                    <div>
+                        <h2 class="card__title" id="dashboard-feedback-title">My feedback</h2>
+                        <p class="card__subtitle">Your latest messages and whether they have been answered.</p>
+                    </div>
+                    <?= dashboardButton('View all', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                </header>
+
+                <?php if ($dashboardFeedback === []): ?>
+                    <div class="empty-state">
+                        <p class="empty-state__title">No feedback sent yet</p>
+                        <p class="empty-state__text">Tell us how we can improve.</p>
+                    </div>
+                <?php else: ?>
+                    <ul class="dashboard-list">
+                        <?php foreach ($dashboardFeedback as $dashboardItem): ?>
+                            <li class="dashboard-item dashboard-item--wrap">
+                                <div class="dashboard-item__body">
+                                    <p class="dashboard-item__title">
+                                        <?= dashboardEscape($dashboardItem['feedback_msg']) ?>
+                                    </p>
+                                    <p class="dashboard-item__meta">
+                                        #<?= (int) $dashboardItem['feedback_id'] ?>
+                                        · Sent <?= dashboardEscape(lcfirst(dashboardRelativeDay($dashboardItem['feedback_date'], $dashboardToday))) ?>
+                                        <?php if ($dashboardItem['response_date'] !== null): ?>
+                                            · Answered <?= dashboardEscape(lcfirst(dashboardRelativeDay($dashboardItem['response_date'], $dashboardToday))) ?>
+                                        <?php endif; ?>
+                                    </p>
+                                </div>
+                                <div class="dashboard-item__tags">
+                                    <?php if ($dashboardItem['response_date'] === null): ?>
+                                        <span class="badge badge--warning">Open</span>
+                                    <?php else: ?>
+                                        <span class="badge badge--success">Answered</span>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+
+            </section>
         <?php elseif ($dashboardRole === 'doctor'): ?>
             <section class="grid grid--3" aria-label="Summary">
                 <div class="stat-card">
@@ -650,7 +720,10 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                     <header class="card__header">
                         <div>
                             <h2 class="card__title" id="dashboard-today-title">Today's appointments</h2>
-                            <p class="card__subtitle"><?= dashboardEscape($dashboardToday->format('l, j F')) ?></p>
+                            <p class="card__subtitle">
+                                <?= dashboardEscape($dashboardToday->format('l, j F')) ?>
+                                · <?= count($dashboardTodayAppointments) ?> <?= count($dashboardTodayAppointments) === 1 ? 'appointment' : 'appointments' ?> in total
+                            </p>
                         </div>
                         <?= dashboardButton('View all', 'appointments.php', 'btn btn--outline btn--sm') ?>
                     </header>
@@ -898,8 +971,8 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                         <span class="icon icon--badge" aria-hidden="true"></span>
                     </div>
                     <div>
-                        <p class="stat-card__label">Privileged accounts</p>
-                        <p class="stat-card__value"><?= number_format($dashboardPrivilegedTotal) ?></p>
+                        <p class="stat-card__label">Establishment staff</p>
+                        <p class="stat-card__value"><?= number_format($dashboardEstablishmentStaffTotal) ?></p>
                     </div>
                 </div>
             </section>
