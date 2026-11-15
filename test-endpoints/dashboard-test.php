@@ -528,7 +528,7 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
                 </div>
             <?php elseif ($dashboardRole === 'admin'): ?>
                 <div class="page-header__actions">
-                    <?= dashboardButton('Create establishment staff account', null, 'btn btn--primary') ?>
+                    <?= dashboardButton('Create staff account', null, 'btn btn--primary') ?>
                 </div>
             <?php endif; ?>
         </div>
