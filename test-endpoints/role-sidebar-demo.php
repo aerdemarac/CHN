@@ -4,17 +4,9 @@
  * Do not publish this demo endpoint in production.
  * Role is intentionally chosen using a URL query for visual testing only.
  */
-$demoRoles = [
-    'patient' => 'Patient',
-    'doctor' => 'Doctor',
-    'healthcare_staff' => 'Healthcare Staff',
-    'admin' => 'Admin',
-];
-$selected = $_GET['demo_role'] ?? 'patient';
-$selected = is_string($selected) && array_key_exists($selected, $demoRoles)
-    ? $selected : 'patient';
-
-$chnUserRole = $selected;
+require_once __DIR__ . '/../include/prototype-role.php';
+$demoRoles = $chnPrototypeRoles;
+$selected = $chnPrototypeRole;
 $chnUserName = 'Demo User';
 $chnPageTitle = 'Dynamic Sidebar Demo';
 ?>
@@ -48,9 +40,9 @@ $chnPageTitle = 'Dynamic Sidebar Demo';
                 </div>
             </div>
             <div style="padding: 24px;">
-                <form method="get">
+                <form method="get" action="<?= htmlspecialchars(chnPrototypeUrl('role-sidebar-demo.php', $chnPrototypeRole), ENT_QUOTES, 'UTF-8') ?>">
                     <label for="demo-role" style="display:block;margin-bottom:8px;">User role</label>
-                    <select id="demo-role" name="demo_role"
+                    <select id="demo-role" name="role"
                             style="display:block;width:100%;max-width:340px;padding:12px 16px;border:1px solid #E2E8F0;border-radius:8px;background:#FFFFFF;color:#243447;margin-bottom:16px;">
                         <?php foreach ($demoRoles as $role => $label): ?>
                             <option value="<?= htmlspecialchars($role, ENT_QUOTES, 'UTF-8') ?>"

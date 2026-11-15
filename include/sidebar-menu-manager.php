@@ -3,7 +3,8 @@
  * CHN role-based sidebar menu definitions (presentation only).
  *
  * The caller MUST set $chnUserRole from a trusted authenticated backend/DB
- * lookup before including include/left-sidebar.php.
+ * lookup before including include/left-sidebar.php in live pages.
+ * Fictional prototype pages may opt into include/prototype-role.php instead.
  * Hiding or showing links DOES NOT enforce access permissions.
  *
  * Design decisions (Nov 14, 2026):
@@ -44,7 +45,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'doctor' => [
                 'dashboard', 'appointments', 'patients', 'cases', 'records', 'feedback',
             ],
-            'healthcare_staff' => [
+            'staff' => [
                 'dashboard', 'alerts', 'appointments', 'patients', 'cases', 'records', 'feedback',
             ],
             'admin' => [
@@ -54,6 +55,8 @@ if (!function_exists('chnSidebarItemsForRole')) {
 
         $normalized = strtolower(trim($role));
         $normalized = str_replace([' ', '-'], '_', $normalized);
+        // Compatibility for older callers; new prototype URLs use staff only.
+        if ($normalized === 'healthcare_staff') $normalized = 'staff';
         $keys = $byRole[$normalized] ?? []; // Unknown roles see no protected navigation.
         return array_map(static fn(string $key): array => $items[$key], $keys);
     }

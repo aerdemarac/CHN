@@ -248,7 +248,9 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
             <div class="topbar__menu topbar__menu--user" id="chn-user-menu" data-dropdown-menu role="menu" hidden>
                 <?php if ($chnAccountSettingsFile !== null): ?>
                     <a class="topbar__menu-item" role="menuitem"
-                       href="<?= htmlspecialchars($chnBaseUrl . rawurlencode($chnAccountSettingsFile), ENT_QUOTES, 'UTF-8') ?>">
+                       href="<?= htmlspecialchars(isset($chnPrototypeRole)
+                           ? chnPrototypeUrl($chnBaseUrl . rawurlencode($chnAccountSettingsFile), $chnPrototypeRole)
+                           : $chnBaseUrl . rawurlencode($chnAccountSettingsFile), ENT_QUOTES, 'UTF-8') ?>">
                         <span>Account Settings</span>
                     </a>
                 <?php else: ?>
@@ -263,7 +265,9 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
 
                 <?php if ($chnHasLogoutEndpoint): ?>
                     <a class="topbar__menu-item topbar__menu-item--danger" role="menuitem"
-                       href="<?= htmlspecialchars($chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>">
+                       href="<?= htmlspecialchars(isset($chnPrototypeRole)
+                           ? chnPrototypeUrl($chnBaseUrl . 'backend/logout.php', $chnPrototypeRole)
+                           : $chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>">
                         <span>Log out</span>
                     </a>
                 <?php else: ?>

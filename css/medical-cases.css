@@ -1,6 +1,9 @@
 /* Medical Cases only; shared shell and tokens remain authoritative. */
 .medical-cases .content__inner { min-width: 0; }
 .medical-cases__notice, .medical-cases__summary { margin-bottom: 24px; }
+.medical-cases__role-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+.medical-cases__role-picker .form-label { display: block; }
+.medical-cases__role-picker > div { flex: 0 1 320px; min-width: 0; }
 .medical-cases__filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 16px; }
 .medical-cases__filters > div { min-width: 0; }
 .medical-cases__filters .form-label { display: block; }
@@ -33,7 +36,7 @@
 .medical-cases :is(a, .table-responsive, .medical-cases__details):focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 2px; }
 @media (max-width: 1024px) {
     .medical-cases__filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .medical-cases__filters > div:first-child { grid-column: 1 / -1; }
+    .medical-cases__filters > div:first-of-type { grid-column: 1 / -1; }
     .medical-cases__metadata { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 767px) {
