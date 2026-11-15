@@ -1,16 +1,9 @@
 <?php
 $dashboardRoles = [
-    'patient' => 'Patient',
-    'doctor'  => 'Doctor',
-    'staff'   => 'Healthcare Staff',
-    'admin'   => 'Admin',
-];
-
-$dashboardSidebarRoles = [
-    'patient' => 'patient',
-    'doctor'  => 'doctor',
-    'staff'   => 'healthcare_staff',
-    'admin'   => 'admin',
+    'patient'          => 'Patient',
+    'doctor'           => 'Doctor',
+    'healthcare_staff' => 'Healthcare Staff',
+    'admin'            => 'Admin',
 ];
 
 $dashboardRole =isset($_GET['role']) && is_string($_GET['role']) && isset($dashboardRoles[$_GET['role']])
@@ -120,10 +113,10 @@ function dashboardSortCases(array $cases, array $tiers): array
 }
 
 $dashboardUsers = [
-    'patient' => ['name' => 'Elif',    'surname' => 'Arslan',    'display' => 'Elif Arslan'],
-    'doctor'  => ['name' => 'Andreas', 'surname' => 'Kyrou',     'display' => 'Dr. Andreas Kyrou'],
-    'staff'   => ['name' => 'Zeynep',  'surname' => 'Şahin',     'display' => 'Zeynep Şahin'],
-    'admin'   => ['name' => 'Nikos',   'surname' => 'Demetriou', 'display' => 'Nikos Demetriou'],
+    'patient'          => ['name' => 'Elif',    'surname' => 'Arslan',    'display' => 'Elif Arslan'],
+    'doctor'           => ['name' => 'Andreas', 'surname' => 'Kyrou',     'display' => 'Dr. Andreas Kyrou'],
+    'healthcare_staff' => ['name' => 'Zeynep',  'surname' => 'Şahin',     'display' => 'Zeynep Şahin'],
+    'admin'            => ['name' => 'Nikos',   'surname' => 'Demetriou', 'display' => 'Nikos Demetriou'],
 ];
 
 $dashboardUser = $dashboardUsers[$dashboardRole];
@@ -351,7 +344,7 @@ if ($dashboardRole === 'patient') {
         $dashboardOpenCaseRows,
         fn (array $item): bool => $item['tier_color'] === 'orange'
     ));
-} elseif ($dashboardRole === 'staff') {
+} elseif ($dashboardRole === 'healthcare_staff') {
     $dashboardEmergencies = [
         [
             'emergency_id'       => 87,
@@ -404,10 +397,10 @@ if ($dashboardRole === 'patient') {
     ];
 } elseif ($dashboardRole === 'admin') {
     $dashboardUserCounts = [
-        'patient' => 1248,
-        'doctor'  => 64,
-        'staff'   => 137,
-        'admin'   => 4,
+        'patient'          => 1248,
+        'doctor'           => 64,
+        'healthcare_staff' => 137,
+        'admin'            => 4,
     ];
     $dashboardUserTotal = array_sum($dashboardUserCounts);
     $dashboardEstablishmentStaffTotal = $dashboardUserTotal - $dashboardUserCounts['patient'];
@@ -462,10 +455,10 @@ if ($dashboardRole === 'patient') {
     $dashboardFeedback = array_slice($dashboardFeedback, 0, 4);
 
     $dashboardUserRoleNotes = [
-        'patient' => 'Self-registered',
-        'doctor'  => 'Created by admins',
-        'staff'   => 'Created by admins',
-        'admin'   => 'Created by admins',
+        'patient'          => 'Self-registered',
+        'doctor'           => 'Created by admins',
+        'healthcare_staff' => 'Created by admins',
+        'admin'            => 'Created by admins',
     ];
 }
 
@@ -479,14 +472,14 @@ $chnUserName = $dashboardUser['display'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHN | Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
     <script src="../js/sidebar.js" defer></script>
     <script src="../js/topbar.js" defer></script>
-    <script src="../js/index.js" defer></script>
+    <script src="../js/dashboard.js" defer></script>
 </head>
 <body>
 <?php
-$chnUserRole = $dashboardSidebarRoles[$dashboardRole];
+$chnUserRole = $dashboardRole;
 require __DIR__ . '/../include/left-sidebar.php';
 
 $chnUserRole = $dashboardRoles[$dashboardRole];
@@ -522,7 +515,7 @@ require __DIR__ . '/../include/top-bar.php';
                     <?php elseif ($dashboardRole === 'doctor'): ?>
                         · <?= dashboardEscape($dashboardDepartment) ?>
                         · You have <?= count($dashboardTodayAppointments) ?> appointments today.
-                    <?php elseif ($dashboardRole === 'staff'): ?>
+                    <?php elseif ($dashboardRole === 'healthcare_staff'): ?>
                         · Emergency alerts and today's schedule across all departments.
                     <?php elseif ($dashboardRole === 'admin'): ?>
                         · System overview.
@@ -824,7 +817,7 @@ require __DIR__ . '/../include/top-bar.php';
 
                 </section>
             </div>
-        <?php elseif ($dashboardRole === 'staff'): ?>
+        <?php elseif ($dashboardRole === 'healthcare_staff'): ?>
             <section class="grid grid--3" aria-label="Summary">
                 <div class="stat-card">
                     <div class="stat-card__icon stat-card__icon--danger">
