@@ -6,7 +6,14 @@ $dashboardRoles = [
     'admin'   => 'Admin',
 ];
 
-$dashboardRole = isset($_GET['role']) && is_string($_GET['role']) && isset($dashboardRoles[$_GET['role']])
+$dashboardSidebarRoles = [
+    'patient' => 'patient',
+    'doctor'  => 'doctor',
+    'staff'   => 'healthcare_staff',
+    'admin'   => 'admin',
+];
+
+$dashboardRole =isset($_GET['role']) && is_string($_GET['role']) && isset($dashboardRoles[$_GET['role']])
     ? $_GET['role']
     : 'patient';
 
@@ -464,7 +471,6 @@ if ($dashboardRole === 'patient') {
 
 $chnPageTitle = 'Dashboard';
 $chnUserName = $dashboardUser['display'];
-$chnUserRole = $dashboardRoles[$dashboardRole];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -479,8 +485,13 @@ $chnUserRole = $dashboardRoles[$dashboardRole];
     <script src="../js/index.js" defer></script>
 </head>
 <body>
-<?php require __DIR__ . '/../include/left-sidebar.php'; ?>
-<?php require __DIR__ . '/../include/top-bar.php'; ?>
+<?php
+$chnUserRole = $dashboardSidebarRoles[$dashboardRole];
+require __DIR__ . '/../include/left-sidebar.php';
+
+$chnUserRole = $dashboardRoles[$dashboardRole];
+require __DIR__ . '/../include/top-bar.php';
+?>
 
 <main class="content" id="main-content" tabindex="-1">
     <div class="content__inner dashboard">
