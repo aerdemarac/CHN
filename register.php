@@ -68,7 +68,7 @@ $pinnedCountries = ['XN', 'TR'];
                 <div class="auth-form__field">
                     <label class="auth-form__label" for="national-id">National ID / Passport number</label>
                     <input class="auth-form__input" type="text" id="national-id" name="national_id"
-                           autocomplete="off" spellcheck="false" maxlength="32"
+                           autocomplete="off" spellcheck="false" maxlength="50"
                            aria-describedby="national-id-hint national-id-error" required>
                     <p class="auth-form__hint" id="national-id-hint">T.C. Kimlik No, national ID or passport number.</p>
                     <p class="auth-form__error" id="national-id-error" role="alert"></p>
@@ -84,7 +84,7 @@ $pinnedCountries = ['XN', 'TR'];
                 <div class="auth-form__field">
                     <label class="auth-form__label" for="phone">Phone number</label>
                     <input class="auth-form__input" type="tel" id="phone" name="phone"
-                           autocomplete="tel" maxlength="20" placeholder="+90 533 123 45 67" required>
+                           autocomplete="tel" maxlength="16" placeholder="+905331234567" required>
                     <p class="auth-form__error" id="phone-error" role="alert"></p>
                 </div>
 

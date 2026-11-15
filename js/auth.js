@@ -63,6 +63,16 @@ function initRegisterForm() {
     form.nationality.addEventListener('change', updateNationalIdKeyboard);
     updateNationalIdKeyboard();
 
+    form.phone.addEventListener('paste', (event) => {
+        const pasted = (event.clipboardData || window.clipboardData)?.getData('text');
+        if (pasted) {
+            event.preventDefault();
+            const normalized = normalizePhone(pasted).slice(0, 16);
+            form.phone.value = normalized;
+            form.phone.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+
     const getNameError = (value, label) => {
         if (!value) return `Please enter your ${label}.`;
         if (!namePattern.test(value)) return `Please enter a valid ${label}.`;
@@ -91,8 +101,8 @@ function initRegisterForm() {
                     if (!isValidTcKimlikNo(value.replace(/\s/g, ''))) return 'Please enter a valid T.C. Kimlik No.';
                     return '';
                 }
-                const length = value.replace(/[\s-]/g, '').length;
-                if (!documentPattern.test(value) || length < 5 || length > 20) {
+                const clean = value.replace(/[\s-]/g, '');
+                if (!documentPattern.test(value) || clean.length < 5 || clean.length > 50 || value.length > 50) {
                     return 'Please enter a valid national ID or passport number.';
                 }
                 return '';
@@ -104,8 +114,11 @@ function initRegisterForm() {
             }],
             [form.phone, 'phone-error', (value) => {
                 if (!value) return 'Please enter your phone number.';
-                const digits = value.replace(/\D/g, '').length;
-                if (!phonePattern.test(value) || digits < 7 || digits > 15) return 'Please enter a valid phone number.';
+                const normalized = normalizePhone(value);
+                const digits = normalized.replace(/\D/g, '');
+                if (!phonePattern.test(value) || digits.length < 7 || normalized.length > 16) {
+                    return 'Please enter a valid phone number.';
+                }
                 return '';
             }],
             [form.password, 'password-error', () => {
@@ -129,8 +142,21 @@ function initRegisterForm() {
         if (invalid.length > 0) {
             event.preventDefault();
             invalid[0].focus();
+        } else {
+            form.phone.value = normalizePhone(form.phone.value);
+            form.national_id.value = form.nationality.value === 'TR'
+                ? form.national_id.value.replace(/\s/g, '')
+                : form.national_id.value.trim();
         }
     });
+}
+
+function normalizePhone(value) {
+    const trimmed = (value || '').trim();
+    if (!trimmed) return '';
+    const hasPlus = trimmed.startsWith('+');
+    const digits = trimmed.replace(/\D/g, '');
+    return (hasPlus ? '+' : '') + digits;
 }
 
 function isValidTcKimlikNo(value) {
