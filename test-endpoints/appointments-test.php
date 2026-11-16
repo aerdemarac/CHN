@@ -208,8 +208,8 @@ $appointmentsAll = array_map(function (array $item) use ($appointmentsCases, $ap
 }, $appointmentsAll);
 
 $appointmentsViews = $appointmentsRole === 'patient'
-    ? ['upcoming' => 'Upcoming', 'past' => 'Past']
-    : ['today' => 'Today', 'upcoming' => 'Upcoming', 'past' => 'Past'];
+    ? ['upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled']
+    : ['today' => 'Today', 'upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled'];
 
 $appointmentsView = isset($_GET['view']) && is_string($_GET['view']) && isset($appointmentsViews[$_GET['view']])
     ? $_GET['view']
@@ -223,6 +223,8 @@ $appointmentsStaffDepartments = array_filter(
 $appointmentsFilterDepartment = null;
 $appointmentsFilterStatus = null;
 $appointmentsFilterPatient = '';
+$appointmentsStatusOptions = array_diff_key($appointmentsStatuses, ['cancelled' => true]);
+$appointmentsHasStatusFilter = $appointmentsRole === 'healthcare_staff' && $appointmentsView !== 'cancelled';
 $appointmentsFilterFrom = null;
 $appointmentsFilterTo = null;
 
@@ -231,7 +233,10 @@ if ($appointmentsRole === 'healthcare_staff') {
         && ctype_digit($_GET['department_id']) && isset($appointmentsStaffDepartments[(int) $_GET['department_id']])
         ? (int) $_GET['department_id']
         : null;
-    $appointmentsFilterStatus = isset($_GET['status']) && is_string($_GET['status']) && isset($appointmentsStatuses[$_GET['status']])
+}
+
+if ($appointmentsHasStatusFilter) {
+    $appointmentsFilterStatus = isset($_GET['status']) && is_string($_GET['status']) && isset($appointmentsStatusOptions[$_GET['status']])
         ? $_GET['status']
         : null;
 }
@@ -297,6 +302,12 @@ $appointmentsRows = array_values(array_filter($appointmentsAll, function (array 
         return false;
     }
 
+    if ($appointmentsView === 'cancelled') {
+        return $item['appointment_status'] === 'cancelled';
+    }
+    if ($item['appointment_status'] === 'cancelled') {
+        return false;
+    }
     if ($appointmentsView === 'today') {
         return $date === $appointmentsTodayKey;
     }
@@ -310,7 +321,7 @@ $appointmentsRows = array_values(array_filter($appointmentsAll, function (array 
 usort($appointmentsRows, function (array $a, array $b) use ($appointmentsView): int {
     $order = [$a['appointment_date'], $a['appointment_time']] <=> [$b['appointment_date'], $b['appointment_time']];
 
-    return $appointmentsView === 'past' ? -$order : $order;
+    return $appointmentsView === 'past' || $appointmentsView === 'cancelled' ? -$order : $order;
 });
 
 $appointmentsHeaders = [
@@ -323,7 +334,8 @@ $appointmentsHeaders = [
 $appointmentsEmpty = [
     'today'    => ['title' => 'No appointments today',    'text' => 'New bookings for today will appear here.'],
     'upcoming' => ['title' => 'No upcoming appointments', 'text' => 'Future bookings will appear here.'],
-    'past'     => ['title' => 'No past appointments',     'text' => 'Finished and cancelled visits will appear here.'],
+    'past'      => ['title' => 'No past appointments',      'text' => 'Finished visits will appear here.'],
+    'cancelled' => ['title' => 'No cancelled appointments', 'text' => 'Cancelled visits will appear here.'],
 ];
 
 if ($appointmentsRole === 'patient') {
@@ -525,7 +537,7 @@ require __DIR__ . '/../include/top-bar.php';
                 </section>
             <?php endif; ?>
 
-            <section class="card appointments-list" aria-labelledby="appointments-list-title">
+            <section class="card appointments-list" id="appointments-list" aria-labelledby="appointments-list-title">
                 <header class="card__header">
                     <div>
                         <h2 class="card__title" id="appointments-list-title">
@@ -542,7 +554,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <?php foreach ($appointmentsViews as $appointmentsViewKey => $appointmentsViewLabel): ?>
                                 <li>
                                     <a class="appointments-tabs__link"
-                                       href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsViewKey] + $appointmentsKeepFilters)) ?>"
+                                       href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsViewKey] + $appointmentsKeepFilters) . '#appointments-list') ?>"
                                        <?= $appointmentsViewKey === $appointmentsView ? 'aria-current="page"' : '' ?>>
                                         <?= appointmentsEscape($appointmentsViewLabel) ?>
                                     </a>
@@ -553,7 +565,7 @@ require __DIR__ . '/../include/top-bar.php';
                 </header>
 
                 <?php if ($appointmentsRole !== 'patient' || $appointmentsHasDateFilter): ?>
-                    <form class="appointments-filters" method="get" action="" aria-label="Filter appointments">
+                    <form class="appointments-filters" method="get" action="#appointments-list" aria-label="Filter appointments">
                         <input type="hidden" name="role" value="<?= appointmentsEscape($appointmentsRole) ?>">
                         <input type="hidden" name="view" value="<?= appointmentsEscape($appointmentsView) ?>">
                         <?php if ($appointmentsRole !== 'patient'): ?>
@@ -576,11 +588,13 @@ require __DIR__ . '/../include/top-bar.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($appointmentsHasStatusFilter): ?>
                         <div class="form-group">
                             <label class="form-label" for="appointments-filter-status">Status</label>
                             <select class="form-control appointments-select" id="appointments-filter-status" name="status">
                                 <option value="">All statuses</option>
-                                <?php foreach ($appointmentsStatuses as $appointmentsStatusKey => $appointmentsStatus): ?>
+                                <?php foreach ($appointmentsStatusOptions as $appointmentsStatusKey => $appointmentsStatus): ?>
                                     <option value="<?= appointmentsEscape($appointmentsStatusKey) ?>" <?= $appointmentsFilterStatus === $appointmentsStatusKey ? 'selected' : '' ?>>
                                         <?= appointmentsEscape($appointmentsStatus['label']) ?>
                                     </option>
@@ -607,7 +621,7 @@ require __DIR__ . '/../include/top-bar.php';
                         <div class="appointments-filters__actions">
                             <button type="submit" class="btn btn--outline">Filter</button>
                             <?php if ($appointmentsIsFiltered): ?>
-                                <a class="btn btn--outline" href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsView])) ?>">Clear</a>
+                                <a class="btn btn--outline" href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsView]) . '#appointments-list') ?>">Clear</a>
                             <?php endif; ?>
                         </div>
                     </form>

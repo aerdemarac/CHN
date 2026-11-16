@@ -445,7 +445,7 @@
                 none.textContent = '—';
                 actions.replaceChildren(none);
 
-                showNotice('Demo only: appointment #' + id + ' is shown as cancelled on this page. Nothing was saved.', 'warning');
+                showNotice('Demo only: appointment #' + id + ' is shown as cancelled on this page. Once saved, it would move to the Cancelled tab. Nothing was saved.', 'warning');
             }
 
             if (start) {

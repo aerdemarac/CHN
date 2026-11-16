@@ -406,6 +406,10 @@
     color: var(--color-primary);
 }
 
+.appointments-list {
+    scroll-margin-top: 88px;
+}
+
 .appointments-filters {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
