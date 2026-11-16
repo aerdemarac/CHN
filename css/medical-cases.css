@@ -56,3 +56,10 @@
 }
 .medical-cases__review-field { max-width: 480px; margin: 16px 0; }
 .medical-cases__review-field .form-label { display: block; }
+
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) summary { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 8px; padding: 4px 8px; color: var(--color-secondary); }
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) summary:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 2px; }
+.medical-cases__edit-pencil { font-size: 1.25rem; }
+.medical-cases__edit-label { font-size: 0.875rem; }
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) form { margin-top: 12px; }
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) button { margin-top: 8px; }

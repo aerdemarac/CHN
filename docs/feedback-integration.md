@@ -1,6 +1,6 @@
 # Feedback & Support frontend
 
-One root `feedback.php` serves patient, doctor, staff and admin using the existing opt-in `include/prototype-role.php`. Only GET role determines the view. Missing/invalid/array roles default to patient; no session or cookie selects a prototype role. All internal links and form actions preserve it. Role switching intentionally resets the history filter. Sidebar definitions and shared components are unchanged; creating feedback.php automatically enables the existing Feedback & Support link for patient/doctor/staff. Admin retains its existing navigation and can preview this page by URL or role selector without new menu permissions.
+One shared `test-endpoints/feedback.php` serves patient, doctor, staff and admin using the existing opt-in `include/prototype-role.php`. Only GET role determines the view. Missing/invalid/array roles default to patient; no session or cookie selects a prototype role. All internal links and form actions preserve it. Role switching intentionally resets the history filter. Sidebar targets now use the relocated path and enable Feedback & Support for patient/doctor/staff. Admin retains its existing navigation and can preview this page by URL or role selector without new menu permissions.
 
 `include/feedback-preview-data.php` contains isolated fictional feedback and responses using only schema columns. A separate fixture map identifies each demo user. Patient/doctor/staff histories are scoped to that user before filtering; staff starts empty. Admin sees a fictional read-only overview. Pending/Answered are derived from response presence, never stored columns. Responses are associated by feedback_id, with zero or one response per entry. No category, priority or status columns are introduced. Dates, message text and identifiers are escaped on output.
 
@@ -10,6 +10,8 @@ Backend dependencies: authenticated feedback reads/writes, validated user owners
 
 ## Local XAMPP verification
 
-The main file is `/Applications/XAMPP/xamppfiles/htdocs/CHN/feedback.php`. With XAMPP's DocumentRoot set to `/Applications/XAMPP/xamppfiles/htdocs`, open `http://localhost/CHN/feedback.php?role=patient` (or doctor/staff/admin). All five Feedback files are real workspace files; Git lists them as untracked until they are added/committed separately. Being untracked does not prevent Apache from serving them.
+The main file is `/Applications/XAMPP/xamppfiles/htdocs/CHN/test-endpoints/feedback.php`. With XAMPP's DocumentRoot set to `/Applications/XAMPP/xamppfiles/htdocs`, open `http://localhost/CHN/test-endpoints/feedback.php?role=patient` (or doctor/staff/admin). The page uses the existing shared shell and local assets.
 
 The reported 404 was confirmed in Apache logs: requests at 14:40 on 15 November 2026 preceded the files written at 14:42. A fresh request at 14:45 returned HTTP 200. No Apache configuration, branch or authentication change was needed.
+
+The shared page now lives in test-endpoints/; the former root route is removed. Includes use dirname(__DIR__), page assets use ../, and Sidebar targets/file checks use the new project-relative path. Existing form/history filters preserve role.

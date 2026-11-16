@@ -54,6 +54,7 @@ function dashboardButton(string $label, ?string $file, string $class): string
         return '<button type="button" class="' . $class . '" disabled>' . dashboardEscape($label) . '</button>';
     }
 
+    if (in_array($file, ['test-endpoints/medical-cases.php', 'test-endpoints/feedback.php'], true)) $page .= '?role=' . rawurlencode($GLOBALS['dashboardRole'] === 'healthcare_staff' ? 'staff' : $GLOBALS['dashboardRole']);
     return '<a class="' . $class . '" href="' . dashboardEscape($page) . '">' . dashboardEscape($label) . '</a>';
 }
 
@@ -651,7 +652,7 @@ require __DIR__ . '/../include/top-bar.php';
                         <h2 class="card__title" id="dashboard-feedback-title">My feedback</h2>
                         <p class="card__subtitle">Your latest messages and whether they have been answered.</p>
                     </div>
-                    <?= dashboardButton('View all', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                    <?= dashboardButton('View all', 'test-endpoints/feedback.php', 'btn btn--outline btn--sm') ?>
                 </header>
 
                 <?php if ($dashboardFeedback === []): ?>
@@ -889,7 +890,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <h2 class="card__title" id="dashboard-tiers-title">Open cases by tier</h2>
                             <p class="card__subtitle">All departments · <?= (int) $dashboardTierTotal ?> open cases.</p>
                         </div>
-                        <?= dashboardButton('Medical cases', 'medical-cases.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('Medical cases', 'test-endpoints/medical-cases.php', 'btn btn--outline btn--sm') ?>
                     </header>
 
                     <ul class="dashboard-list">
@@ -1009,7 +1010,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <h2 class="card__title" id="dashboard-feedback-title">Complaints and feedback</h2>
                             <p class="card__subtitle">Latest messages, open complaints first.</p>
                         </div>
-                        <?= dashboardButton('All feedback', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                        <?= dashboardButton('All feedback', 'test-endpoints/feedback.php', 'btn btn--outline btn--sm') ?>
                     </header>
 
                     <?php if ($dashboardFeedback === []): ?>
@@ -1032,7 +1033,7 @@ require __DIR__ . '/../include/top-bar.php';
                                     <div class="dashboard-item__tags">
                                         <?php if ($dashboardIsOpen): ?>
                                             <span class="badge badge--warning">Open</span>
-                                            <?= dashboardButton('Respond', 'feedback.php', 'btn btn--outline btn--sm') ?>
+                                            <?= dashboardButton('Respond', 'test-endpoints/feedback.php', 'btn btn--outline btn--sm') ?>
                                         <?php else: ?>
                                             <span class="badge badge--success">Answered</span>
                                         <?php endif; ?>

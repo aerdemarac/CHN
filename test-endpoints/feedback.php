@@ -1,7 +1,7 @@
 <?php
 // Frontend prototype only: no database writes, session identity or live records.
-require_once __DIR__ . '/include/prototype-role.php';
-$preview = require __DIR__ . '/include/feedback-preview-data.php';
+require_once dirname(__DIR__) . '/include/prototype-role.php';
+$preview = require dirname(__DIR__) . '/include/feedback-preview-data.php';
 $chnPageTitle = 'Feedback & Support';
 $chnUserName = 'Preview User';
 $isAdmin = $chnPrototypeRole === 'admin';
@@ -38,15 +38,15 @@ $feedbackUrl = chnPrototypeUrl('feedback.php', $chnPrototypeRole);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedback &amp; Support | CHN</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/feedback.css">
-    <script src="js/sidebar.js" defer></script>
-    <script src="js/topbar.js" defer></script>
-    <script src="js/feedback.js" defer></script>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/feedback.css">
+    <script src="../js/sidebar.js" defer></script>
+    <script src="../js/topbar.js" defer></script>
+    <script src="../js/feedback.js" defer></script>
 </head>
 <body>
-<?php require __DIR__ . '/include/left-sidebar.php'; ?>
-<?php require __DIR__ . '/include/top-bar.php'; ?>
+<?php require dirname(__DIR__) . '/include/left-sidebar.php'; ?>
+<?php require dirname(__DIR__) . '/include/top-bar.php'; ?>
 <main class="content feedback" id="main-content" tabindex="-1">
 <div class="content__inner">
     <header class="page-header">
