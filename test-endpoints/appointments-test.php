@@ -208,9 +208,7 @@ $appointmentsAll = array_map(function (array $item) use ($appointmentsCases, $ap
     ];
 }, $appointmentsAll);
 
-$appointmentsViews = $appointmentsRole === 'patient'
-    ? ['today' => 'Today', 'past' => 'Past', 'cancelled' => 'Cancelled']
-    : ['today' => 'Today', 'upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled'];
+$appointmentsViews = ['today' => 'Today', 'upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled'];
 
 $appointmentsView = isset($_GET['view']) && is_string($_GET['view']) && isset($appointmentsViews[$_GET['view']])
     ? $_GET['view']
