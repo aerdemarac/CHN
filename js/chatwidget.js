@@ -1,5 +1,5 @@
 /**
- * CHN AI Chatbot Widget (Chatwidget.js)
+ * Molehi-AI Chatbot Widget (Chatwidget.js)
  * Gemini API + Vanilla JS + LocalStorage History
  */
 
@@ -156,7 +156,7 @@
 
             root.innerHTML = `
                 <!-- Floating Bean Button -->
-                <button type="button" class="chn-chat-bean" id="chn-chat-bean" aria-label="CHN AI Asistanı Sohbetini Aç" aria-expanded="false">
+                <button type="button" class="chn-chat-bean" id="chn-chat-bean" aria-label="Molehi-AI Asistanı Sohbetini Aç" aria-expanded="false">
                     <span class="chn-chat-bean__badge" aria-hidden="true"></span>
                     
                     <!-- Chat Icon -->
@@ -169,7 +169,7 @@
                         <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
 
-                    <span class="chn-chat-bean__tooltip">CHN AI Asistanı</span>
+                    <span class="chn-chat-bean__tooltip">Molehi-AI Assistant</span>
                 </button>
 
                 <!-- Chat Window -->
@@ -183,7 +183,7 @@
                                 </svg>
                             </div>
                             <div class="chn-chat-header__text">
-                                <h3 class="chn-chat-header__title" id="chn-chat-title">CHN AI Asistanı</h3>
+                                <h3 class="chn-chat-header__title" id="chn-chat-title">Molehi-AI Assistant</h3>
                                 <span class="chn-chat-header__status">
                                     <span class="chn-chat-header__status-dot"></span>
                                     Gemini AI • Çevrimiçi
@@ -252,7 +252,7 @@
                             </button>
                         </form>
                         <div class="chn-chat-disclaimer">
-                            CHN AI tıbbi tanı koymaz. Acil durumlar için lütfen 112'yi arayınız.
+                            Molehi-AI tıbbi tanı koymaz. Acil durumlar için lütfen 112'yi arayınız.
                         </div>
                     </footer>
                 </section>

@@ -1,6 +1,6 @@
 <?php
 /**
- * CHN AI Chatbot Backend Proxy
+ * Molehi-AI Chatbot Backend Proxy
  * Connects frontend Chatwidget.js to Google Gemini API
  * Reads GEMINI_API_KEY and GEMINI_MODEL from config/.env
  */
@@ -81,11 +81,69 @@ function loadChnEnv(): void
     }
 }
 
+/**
+ * Loads training and knowledge base markdown files from the ai-training/ directory.
+ * Reads ai-training/ai-training.md or combines any .md files found in the folder.
+ */
+function loadAiTrainingContext(): string
+{
+    $trainingDir = dirname(__DIR__) . '/ai-training';
+
+    $defaultInstruction = "Sen Kıbrıs Sağlık Ağı (Cyprus Health-Care Network - CHN) sisteminin resmi yapay zeka sağlık asistanısın. Görevin hastalara ve sistem kullanıcılarına sağlık süreçleri, randevu alma, hastane birimleri, doktor branşları ve sistem işleyişi hakkında nazik, profesyonel, güvenilir ve anlaşılır rehberlik sunmaktır.
+Önemli Kurallar:
+1. Tıbbi acil durumlarda (şiddetli göğüs ağrısı, nefes darlığı, ağır kanama vb.) derhal 112 Acil Servis'e yönlendir.
+2. Kesin bir tıbbi tanı koyamazsın.
+3. CHN Triage renkleri: Turuncu (Acil bakım), Sarı (Önemli takip), Yeşil (Hayati risk yok, 0 risk).";
+
+    if (!is_dir($trainingDir)) {
+        return $defaultInstruction;
+    }
+
+    // Specific training file takes priority if present
+    $primaryFile = $trainingDir . '/ai-training.md';
+    if (is_file($primaryFile) && is_readable($primaryFile)) {
+        $content = trim((string)file_get_contents($primaryFile));
+        if ($content !== '') {
+            return $content;
+        }
+    }
+
+    // Otherwise, scan all .md files in the folder
+    $mdFiles = glob($trainingDir . '/*.md');
+    if (!empty($mdFiles)) {
+        $combined = [];
+        foreach ($mdFiles as $file) {
+            if (is_file($file) && is_readable($file)) {
+                $text = trim((string)file_get_contents($file));
+                if ($text !== '') {
+                    $combined[] = $text;
+                }
+            }
+        }
+        if (!empty($combined)) {
+            return implode("\n\n---\n\n", $combined);
+        }
+    }
+
+    return $defaultInstruction;
+}
+
 // Load env configuration
 loadChnEnv();
 
 $geminiApiKey = getenv('GEMINI_API_KEY') ?: ($_ENV['GEMINI_API_KEY'] ?? '');
 $geminiModel = getenv('GEMINI_MODEL') ?: ($_ENV['GEMINI_MODEL'] ?? 'gemini-3.5-flash-lite');
+
+// Load AI training context from ai-training/ folder
+$baseTrainingContext = loadAiTrainingContext();
+
+// Reinforce concise and natural conversation rules (No markdown, short and to the point)
+$styleDirectives = "\n\nKRİTİK İLETİŞİM VE FORMAT KURALLARI:
+1. KISA VE ÖZ KONUŞ: Yanıtların canlı destekteki gerçek bir insan gibi kısa, net ve doğrudan olmalıdır. Asla uzun paragraflar yazma; kural olarak 2-3 cümleyi geçme.
+2. DOĞAL VE SADE DİL (MARKDOWN KULLANMA): Kesinlikle yıldız (**kalın**), başlık (###), liste imleri (* veya -) veya kod blokları gibi markdown işaretleri kullanma. İnsan gibi doğal, akıcı ve sade düz metinle yaz.
+3. DOĞRUDAN CEVAP VER: Giriş veya kapanış dolgu cümleleriyle vakit kaybetme, kullanıcının sorusuna doğrudan ve samimi bir dille yanıt ver.";
+
+$systemInstruction = $baseTrainingContext . $styleDirectives;
 
 // Read JSON payload from request body
 $rawInput = file_get_contents('php://input');
@@ -124,38 +182,31 @@ if (mb_strlen($userMessage) > 2000) {
 
 // If GEMINI_API_KEY is not configured yet, provide an informative simulated response
 if (empty($geminiApiKey)) {
-    // Generate intelligent simulated answers for common queries in demo mode
+    // Generate intelligent simulated answers for common queries in demo mode based on ai-training.md
     $lower = mb_strtolower($userMessage);
     $demoReply = "";
 
     if (str_contains($lower, 'randevu') || str_contains($lower, 'appointment')) {
-        $demoReply = "📅 **Randevu İşlemleri:**\n\nCHN sistemi üzerinden randevu almak için sol menüdeki **Appointments (Randevular)** sayfasına giderek müsait doktor ve poliklinik saatlerini görüntüleyebilirsiniz.\n\n*(Not: Şu anda Demo modundayım. `config/.env` dosyasına `GEMINI_API_KEY` tanımlandığında sorularınıza gerçek zamanlı yapay zeka yanıt verecektir.)*";
-    } elseif (str_contains($lower, 'acil') || str_contains($lower, 'emergency') || str_contains($lower, '112')) {
-        $demoReply = "🚨 **Acil Sağlık Durumları:**\n\nAcil tıbbi yardım, kaza veya hayati tehlike arz eden durumlarda lütfen vakit kaybetmeden **112 Acil Çağrı Merkezi**'ni arayınız.\n\n*(Sistem Demo Modundadır. Sorunuz: \"{$userMessage}\")*";
-    } elseif (str_contains($lower, 'triage') || str_contains($lower, 'renk') || str_contains($lower, 'tier')) {
-        $demoReply = "🚦 **CHN Triage Aciliyet Renkleri:**\n\n- 🟠 **Turuncu (Orange):** Acil bakım gerektirir, önceliklidir.\n- 🟡 **Sarı (Yellow):** Önemli vaka, takip gerektirir.\n- 🟢 **Yeşil (Green):** Hayati risk yok, standart poliklinik süreci.\n\n*(Sistem Demo Modundadır. `GEMINI_API_KEY` eklendiğinde tam AI desteği aktifleşecektir.)*";
+        $demoReply = "📅 **Randevu & Vaka Yapısı:**\n\nCHN sistemi 'Vaka Bazlı (Case-Based)' çalışır. Randevularınız şikayetlerinize göre gruplandırılır. Sol menüden **Appointments (Randevular)** sayfasına giderek randevu alabilir (Book), görüntüleyebilir (View) veya yeniden planlayabilirsiniz (Reschedule).\n\n*(Sistem şu an Demo modundadır. `config/.env` dosyasına `GEMINI_API_KEY` girildiğinde `ai-training/ai-training.md` yönergelerine göre tam AI yanıtı üretecektir.)*";
+    } elseif (str_contains($lower, 'acil') || str_contains($lower, 'emergency') || str_contains($lower, '112') || str_contains($lower, 'kalp')) {
+        $demoReply = "🚨 **Acil Durum Bildirimi:**\n\nHayati tehlikesi olan durumlarda lütfen randevu almayı beklemeyin; derhal **112 Acil Servis'i** arayın veya en yakın acil servise başvurun. Ayrıca CHN üzerindeki **Acil Durum (Emergency)** butonuna basarak 2 aşamalı doğrulama sonrası konumunuzu sağlık ekiplerine iletebilirsiniz.\n\n*(Sistem Demo Modundadır. `ai-training.md` bilgi bankası yüklendi.)*";
+    } elseif (str_contains($lower, 'triage') || str_contains($lower, 'renk') || str_contains($lower, 'tier') || str_contains($lower, 'kırmızı')) {
+        $demoReply = "🚦 **CHN Tıbbi Durum Seviyelendirmesi (Tiering):**\n\n- 🟠 **Turuncu (Orange):** Yüksek Risk / Bakım Gerektirir.\n- 🟡 **Sarı (Yellow):** Önemli / Orta Düzey Risk.\n- 🟢 **Yeşil (Green):** Hayati Risk Yok (0 Risk).\n\n*(Not: Sistemimizde Kırmızı seviye bilerek yoktur; acil durumdaki hastaların sistem yerine doğrudan 112'ye yönlendirilmesi hedeflenmiştir.)*";
+    } elseif (str_contains($lower, 'vaka') || str_contains($lower, 'case')) {
+        $demoReply = "📋 **Vaka Bazlı Yapı (Case-Based Structure):**\n\nCHN'de hastanın her rahatsızlığı bir 'Vaka (Case)' olarak açılır. Tüm tahlil, randevu ve reçeteler bu vakanın altında toplanır. Böylece hekimler geçmişinizi bütüncül görebilir.";
     } else {
-        $demoReply = "👋 Merhaba! Ben **CHN Yapay Zeka Sağlık Asistanıyım**.\n\nŞu anda sistem **Demo Modunda** çalışmaktadır çünkü `config/.env` dosyasına henüz geçerli bir `GEMINI_API_KEY` eklenmemiştir.\n\n📌 **Mesajınızı aldım:**\n> \"{$userMessage}\"\n\nAnahtarınızı eklediğiniz anda tüm sağlık, randevu, hekim ve hastane sorularınızı doğrudan Google Gemini yapay zekası yanıtlayacaktır.";
+        $demoReply = "👋 Merhaba! Ben **CHN Yapay Zeka Sağlık Asistanıyım**.\n\n`ai-training/ai-training.md` bilgi bankası başarıyla yüklendi! 📚\nŞu anda sistem **Demo Modunda** çalışmaktadır çünkü `config/.env` dosyasına henüz `GEMINI_API_KEY` eklenmemiştir.\n\n📌 **Sorunuz:**\n> \"{$userMessage}\"\n\nAnahtarınızı eklediğiniz anda Google Gemini yapay zekası `ai-training.md` içindeki tüm kurallara uyarak yanıt verecektir.";
     }
 
     echo json_encode([
         'success' => true,
         'reply' => $demoReply,
         'demo' => true,
-        'model' => 'demo-mode'
+        'model' => 'demo-mode',
+        'training_source' => 'ai-training/ai-training.md'
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
-
-// System instruction for CHN Medical Assistant
-$systemInstruction = "Sen Kıbrıs Sağlık Ağı (Cyprus Health-Care Network - CHN) sisteminin resmi yapay zeka sağlık asistanısın. Görevin hastalara ve sistem kullanıcılarına sağlık süreçleri, randevu alma, hastane birimleri, doktor branşları ve sistem işleyişi hakkında nazik, profesyonel, güvenilir ve anlaşılır rehberlik sunmaktır.
-
-Önemli Kurallar:
-1. Tıbbi acil durumlarda (şiddetli göğüs ağrısı, nefes darlığı, ağır kanama, bilinç kaybı vb.) kullanıcıyı derhal 112 Acil Servis'i aramaya yönlendir.
-2. Kesin bir tıbbi tanı koyamazsın. Bilgilerin genel sağlık ve sistem danışmanlığı amaçlı olduğunu, kesin teşhis ve tedavi için uzman doktora muayene olunması gerektiğini gerektiğinde nazikçe hatırlat.
-3. Kullanıcı hangi dilde yazarsa o dilde yanıt ver (özellikle Türkçe ve İngilizce).
-4. Yanıtlarını okunabilir kılmak için kısa paragraflar, madde işaretleri (*) ve kalın metinler (**) kullan.
-5. CHN Triage renkleri: Turuncu (Acil bakım gerektirir), Sarı (Önemli takip), Yeşil (Hayati risk yok, standart).";
 
 // Format multi-turn conversation contents for Gemini API
 $contents = [];
@@ -197,10 +248,10 @@ $payload = [
     ],
     'contents' => $contents,
     'generationConfig' => [
-        'temperature' => 0.7,
+        'temperature' => 0.5,
         'topK' => 40,
         'topP' => 0.95,
-        'maxOutputTokens' => 1024,
+        'maxOutputTokens' => 600,
     ]
 ];
 

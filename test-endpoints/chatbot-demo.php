@@ -1,5 +1,5 @@
 <?php
-$pageTitle = "CHN AI Chatbot Demo";
+$pageTitle = "Molehi-AI Chatbot Demo";
 ?>
 <!DOCTYPE html>
 <html lang="tr">
@@ -95,7 +95,7 @@ $pageTitle = "CHN AI Chatbot Demo";
     <div class="demo-container">
         <div class="demo-header">
             <span class="demo-badge">🚀 Canlı Önizleme & Test</span>
-            <h1>CHN AI Chatbot (Gemini + LocalStorage)</h1>
+            <h1>Molehi-AI Chatbot (Gemini + LocalStorage)</h1>
             <p>Ekranın <strong>sağ alt köşesindeki yüzen baloncuk (bean)</strong> butonuna tıklayarak sohbeti başlatabilirsiniz.</p>
         </div>
 
