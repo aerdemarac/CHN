@@ -181,6 +181,7 @@ $appointmentsAll = [
     ['appointment_id' => 615, 'case_id' => 1056, 'doctor_id' => 11, 'appointment_date' => appointmentsDate(5),   'appointment_time' => '09:30:00', 'appointment_status' => 'confirmed'],
     ['appointment_id' => 616, 'case_id' => 1051, 'doctor_id' => 11, 'appointment_date' => appointmentsDate(7),   'appointment_time' => '11:00:00', 'appointment_status' => 'pending'],
     ['appointment_id' => 618, 'case_id' => 1063, 'doctor_id' => 13, 'appointment_date' => appointmentsDate(-2),  'appointment_time' => '10:30:00', 'appointment_status' => 'completed'],
+    ['appointment_id' => 619, 'case_id' => 1038, 'doctor_id' => 13, 'appointment_date' => appointmentsDate(0),   'appointment_time' => '11:30:00', 'appointment_status' => 'confirmed'],
     ['appointment_id' => 620, 'case_id' => 1063, 'doctor_id' => 13, 'appointment_date' => appointmentsDate(0),   'appointment_time' => '09:30:00', 'appointment_status' => 'completed'],
     ['appointment_id' => 621, 'case_id' => 1065, 'doctor_id' => 14, 'appointment_date' => appointmentsDate(0),   'appointment_time' => '11:00:00', 'appointment_status' => 'confirmed'],
     ['appointment_id' => 622, 'case_id' => 1067, 'doctor_id' => 15, 'appointment_date' => appointmentsDate(0),   'appointment_time' => '14:30:00', 'appointment_status' => 'pending'],
@@ -208,7 +209,7 @@ $appointmentsAll = array_map(function (array $item) use ($appointmentsCases, $ap
 }, $appointmentsAll);
 
 $appointmentsViews = $appointmentsRole === 'patient'
-    ? ['upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled']
+    ? ['today' => 'Today', 'past' => 'Past', 'cancelled' => 'Cancelled']
     : ['today' => 'Today', 'upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled'];
 
 $appointmentsView = isset($_GET['view']) && is_string($_GET['view']) && isset($appointmentsViews[$_GET['view']])
@@ -248,9 +249,7 @@ if ($appointmentsRole === 'doctor' || $appointmentsRole === 'healthcare_staff') 
 }
 
 $appointmentsHasDateFilter = $appointmentsRole !== 'admin' && $appointmentsView !== 'today';
-$appointmentsDateMin = $appointmentsView === 'upcoming'
-    ? ($appointmentsRole === 'patient' ? $appointmentsTodayKey : appointmentsDate(1))
-    : null;
+$appointmentsDateMin = $appointmentsView === 'upcoming' ? appointmentsDate(1) : null;
 $appointmentsDateMax = $appointmentsView === 'past' ? appointmentsDate(-1) : null;
 
 if ($appointmentsHasDateFilter) {
@@ -315,7 +314,7 @@ $appointmentsRows = array_values(array_filter($appointmentsAll, function (array 
         return $date < $appointmentsTodayKey;
     }
 
-    return $appointmentsRole === 'patient' ? $date >= $appointmentsTodayKey : $date > $appointmentsTodayKey;
+    return $date > $appointmentsTodayKey;
 }));
 
 usort($appointmentsRows, function (array $a, array $b) use ($appointmentsView): int {
