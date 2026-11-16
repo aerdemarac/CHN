@@ -42,6 +42,7 @@ $chnPageTitles = [
     'medical-cases.php'   => 'Medical Cases',
     'feedback.php'        => 'Feedback',
     'profile.php'         => 'Profile',
+    'account-settings.php' => 'Account Settings',
     'sidebar-test.php'         => 'Sidebar Preview',
     'top-and-sidebar-test.php' => 'Top Bar & UI Preview',
 ];
@@ -248,7 +249,9 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
             <div class="topbar__menu topbar__menu--user" id="chn-user-menu" data-dropdown-menu role="menu" hidden>
                 <?php if ($chnAccountSettingsFile !== null): ?>
                     <a class="topbar__menu-item" role="menuitem"
-                       href="<?= htmlspecialchars($chnBaseUrl . rawurlencode($chnAccountSettingsFile), ENT_QUOTES, 'UTF-8') ?>">
+                       href="<?= htmlspecialchars($chnBaseUrl . rawurlencode($chnAccountSettingsFile)
+                           . ($chnAccountSettingsFile === 'account-settings.php' && in_array($chnResolvedRole, ['patient', 'doctor', 'healthcare_staff', 'admin'], true)
+                               ? '?role=' . rawurlencode($chnResolvedRole) : ''), ENT_QUOTES, 'UTF-8') ?>">
                         <span>Account Settings</span>
                     </a>
                 <?php else: ?>
