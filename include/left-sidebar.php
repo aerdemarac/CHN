@@ -59,11 +59,17 @@ if (!empty($chnSidebarShowTestLink)) {
         <?php foreach ($chnSidebarItems as $chnItem): ?>
             <?php
                 $chnFile = $chnItem['file'];
+                if (!is_file($chnProjectRoot . '/' . $chnFile) && isset($chnItem['demo'])
+                    && is_file($chnProjectRoot . '/' . $chnItem['demo'])) {
+                    $chnFile = $chnItem['demo'];
+                }
                 $chnLabel = htmlspecialchars($chnItem['label'], ENT_QUOTES, 'UTF-8');
                 $chnIcon = htmlspecialchars($chnItem['icon'], ENT_QUOTES, 'UTF-8');
                 $chnExists = is_file($chnProjectRoot . '/' . $chnFile);
                 $chnIsCurrent = $chnCurrentPage === basename($chnFile);
-                $chnHref = $chnBaseUrl . implode('/', array_map('rawurlencode', explode('/', $chnFile)));
+                $chnHref = $chnBaseUrl . implode('/', array_map('rawurlencode', explode('/', $chnFile)))
+                    . (in_array($chnUserRole ?? null, ['patient', 'doctor', 'healthcare_staff', 'admin'], true)
+                        ? '?' . http_build_query(['role' => $chnUserRole]) : '');
             ?>
             <?php if ($chnExists): ?>
                 <a class="sidebar__link<?= $chnIsCurrent ? ' sidebar__link--active' : '' ?>"
