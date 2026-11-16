@@ -407,19 +407,19 @@
 }
 
 .appointments-filters {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
+    align-items: end;
     gap: 16px;
     margin-bottom: 16px;
 }
 
-.appointments-filters .form-group {
-    flex: 1 1 200px;
-}
-
 .appointments-filters .form-group + .form-group {
     margin-top: 0;
+}
+
+.appointments-filters .form-control {
+    height: calc(1.5em + 26px);
 }
 
 .appointments-filters__actions {
@@ -526,6 +526,10 @@
 
     .appointments .card + .card {
         margin-top: 16px;
+    }
+
+    .appointments-filters {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .appointments-filters__actions,

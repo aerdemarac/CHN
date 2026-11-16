@@ -46,6 +46,16 @@ function appointmentsQuery(array $params): string
     return '?' . http_build_query($params);
 }
 
+function appointmentsDateParam(string $name): ?string
+{
+    if (!isset($_GET[$name]) || !is_string($_GET[$name])) {
+        return null;
+    }
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $_GET[$name]);
+
+    return $date !== false && $date->format('Y-m-d') === $_GET[$name] ? $_GET[$name] : null;
+}
+
 function appointmentsPageLink(string $file, string $role): ?string
 {
     return is_file(dirname(__DIR__) . '/' . $file) ? '../' . $file . appointmentsQuery(['role' => $role]) : null;
@@ -212,6 +222,9 @@ $appointmentsStaffDepartments = array_filter(
 
 $appointmentsFilterDepartment = null;
 $appointmentsFilterStatus = null;
+$appointmentsFilterPatient = '';
+$appointmentsFilterFrom = null;
+$appointmentsFilterTo = null;
 
 if ($appointmentsRole === 'healthcare_staff') {
     $appointmentsFilterDepartment = isset($_GET['department_id']) && is_string($_GET['department_id'])
@@ -223,7 +236,36 @@ if ($appointmentsRole === 'healthcare_staff') {
         : null;
 }
 
-$appointmentsRows = array_values(array_filter($appointmentsAll, function (array $item) use ($appointmentsRole, $appointmentsUser, $appointmentsStaffDepartments, $appointmentsView, $appointmentsTodayKey, $appointmentsFilterDepartment, $appointmentsFilterStatus): bool {
+if ($appointmentsRole === 'doctor' || $appointmentsRole === 'healthcare_staff') {
+    $appointmentsFilterPatient = isset($_GET['patient_name']) && is_string($_GET['patient_name'])
+        ? mb_substr(trim(preg_replace('/\s+/u', ' ', $_GET['patient_name']) ?? ''), 0, 100)
+        : '';
+}
+
+$appointmentsHasDateFilter = $appointmentsRole !== 'admin' && $appointmentsView !== 'today';
+$appointmentsDateMin = $appointmentsView === 'upcoming'
+    ? ($appointmentsRole === 'patient' ? $appointmentsTodayKey : appointmentsDate(1))
+    : null;
+$appointmentsDateMax = $appointmentsView === 'past' ? appointmentsDate(-1) : null;
+
+if ($appointmentsHasDateFilter) {
+    $appointmentsFilterFrom = appointmentsDateParam('date_from');
+    $appointmentsFilterTo = appointmentsDateParam('date_to');
+
+    if ($appointmentsFilterFrom !== null && $appointmentsFilterTo !== null && $appointmentsFilterFrom > $appointmentsFilterTo) {
+        [$appointmentsFilterFrom, $appointmentsFilterTo] = [$appointmentsFilterTo, $appointmentsFilterFrom];
+    }
+}
+
+$appointmentsKeepFilters = array_filter([
+    'patient_name'  => $appointmentsFilterPatient,
+    'department_id' => $appointmentsFilterDepartment,
+    'status'        => $appointmentsFilterStatus,
+], fn ($value): bool => $value !== null && $value !== '');
+
+$appointmentsIsFiltered = $appointmentsKeepFilters !== [] || $appointmentsFilterFrom !== null || $appointmentsFilterTo !== null;
+
+$appointmentsRows = array_values(array_filter($appointmentsAll, function (array $item) use ($appointmentsRole, $appointmentsUser, $appointmentsStaffDepartments, $appointmentsView, $appointmentsTodayKey, $appointmentsFilterDepartment, $appointmentsFilterStatus, $appointmentsFilterPatient, $appointmentsFilterFrom, $appointmentsFilterTo): bool {
     if ($appointmentsRole === 'patient' && $item['patient_id'] !== $appointmentsUser['patient_id']) {
         return false;
     }
@@ -242,8 +284,18 @@ $appointmentsRows = array_values(array_filter($appointmentsAll, function (array 
     if ($appointmentsFilterStatus !== null && $item['appointment_status'] !== $appointmentsFilterStatus) {
         return false;
     }
+    if ($appointmentsFilterPatient !== '' && mb_stripos($item['patient_name'], $appointmentsFilterPatient) === false) {
+        return false;
+    }
 
     $date = $item['appointment_date'];
+
+    if ($appointmentsFilterFrom !== null && $date < $appointmentsFilterFrom) {
+        return false;
+    }
+    if ($appointmentsFilterTo !== null && $date > $appointmentsFilterTo) {
+        return false;
+    }
 
     if ($appointmentsView === 'today') {
         return $date === $appointmentsTodayKey;
@@ -482,6 +534,7 @@ require __DIR__ . '/../include/top-bar.php';
                         <p class="card__subtitle">
                             <?= count($appointmentsRows) ?> <?= count($appointmentsRows) === 1 ? 'appointment' : 'appointments' ?>
                             · <?= appointmentsEscape($appointmentsViews[$appointmentsView]) ?>
+                            <?= $appointmentsIsFiltered ? '· Filtered' : '' ?>
                         </p>
                     </div>
                     <nav aria-label="Appointment period">
@@ -489,7 +542,7 @@ require __DIR__ . '/../include/top-bar.php';
                             <?php foreach ($appointmentsViews as $appointmentsViewKey => $appointmentsViewLabel): ?>
                                 <li>
                                     <a class="appointments-tabs__link"
-                                       href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsViewKey])) ?>"
+                                       href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsViewKey] + $appointmentsKeepFilters)) ?>"
                                        <?= $appointmentsViewKey === $appointmentsView ? 'aria-current="page"' : '' ?>>
                                         <?= appointmentsEscape($appointmentsViewLabel) ?>
                                     </a>
@@ -499,10 +552,19 @@ require __DIR__ . '/../include/top-bar.php';
                     </nav>
                 </header>
 
-                <?php if ($appointmentsRole === 'healthcare_staff'): ?>
-                    <form class="appointments-filters" method="get" action="">
+                <?php if ($appointmentsRole !== 'patient' || $appointmentsHasDateFilter): ?>
+                    <form class="appointments-filters" method="get" action="" aria-label="Filter appointments">
                         <input type="hidden" name="role" value="<?= appointmentsEscape($appointmentsRole) ?>">
                         <input type="hidden" name="view" value="<?= appointmentsEscape($appointmentsView) ?>">
+                        <?php if ($appointmentsRole !== 'patient'): ?>
+                        <div class="form-group">
+                            <label class="form-label" for="appointments-filter-patient">Patient name</label>
+                            <input type="search" class="form-control" id="appointments-filter-patient" name="patient_name"
+                                   value="<?= appointmentsEscape($appointmentsFilterPatient) ?>" maxlength="100"
+                                   autocomplete="off" placeholder="Search by name">
+                        </div>
+                        <?php endif; ?>
+                        <?php if ($appointmentsRole === 'healthcare_staff'): ?>
                         <div class="form-group">
                             <label class="form-label" for="appointments-filter-department">Department</label>
                             <select class="form-control appointments-select" id="appointments-filter-department" name="department_id">
@@ -525,9 +587,26 @@ require __DIR__ . '/../include/top-bar.php';
                                 <?php endforeach; ?>
                             </select>
                         </div>
+                        <?php endif; ?>
+                        <?php if ($appointmentsHasDateFilter): ?>
+                        <div class="form-group">
+                            <label class="form-label" for="appointments-filter-from">From</label>
+                            <input type="date" class="form-control" id="appointments-filter-from" name="date_from"
+                                   value="<?= appointmentsEscape($appointmentsFilterFrom ?? '') ?>"
+                                   <?= $appointmentsDateMin !== null ? 'min="' . appointmentsEscape($appointmentsDateMin) . '"' : '' ?>
+                                   <?= $appointmentsDateMax !== null ? 'max="' . appointmentsEscape($appointmentsDateMax) . '"' : '' ?>>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="appointments-filter-to">To</label>
+                            <input type="date" class="form-control" id="appointments-filter-to" name="date_to"
+                                   value="<?= appointmentsEscape($appointmentsFilterTo ?? '') ?>"
+                                   <?= $appointmentsDateMin !== null ? 'min="' . appointmentsEscape($appointmentsDateMin) . '"' : '' ?>
+                                   <?= $appointmentsDateMax !== null ? 'max="' . appointmentsEscape($appointmentsDateMax) . '"' : '' ?>>
+                        </div>
+                        <?php endif; ?>
                         <div class="appointments-filters__actions">
                             <button type="submit" class="btn btn--outline">Filter</button>
-                            <?php if ($appointmentsFilterDepartment !== null || $appointmentsFilterStatus !== null): ?>
+                            <?php if ($appointmentsIsFiltered): ?>
                                 <a class="btn btn--outline" href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsView])) ?>">Clear</a>
                             <?php endif; ?>
                         </div>
@@ -536,8 +615,13 @@ require __DIR__ . '/../include/top-bar.php';
 
                 <?php if ($appointmentsRows === []): ?>
                     <div class="empty-state">
-                        <p class="empty-state__title"><?= appointmentsEscape($appointmentsEmpty[$appointmentsView]['title']) ?></p>
-                        <p class="empty-state__text"><?= appointmentsEscape($appointmentsEmpty[$appointmentsView]['text']) ?></p>
+                        <?php if ($appointmentsIsFiltered): ?>
+                            <p class="empty-state__title">No matching appointments</p>
+                            <p class="empty-state__text">Try another name or date range, or clear the filters.</p>
+                        <?php else: ?>
+                            <p class="empty-state__title"><?= appointmentsEscape($appointmentsEmpty[$appointmentsView]['title']) ?></p>
+                            <p class="empty-state__text"><?= appointmentsEscape($appointmentsEmpty[$appointmentsView]['text']) ?></p>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="table-responsive">
