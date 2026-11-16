@@ -56,9 +56,17 @@ function appointmentsDateParam(string $name): ?string
     return $date !== false && $date->format('Y-m-d') === $_GET[$name] ? $_GET[$name] : null;
 }
 
-function appointmentsPageLink(string $file, string $role): ?string
+function appointmentsPageLink(string $file, string $role, array $extra = []): ?string
 {
-    return is_file(dirname(__DIR__) . '/' . $file) ? '../' . $file . appointmentsQuery(['role' => $role]) : null;
+    $query = appointmentsQuery(['role' => $role] + $extra);
+
+    if (is_file(dirname(__DIR__) . '/' . $file)) {
+        return '../' . $file . $query;
+    }
+
+    $demo = pathinfo($file, PATHINFO_FILENAME) . '-test.php';
+
+    return is_file(__DIR__ . '/' . $demo) ? $demo . $query : null;
 }
 
 function appointmentsRelativeDay(string $date, DateTimeImmutable $today): string
@@ -715,9 +723,9 @@ require __DIR__ . '/../include/top-bar.php';
                                                                 data-appointment-start="<?= appointmentsEscape($appointmentsItem['patient_name']) ?>">Start visit</button>
                                                     <?php endif; ?>
                                                     <?php if ($appointmentsCanDiagnose): ?>
-                                                        <?php $appointmentsRecordsLink = appointmentsPageLink('medical-records.php', $appointmentsRole); ?>
+                                                        <?php $appointmentsRecordsLink = appointmentsPageLink('medical-records.php', $appointmentsRole, ['case_id' => $appointmentsItem['case_id'], 'add' => 'diagnosis']); ?>
                                                         <?php if ($appointmentsRecordsLink !== null): ?>
-                                                            <a class="btn btn--outline btn--sm" href="<?= appointmentsEscape($appointmentsRecordsLink) ?>">Add diagnosis</a>
+                                                            <a class="btn btn--outline btn--sm" href="<?= appointmentsEscape($appointmentsRecordsLink . '#records-diagnoses') ?>">Add diagnosis</a>
                                                         <?php else: ?>
                                                             <button type="button" class="btn btn--outline btn--sm" disabled>Add diagnosis</button>
                                                         <?php endif; ?>

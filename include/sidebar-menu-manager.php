@@ -28,7 +28,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'test-endpoints/appointments-test.php', 'icon' => 'appointments'],
             'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'icon' => 'records'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'medical-cases.php', 'icon' => 'cases'],
-            'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
+            'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'demo' => 'test-endpoints/medical-records-test.php', 'icon' => 'records'],
             'alerts' => ['label' => 'Emergency Alerts', 'file' => 'emergency-alerts.php', 'icon' => 'cases'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'feedback.php', 'icon' => 'feedback'],
             'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'icon' => 'records'],
