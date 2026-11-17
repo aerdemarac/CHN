@@ -45,9 +45,11 @@
         var department = form.elements.department_id;
         var nationality = form.elements.nationality;
         var nationalId = form.elements.national_id;
+        var password = form.elements.password;
+        var passwordConfirm = form.elements.password_confirm;
         var workplaceGroups = Array.prototype.slice.call(form.querySelectorAll('[data-users-workplace]'));
-        var departmentOptional = document.getElementById('users-department-optional');
         var departmentOptions = Array.prototype.slice.call(department.options);
+        var toggles = Array.prototype.slice.call(form.querySelectorAll('.users-form__toggle'));
 
         function hasWorkplace() {
             return role.value === 'doctor' || role.value === 'healthcare_staff';
@@ -79,15 +81,12 @@
 
         function updateWorkplace() {
             var visible = hasWorkplace();
-            var isStaff = role.value === 'healthcare_staff';
 
             workplaceGroups.forEach(function (group) {
                 group.hidden = !visible;
             });
             hospital.disabled = !visible;
             department.disabled = !visible;
-            departmentOptional.hidden = !isStaff;
-            departmentOptions[0].textContent = isStaff ? departmentOptions[0].dataset.labelStaff : departmentOptions[0].dataset.labelDoctor;
             if (!visible) {
                 setError(hospital, '');
                 setError(department, '');
@@ -110,9 +109,23 @@
             return namePattern.test(value) ? '' : 'Please enter a valid ' + label + '.';
         }
 
+        function nationalIdError(value) {
+            var clean = value.replace(/[\s-]/g, '');
+
+            if (!value) {
+                return 'Please enter a national ID or passport number.';
+            }
+            if (nationality.value === 'TR') {
+                return isValidTcKimlikNo(value.replace(/\s/g, '')) ? '' : 'Please enter a valid T.C. Kimlik No.';
+            }
+            return documentPattern.test(value) && clean.length >= 5 && clean.length <= 50
+                ? ''
+                : 'Please enter a valid national ID or passport number.';
+        }
+
         var checks = [
             [role, function (value) {
-                return role.disabled || value ? '' : 'Please select a role.';
+                return value ? '' : 'Please select a role.';
             }],
             [form.elements.first_name, function (value) {
                 return nameError(value, 'first name');
@@ -127,41 +140,46 @@
                 return value.length <= 254 && emailPattern.test(value) ? '' : 'Please enter a valid email address.';
             }],
             [hospital, function (value) {
-                return !hasWorkplace() || value ? '' : 'Please select a hospital.';
+                return value ? '' : 'Please select a hospital.';
             }],
             [department, function (value) {
-                return role.value !== 'doctor' || value ? '' : 'Please select a department.';
+                return value ? '' : 'Please select a department.';
             }],
             [form.elements.phone, function (value) {
                 var digits = value.replace(/\D/g, '');
                 var length = digits.length + (value.charAt(0) === '+' ? 1 : 0);
 
                 if (!value) {
-                    return '';
+                    return 'Please enter a phone number.';
                 }
                 return phonePattern.test(value) && digits.length >= 7 && length <= 16 ? '' : 'Please enter a valid phone number.';
             }],
             [form.elements.birth_date, function (value, control) {
-                if (control.validity.badInput || (value && !control.validity.valid)) {
+                if (control.validity.badInput) {
                     return 'Please enter a valid date of birth.';
                 }
-                return '';
+                if (!value) {
+                    return 'Please enter the date of birth.';
+                }
+                return control.validity.valid ? '' : 'Please enter a valid date of birth.';
             }],
             [nationality, function (value) {
-                return value || !nationalId.value.trim() ? '' : 'Please select the nationality for this national ID.';
+                return value ? '' : 'Please select a nationality.';
             }],
-            [nationalId, function (value) {
-                var clean = value.replace(/[\s-]/g, '');
+            [nationalId, nationalIdError],
+            [password, function () {
+                var value = password.value;
 
                 if (!value) {
-                    return '';
+                    return 'Please enter a password.';
                 }
-                if (nationality.value === 'TR') {
-                    return isValidTcKimlikNo(value.replace(/\s/g, '')) ? '' : 'Please enter a valid T.C. Kimlik No.';
+                return value.length >= 8 && /\p{L}/u.test(value) && /\d/.test(value) ? '' : 'Password does not meet the requirements.';
+            }],
+            [passwordConfirm, function () {
+                if (!passwordConfirm.value) {
+                    return 'Please confirm the password.';
                 }
-                return documentPattern.test(value) && clean.length >= 5 && clean.length <= 50
-                    ? ''
-                    : 'Please enter a valid national ID or passport number.';
+                return passwordConfirm.value === password.value ? '' : 'Passwords do not match.';
             }]
         ];
 
@@ -170,7 +188,7 @@
 
             checks.forEach(function (check) {
                 var control = check[0];
-                var message = control.disabled && control !== role ? '' : check[1](control.value.trim(), control);
+                var message = control.disabled ? '' : check[1](control.value.trim(), control);
 
                 setError(control, message);
                 if (message && !firstInvalid) {
@@ -189,7 +207,12 @@
             updateDepartments();
             setError(hospital, '');
         });
-        nationality.addEventListener('change', updateNationalIdKeyboard);
+        nationality.addEventListener('change', function () {
+            updateNationalIdKeyboard();
+            if (nationalId.hasAttribute('aria-invalid')) {
+                setError(nationalId, nationalIdError(nationalId.value.trim()));
+            }
+        });
 
         checks.forEach(function (check) {
             var control = check[0];
@@ -198,6 +221,21 @@
                 if (control.hasAttribute('aria-invalid')) {
                     setError(control, check[1](control.value.trim(), control));
                 }
+            });
+        });
+
+        toggles.forEach(function (toggle) {
+            var input = document.getElementById(toggle.getAttribute('aria-controls'));
+            var icon = toggle.querySelector('.icon');
+
+            toggle.addEventListener('click', function () {
+                var show = input.type === 'password';
+
+                input.type = show ? 'text' : 'password';
+                toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+                toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                icon.classList.toggle('icon--eye', !show);
+                icon.classList.toggle('icon--eye-slash', show);
             });
         });
 
@@ -212,13 +250,11 @@
                 return;
             }
 
+            password.value = '';
+            passwordConfirm.value = '';
             formCard.hidden = true;
-            if (form.dataset.mode === 'create') {
-                showNotice('Demo only: an account for ' + name + ' (' + roleLabel + ') would be created and a link to set a password would be emailed to '
-                    + form.elements.email.value.trim() + '. Nothing was saved.');
-            } else {
-                showNotice('Demo only: the changes to ' + name + ' were not saved.');
-            }
+            showNotice('Demo only: an account for ' + name + ' (' + roleLabel + ') with the email ' + form.elements.email.value.trim()
+                + ' would be created. Nothing was saved.');
         });
 
         updateWorkplace();
@@ -246,10 +282,6 @@
                 event.preventDefault();
                 if (!window.confirm('Delete the account of ' + name + '? This cannot be undone.')) {
                     return;
-                }
-
-                if (form && formCard && form.elements.user_id && form.elements.user_id.value === row.dataset.usersRow) {
-                    formCard.hidden = true;
                 }
 
                 decrease('shown');

@@ -113,28 +113,7 @@ $usersQuery = isset($_GET['q']) && is_string($_GET['q']) ? mb_substr(trim($_GET[
 
 $usersState = ['role' => $usersRole, 'filter_role' => $usersFilterRole, 'q' => $usersQuery];
 
-$usersForm = null;
-$usersFormId = null;
-
-if ($usersRole === 'admin' && isset($_GET['form']) && is_string($_GET['form'])) {
-    if ($_GET['form'] === 'create') {
-        $usersForm = 'create';
-    } elseif ($_GET['form'] === 'edit' && isset($_GET['user_id']) && is_string($_GET['user_id'])
-        && ctype_digit($_GET['user_id']) && isset($usersAll[(int) $_GET['user_id']])) {
-        $usersForm = 'edit';
-        $usersFormId = (int) $_GET['user_id'];
-    }
-}
-
-$usersFormUser = $usersFormId !== null ? $usersAll[$usersFormId] : [
-    'name' => '', 'surname' => '', 'email' => '', 'role' => '', 'phone' => null, 'birth_date' => null,
-    'nationality' => null, 'national_id' => null, 'hospital_id' => null, 'department_id' => null,
-];
-$usersFormIsSelf = $usersFormId === $usersCurrentUserId;
-$usersFormRoles = $usersForm === 'edit' ? array_keys($usersRoles) : $usersPrivilegedRoles;
-$usersFormHospital = $usersFormUser['hospital_id']
-    ?? ($usersFormUser['department_id'] !== null ? $usersDepartments[$usersFormUser['department_id']]['hospital_id'] : null);
-$usersFormHasWorkplace = in_array($usersFormUser['role'], ['doctor', 'healthcare_staff'], true);
+$usersShowForm = $usersRole === 'admin' && isset($_GET['form']) && $_GET['form'] === 'create';
 
 $usersMatching = array_filter($usersAll, function (array $user) use ($usersQuery): bool {
     return $usersQuery === ''
@@ -201,7 +180,7 @@ require __DIR__ . '/../include/top-bar.php';
             <div>
                 <h1 class="page-header__title">User management</h1>
                 <p class="page-header__subtitle">
-                    <?= $usersRole === 'admin' ? 'Create privileged accounts and manage every user of the network.' : 'Account administration for admins.' ?>
+                    <?= $usersRole === 'admin' ? 'Create privileged accounts and remove users of the network.' : 'Account administration for admins.' ?>
                 </p>
             </div>
             <?php if ($usersRole === 'admin'): ?>
@@ -215,68 +194,50 @@ require __DIR__ . '/../include/top-bar.php';
             <section class="card" aria-labelledby="users-denied-title">
                 <div class="empty-state">
                     <h2 class="empty-state__title" id="users-denied-title">Only available for admins</h2>
-                    <p class="empty-state__text">Admins create doctor, healthcare staff and admin accounts here and manage existing users.</p>
+                    <p class="empty-state__text">Admins create doctor, healthcare staff and admin accounts here and remove existing users.</p>
                     <a class="btn btn--outline" href="<?= usersEscape('dashboard-test.php' . usersUrl(['role' => $usersRole])) ?>">Back to dashboard</a>
                 </div>
             </section>
         <?php else: ?>
             <p class="alert alert--info users-notice" id="users-notice" role="status" tabindex="-1" hidden></p>
 
-            <?php if ($usersForm !== null): ?>
+            <?php if ($usersShowForm): ?>
                 <section class="card users-form-card" id="users-form" aria-labelledby="users-form-title">
                     <header class="card__header">
                         <div>
-                            <h2 class="card__title" id="users-form-title">
-                                <?= $usersForm === 'create' ? 'Create account' : 'Edit ' . usersEscape($usersFormUser['name'] . ' ' . $usersFormUser['surname']) ?>
-                            </h2>
-                            <p class="card__subtitle">
-                                <?= $usersForm === 'create'
-                                    ? 'For doctors, healthcare staff and admins. Patients sign up themselves. The new user gets an email with a link to set their own password.'
-                                    : 'Changes apply the next time the user opens a page.' ?>
-                            </p>
+                            <h2 class="card__title" id="users-form-title">Create account</h2>
+                            <p class="card__subtitle">For doctors, healthcare staff and admins. Patients sign up themselves. All fields are required.</p>
                         </div>
                     </header>
 
                     <form class="users-form" id="users-account-form" method="post" novalidate
-                          action="<?= usersEscape('../backend/users.php' . usersUrl(['role' => $usersRole])) ?>"
-                          data-mode="<?= usersEscape($usersForm) ?>">
-                        <input type="hidden" name="action" value="<?= $usersForm === 'create' ? 'create_user' : 'update_user' ?>">
-                        <?php if ($usersFormId !== null): ?>
-                            <input type="hidden" name="user_id" value="<?= (int) $usersFormId ?>">
-                        <?php endif; ?>
+                          action="<?= usersEscape('../backend/users.php' . usersUrl(['role' => $usersRole])) ?>">
+                        <input type="hidden" name="action" value="create_user">
 
                         <div class="users-form__grid">
                             <div class="form-group">
                                 <label class="form-label" for="users-user-role">Role</label>
                                 <select class="form-control" id="users-user-role" name="user_role" required
-                                        aria-describedby="users-user-role-hint users-user-role-error"
-                                        <?= $usersFormIsSelf ? 'disabled' : '' ?>>
-                                    <?php if ($usersForm === 'create'): ?>
-                                        <option value="">Select a role</option>
-                                    <?php endif; ?>
-                                    <?php foreach ($usersFormRoles as $usersRoleKey): ?>
-                                        <option value="<?= usersEscape($usersRoleKey) ?>" <?= $usersFormUser['role'] === $usersRoleKey ? 'selected' : '' ?>>
-                                            <?= usersEscape($usersRoles[$usersRoleKey]) ?>
-                                        </option>
+                                        aria-describedby="users-user-role-error">
+                                    <option value="">Select a role</option>
+                                    <?php foreach ($usersPrivilegedRoles as $usersRoleKey): ?>
+                                        <option value="<?= usersEscape($usersRoleKey) ?>"><?= usersEscape($usersRoles[$usersRoleKey]) ?></option>
                                     <?php endforeach; ?>
                                 </select>
-                                <p class="form-hint" id="users-user-role-hint" <?= $usersFormIsSelf ? '' : 'hidden' ?>>You cannot change your own role.</p>
                                 <p class="form-error" id="users-user-role-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="users-first-name">First name</label>
                                 <input class="form-control" type="text" id="users-first-name" name="first_name" maxlength="100" required
-                                       autocomplete="off" value="<?= usersEscape($usersFormUser['name']) ?>"
-                                       aria-describedby="users-first-name-error">
+                                       autocomplete="off" aria-describedby="users-first-name-error">
                                 <p class="form-error" id="users-first-name-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="users-last-name">Last name</label>
                                 <input class="form-control" type="text" id="users-last-name" name="last_name" maxlength="100" required
-                                       autocomplete="off" value="<?= usersEscape($usersFormUser['surname']) ?>"
-                                       aria-describedby="users-last-name-error">
+                                       autocomplete="off" aria-describedby="users-last-name-error">
                                 <p class="form-error" id="users-last-name-error" role="alert" hidden></p>
                             </div>
 
@@ -284,38 +245,29 @@ require __DIR__ . '/../include/top-bar.php';
                                 <label class="form-label" for="users-email">Email</label>
                                 <input class="form-control" type="email" id="users-email" name="email" maxlength="254" required
                                        autocomplete="off" autocapitalize="none" spellcheck="false"
-                                       value="<?= usersEscape($usersFormUser['email']) ?>"
                                        aria-describedby="users-email-error">
                                 <p class="form-error" id="users-email-error" role="alert" hidden></p>
                             </div>
 
-                            <div class="form-group" data-users-workplace <?= $usersFormHasWorkplace ? '' : 'hidden' ?>>
+                            <div class="form-group" data-users-workplace hidden>
                                 <label class="form-label" for="users-hospital-id">Hospital</label>
-                                <select class="form-control" id="users-hospital-id" name="hospital_id"
-                                        aria-describedby="users-hospital-id-error" <?= $usersFormHasWorkplace ? '' : 'disabled' ?>>
+                                <select class="form-control" id="users-hospital-id" name="hospital_id" required
+                                        aria-describedby="users-hospital-id-error" disabled>
                                     <option value="">Select a hospital</option>
                                     <?php foreach ($usersHospitals as $usersHospitalId => $usersHospitalName): ?>
-                                        <option value="<?= (int) $usersHospitalId ?>" <?= $usersFormHospital === $usersHospitalId ? 'selected' : '' ?>>
-                                            <?= usersEscape($usersHospitalName) ?>
-                                        </option>
+                                        <option value="<?= (int) $usersHospitalId ?>"><?= usersEscape($usersHospitalName) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                                 <p class="form-error" id="users-hospital-id-error" role="alert" hidden></p>
                             </div>
 
-                            <div class="form-group" data-users-workplace <?= $usersFormHasWorkplace ? '' : 'hidden' ?>>
-                                <label class="form-label" for="users-department-id">
-                                    Department <span class="users-form__optional" id="users-department-optional" <?= $usersFormUser['role'] === 'healthcare_staff' ? '' : 'hidden' ?>>(optional)</span>
-                                </label>
-                                <select class="form-control" id="users-department-id" name="department_id"
-                                        aria-describedby="users-department-id-error" <?= $usersFormHasWorkplace ? '' : 'disabled' ?>>
-                                    <option value="" data-label-doctor="Select a department" data-label-staff="All departments">
-                                        <?= $usersFormUser['role'] === 'healthcare_staff' ? 'All departments' : 'Select a department' ?>
-                                    </option>
+                            <div class="form-group" data-users-workplace hidden>
+                                <label class="form-label" for="users-department-id">Department</label>
+                                <select class="form-control" id="users-department-id" name="department_id" required
+                                        aria-describedby="users-department-id-error" disabled>
+                                    <option value="">Select a department</option>
                                     <?php foreach ($usersDepartments as $usersDepartmentId => $usersDepartment): ?>
-                                        <option value="<?= (int) $usersDepartmentId ?>"
-                                                data-hospital-id="<?= (int) $usersDepartment['hospital_id'] ?>"
-                                                <?= $usersFormUser['department_id'] === $usersDepartmentId ? 'selected' : '' ?>>
+                                        <option value="<?= (int) $usersDepartmentId ?>" data-hospital-id="<?= (int) $usersDepartment['hospital_id'] ?>">
                                             <?= usersEscape($usersDepartment['department_name']) ?>
                                         </option>
                                     <?php endforeach; ?>
@@ -324,54 +276,74 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-phone">Phone <span class="users-form__optional">(optional)</span></label>
-                                <input class="form-control" type="tel" id="users-phone" name="phone" maxlength="24" inputmode="tel"
-                                       autocomplete="off" value="<?= usersEscape($usersFormUser['phone'] ?? '') ?>"
-                                       aria-describedby="users-phone-error">
+                                <label class="form-label" for="users-phone">Phone</label>
+                                <input class="form-control" type="tel" id="users-phone" name="phone" maxlength="24" inputmode="tel" required
+                                       autocomplete="off" aria-describedby="users-phone-error">
                                 <p class="form-error" id="users-phone-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-birth-date">Date of birth <span class="users-form__optional">(optional)</span></label>
-                                <input class="form-control" type="date" id="users-birth-date" name="birth_date"
+                                <label class="form-label" for="users-birth-date">Date of birth</label>
+                                <input class="form-control" type="date" id="users-birth-date" name="birth_date" required
                                        min="1900-01-01" max="<?= usersEscape(usersDate(0)) ?>"
-                                       value="<?= usersEscape($usersFormUser['birth_date'] ?? '') ?>"
                                        aria-describedby="users-birth-date-error">
                                 <p class="form-error" id="users-birth-date-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-nationality">Nationality <span class="users-form__optional">(optional)</span></label>
-                                <select class="form-control" id="users-nationality" name="nationality" aria-describedby="users-nationality-error">
+                                <label class="form-label" for="users-nationality">Nationality</label>
+                                <select class="form-control" id="users-nationality" name="nationality" required aria-describedby="users-nationality-error">
                                     <option value="">Select a nationality</option>
                                     <?php foreach ($usersPinnedCountries as $usersCode): ?>
-                                        <option value="<?= usersEscape($usersCode) ?>" <?= $usersFormUser['nationality'] === $usersCode ? 'selected' : '' ?>>
-                                            <?= usersEscape($usersCountries[$usersCode]) ?>
-                                        </option>
+                                        <option value="<?= usersEscape($usersCode) ?>"><?= usersEscape($usersCountries[$usersCode]) ?></option>
                                     <?php endforeach; ?>
                                     <?php foreach ($usersCountries as $usersCode => $usersCountry): ?>
                                         <?php if (in_array($usersCode, $usersPinnedCountries, true)) continue; ?>
-                                        <option value="<?= usersEscape($usersCode) ?>" <?= $usersFormUser['nationality'] === $usersCode ? 'selected' : '' ?>>
-                                            <?= usersEscape($usersCountry) ?>
-                                        </option>
+                                        <option value="<?= usersEscape($usersCode) ?>"><?= usersEscape($usersCountry) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                                 <p class="form-error" id="users-nationality-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-national-id">National ID <span class="users-form__optional">(optional)</span></label>
-                                <input class="form-control" type="text" id="users-national-id" name="national_id" maxlength="50"
+                                <label class="form-label" for="users-national-id">National ID</label>
+                                <input class="form-control" type="text" id="users-national-id" name="national_id" maxlength="50" required
                                        autocomplete="off" autocapitalize="characters" spellcheck="false"
-                                       value="<?= usersEscape($usersFormUser['national_id'] ?? '') ?>"
                                        aria-describedby="users-national-id-error">
                                 <p class="form-error" id="users-national-id-error" role="alert" hidden></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="users-password">Password</label>
+                                <div class="users-form__password">
+                                    <input class="form-control" type="password" id="users-password" name="password" maxlength="255" required
+                                           autocomplete="new-password" aria-describedby="users-password-hint users-password-error">
+                                    <button class="users-form__toggle" type="button"
+                                            aria-label="Show password" aria-controls="users-password" aria-pressed="false">
+                                        <span class="icon icon--eye" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                                <p class="form-hint" id="users-password-hint">At least 8 characters with a letter and a number.</p>
+                                <p class="form-error" id="users-password-error" role="alert" hidden></p>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="users-password-confirm">Confirm password</label>
+                                <div class="users-form__password">
+                                    <input class="form-control" type="password" id="users-password-confirm" name="password_confirm" maxlength="255" required
+                                           autocomplete="new-password" aria-describedby="users-password-confirm-error">
+                                    <button class="users-form__toggle" type="button"
+                                            aria-label="Show password" aria-controls="users-password-confirm" aria-pressed="false">
+                                        <span class="icon icon--eye" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                                <p class="form-error" id="users-password-confirm-error" role="alert" hidden></p>
                             </div>
                         </div>
 
                         <div class="card__footer">
                             <a class="btn btn--outline" href="<?= usersEscape(usersUrl($usersState) . '#users-list') ?>">Cancel</a>
-                            <button type="submit" class="btn btn--primary"><?= $usersForm === 'create' ? 'Create account' : 'Save changes' ?></button>
+                            <button type="submit" class="btn btn--primary">Create account</button>
                         </div>
                     </form>
                 </section>
@@ -459,19 +431,14 @@ require __DIR__ . '/../include/top-bar.php';
                                     <td class="users-table__nowrap"><?= $usersItem['phone'] !== null ? usersEscape($usersItem['phone']) : '<span class="users-table__none">Not provided</span>' ?></td>
                                     <td class="users-table__nowrap"><time datetime="<?= usersEscape($usersCreated->format('Y-m-d')) ?>"><?= usersEscape($usersCreated->format('j M Y')) ?></time></td>
                                     <td>
-                                        <div class="users-table__actions">
-                                            <a class="btn btn--outline btn--sm"
-                                               href="<?= usersEscape(usersUrl($usersState, ['form' => 'edit', 'user_id' => $usersId]) . '#users-form') ?>"
-                                               aria-label="Edit <?= usersEscape($usersFullName) ?>">Edit</a>
-                                            <form method="post" data-users-delete data-users-name="<?= usersEscape($usersFullName) ?>"
-                                                  action="<?= usersEscape('../backend/users.php' . usersUrl(['role' => $usersRole])) ?>">
-                                                <input type="hidden" name="action" value="delete_user">
-                                                <input type="hidden" name="user_id" value="<?= (int) $usersId ?>">
-                                                <button type="submit" class="btn btn--outline btn--sm users-table__delete"
-                                                        aria-label="Delete <?= usersEscape($usersFullName) ?>"
-                                                        <?= $usersId === $usersCurrentUserId ? 'disabled title="You cannot delete your own account"' : '' ?>>Delete</button>
-                                            </form>
-                                        </div>
+                                        <form method="post" data-users-delete data-users-name="<?= usersEscape($usersFullName) ?>"
+                                              action="<?= usersEscape('../backend/users.php' . usersUrl(['role' => $usersRole])) ?>">
+                                            <input type="hidden" name="action" value="delete_user">
+                                            <input type="hidden" name="user_id" value="<?= (int) $usersId ?>">
+                                            <button type="submit" class="btn btn--outline btn--sm users-table__delete"
+                                                    aria-label="Delete <?= usersEscape($usersFullName) ?>"
+                                                    <?= $usersId === $usersCurrentUserId ? 'disabled title="You cannot delete your own account"' : '' ?>>Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

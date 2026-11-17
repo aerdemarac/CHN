@@ -1,3 +1,6 @@
+.icon--eye       { --icon: url("../assets/icons/eye.svg"); }
+.icon--eye-slash { --icon: url("../assets/icons/eye-slash.svg"); }
+
 .topbar + .content {
     min-height: 0;
 }
@@ -97,9 +100,58 @@
     height: calc(1.5em + 26px);
 }
 
-.users-form__optional {
-    font-weight: 400;
+.users-form__password {
+    display: flex;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.users-form__password .form-control {
+    height: calc(1.5em + 24px);
+    min-width: 0;
+    border: none;
+}
+
+.users-form__password .form-control:focus-visible {
+    outline: none;
+}
+
+.users-form__password:has(.form-control:focus-visible) {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+}
+
+.users-form__password:has([aria-invalid="true"]) {
+    border-color: var(--color-danger);
+}
+
+.users-form__toggle {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
     color: var(--color-text-muted);
+    background: none;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.users-form__toggle .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.users-form__toggle:hover,
+.users-form__toggle[aria-pressed="true"] {
+    color: var(--color-secondary);
+}
+
+.users-form__toggle:focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: -4px;
 }
 
 .users-search {
@@ -165,11 +217,6 @@
     min-width: 176px;
 }
 
-.users-table__actions {
-    display: flex;
-    gap: 8px;
-}
-
 .users-table__delete {
     color: var(--color-danger);
 }
@@ -203,7 +250,9 @@
 
 @media (prefers-reduced-motion: reduce) {
     .users-demo__link,
-    .users-tabs__link {
+    .users-tabs__link,
+    .users-form__password,
+    .users-form__toggle {
         transition: none;
     }
 }
