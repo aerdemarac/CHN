@@ -1,12 +1,11 @@
 /* Scoped additions; shared CHN tokens and components remain authoritative. */
 .account-settings .content__inner, .account-settings .card { min-width: 0; }
-.account-settings__notice, .account-settings__section, .account-settings__actions { margin-bottom: 24px; }
+.account-settings .form-label { display: block; }
 .account-settings__role-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
 .account-settings__role-picker > div { flex: 0 1 280px; min-width: 0; }
-.account-settings .form-label { display: block; }
 .account-settings__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .account-settings__field { min-width: 0; }
-.account-settings .form-control[readonly] { background: var(--color-bg); color: var(--color-text-muted); cursor: default; }
+.account-settings .form-control[readonly], .account-settings .form-control:disabled { background: var(--color-bg); color: var(--color-text-muted); cursor: default; opacity: 1; }
 .account-settings__identity { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; margin: 0 0 24px; background: var(--color-bg); border-radius: 8px; }
 .account-settings__identity span { color: var(--color-text-muted); }
 .account-settings__notifications { min-width: 0; border: 0; padding: 0; margin: 0; }
@@ -20,7 +19,15 @@
 .account-settings__result:empty { margin: 0; }
 .account-settings__result[data-error="true"] { color: var(--color-danger); }
 @media (max-width: 767px) {
+    .account-settings__role-picker > div { flex-basis: 100%; }
     .account-settings__grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
     .account-settings .card { padding: 16px; }
-    .account-settings__role-picker > div { flex-basis: 100%; }
 }
+
+.account-settings__section, .account-settings__actions { margin-bottom: 24px; }
+.account-settings__password { width: calc(100% - 32px); max-width: 480px; max-height: calc(100% - 32px); overflow-y: auto; margin: auto; padding: 24px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); color: var(--color-text); box-shadow: 0 4px 6px rgba(18, 59, 93, 0.05); }
+.account-settings__password::backdrop { background: rgba(18, 59, 93, 0.4); }
+.account-settings__password .form-control { width: 100%; }
+
+.account-settings__notifications input:disabled { opacity: 1; cursor: default; }
+.account-settings__notifications label:has(input:disabled) { color: var(--color-text-muted); cursor: default; }
