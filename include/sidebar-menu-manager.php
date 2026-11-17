@@ -24,8 +24,8 @@ if (!function_exists('chnSidebarItemsForRole')) {
         // Only pre-existing icon names from css/style.css.
         // Routes are project-root relative; unimplemented routes display Soon.
         $items = [
-            'dashboard' => ['label' => 'Dashboard', 'file' => 'index.php', 'icon' => 'dashboard'],
-            'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'icon' => 'appointments'],
+            'dashboard' => ['label' => 'Dashboard', 'file' => 'index.php', 'demo' => 'test-endpoints/dashboard-test.php', 'icon' => 'dashboard'],
+            'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'test-endpoints/appointments-test.php', 'icon' => 'appointments'],
             'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'icon' => 'records'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'medical-cases.php', 'icon' => 'cases'],
             'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
