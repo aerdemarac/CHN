@@ -6,6 +6,7 @@
 .account-settings .form-label { display: block; }
 .account-settings__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
 .account-settings__field { min-width: 0; }
+.account-settings .form-control[readonly] { background: var(--color-bg); color: var(--color-text-muted); cursor: default; }
 .account-settings__identity { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; margin: 0 0 24px; background: var(--color-bg); border-radius: 8px; }
 .account-settings__identity span { color: var(--color-text-muted); }
 .account-settings__notifications { min-width: 0; border: 0; padding: 0; margin: 0; }

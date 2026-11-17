@@ -6,6 +6,10 @@ $chnPageTitle = 'Account Settings';
 $chnUserName = 'Alex Demo';
 $chnUserRole = $accountRole; // Fictional UI scope only; never permissions.
 $account = ['name' => 'Alex', 'surname' => 'Demo', 'email' => 'alex.demo@example.invalid', 'phone' => '+905551234567', 'birth_date' => '1994-06-15', 'gender' => 'not_specified', 'nationality' => 'CY'];
+// Presentation only. Future updates must enforce this rule using the authenticated role.
+$accountReadOnlyFields = $accountRole === 'admin' ? [] : ['email', 'birth_date', 'nationality'];
+$accountGenderOptions = ['female' => 'Female', 'male' => 'Male'];
+$accountGenderSupported = isset($accountGenderOptions[$account['gender'] ?? '']);
 function accountEscape($value): string { return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 ?>
 <!doctype html>
@@ -38,20 +42,28 @@ function accountEscape($value): string { return htmlspecialchars((string) $value
             <p class="account-settings__identity">Account role: <strong><?= accountEscape($accountRoles[$accountRole]) ?></strong><span>Managed by your care network</span></p>
             <div class="account-settings__grid">
                 <?php foreach (['name' => ['First name', 'text', 'given-name'], 'surname' => ['Last name', 'text', 'family-name'], 'email' => ['Email address', 'email', 'email'], 'phone' => ['Phone number', 'tel', 'tel'], 'birth_date' => ['Date of birth', 'date', 'bday'], 'nationality' => ['Nationality', 'text', 'country']] as $field => $config): ?>
-                <div class="account-settings__field"><label class="form-label" for="account-<?= $field ?>"><?= $config[0] ?><?= in_array($field, ['name', 'surname', 'email'], true) ? ' *' : ' (optional)' ?></label>
-                    <input class="form-control" id="account-<?= $field ?>" name="<?= $field ?>" type="<?= $config[1] ?>" autocomplete="<?= $config[2] ?>" value="<?= accountEscape($account[$field]) ?>" <?= in_array($field, ['name', 'surname', 'email'], true) ? 'required' : '' ?> <?= $field === 'phone' ? 'maxlength="16" inputmode="tel"' : ($field === 'nationality' ? 'maxlength="2" pattern="[A-Za-z]{2}"' : (in_array($field, ['name', 'surname', 'email'], true) ? 'maxlength="255"' : '')) ?> aria-describedby="account-<?= $field ?>-help account-<?= $field ?>-error">
-                    <p class="form-hint" id="account-<?= $field ?>-help"><?php if ($field === 'phone'): ?>International format: + followed by 7–15 digits.<?php elseif ($field === 'nationality'): ?>Two-letter country code, for example CY or TR.<?php elseif ($field === 'birth_date'): ?>Enter a valid date that is not in the future.<?php elseif ($field === 'email'): ?>Use a fictional email address in this preview.<?php else: ?>As you would like it to appear on your account.<?php endif; ?></p>
+                <?php $accountReadOnly = in_array($field, $accountReadOnlyFields, true); ?>
+                <div class="account-settings__field"><label class="form-label" for="account-<?= $field ?>"><?= $config[0] ?><?= in_array($field, ['name', 'surname', 'email'], true) ? ' *' : ' (optional)' ?><?= $accountReadOnly ? ' — Read only' : '' ?></label>
+                    <input class="form-control" id="account-<?= $field ?>" name="<?= $field ?>" type="<?= $config[1] ?>" autocomplete="<?= $config[2] ?>" <?= $accountReadOnly ? 'readonly aria-readonly="true"' : '' ?> value="<?= accountEscape($account[$field]) ?>" <?= in_array($field, ['name', 'surname', 'email'], true) ? 'required' : '' ?> <?= $field === 'phone' ? 'maxlength="16" inputmode="tel"' : ($field === 'nationality' ? 'maxlength="2" pattern="[A-Za-z]{2}"' : (in_array($field, ['name', 'surname', 'email'], true) ? 'maxlength="255"' : '')) ?> aria-describedby="account-<?= $field ?>-help account-<?= $field ?>-error">
+                    <p class="form-hint" id="account-<?= $field ?>-help"><?php if ($accountReadOnly): ?>Managed by your care network. You cannot change this field here.<?php elseif ($field === 'phone'): ?>International format: + followed by 7–15 digits.<?php elseif ($field === 'nationality'): ?>Two-letter country code, for example CY or TR.<?php elseif ($field === 'birth_date'): ?>Enter a valid date that is not in the future.<?php elseif ($field === 'email'): ?>Use a fictional email address in this preview.<?php else: ?>As you would like it to appear on your account.<?php endif; ?></p>
                     <p class="form-error" id="account-<?= $field ?>-error"></p>
                 </div>
                 <?php endforeach; ?>
-                <div class="account-settings__field"><label class="form-label" for="account-gender">Gender (optional)</label><select class="form-control" id="account-gender" name="gender"><option value="not_specified" selected>Prefer not to say</option><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option></select></div>
+                <div class="account-settings__field">
+                    <label class="form-label" for="account-gender">Gender (optional)</label>
+                    <select class="form-control" id="account-gender" name="gender" aria-describedby="account-gender-help">
+                        <?php if (!$accountGenderSupported): ?><option value="" selected disabled>Choose a gender to change it</option><?php endif; ?>
+                        <?php foreach ($accountGenderOptions as $value => $label): ?><option value="<?= accountEscape($value) ?>" <?= $account['gender'] === $value ? 'selected' : '' ?>><?= accountEscape($label) ?></option><?php endforeach; ?>
+                    </select>
+                    <p class="form-hint" id="account-gender-help"><?php if (!$accountGenderSupported && $account['gender'] !== null && $account['gender'] !== ''): ?>Current recorded value: <?= accountEscape($account['gender']) ?>. <?php endif; ?>Leave unchanged to keep the recorded value. Selecting an option changes this draft only.</p>
+                </div>
             </div>
         </section>
         <section class="card account-settings__section" aria-labelledby="preferences-title">
             <header class="card__header"><div><h2 class="card__title" id="preferences-title">Preferences</h2><p class="card__subtitle">Choose how you would like to hear from CHN.</p></div></header>
             <div class="account-settings__grid">
                 <div class="account-settings__field"><label class="form-label" for="account-language">Preferred language</label><select class="form-control" id="account-language" name="preferred_language"><?php foreach ($chnLanguages as $code => $language): ?><option value="<?= accountEscape($code) ?>" <?= $code === 'en' ? 'selected' : '' ?>><?= accountEscape($language['label']) ?></option><?php endforeach; ?></select><p class="form-hint">Draft preference only; this preview does not translate the interface.</p></div>
-                <fieldset class="account-settings__notifications"><legend class="form-label">Notification preferences</legend><label><input type="checkbox" name="email_notifications" value="1" checked> Email reminders</label><label><input type="checkbox" name="sms_notifications" value="1"> SMS reminders</label><p class="form-hint">Illustrative preferences only. No messages are sent.</p></fieldset>
+                <fieldset class="account-settings__notifications"><legend class="form-label">Notification preferences</legend><label><input type="checkbox" name="email_notifications" value="1" checked> Email reminders</label><p class="form-hint">Illustrative preferences only. No messages are sent.</p></fieldset>
             </div>
         </section>
         <div class="card account-settings__actions">
