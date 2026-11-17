@@ -186,7 +186,7 @@
                                 <h3 class="chn-chat-header__title" id="chn-chat-title">Molehi-AI Assistant</h3>
                                 <span class="chn-chat-header__status">
                                     <span class="chn-chat-header__status-dot"></span>
-                                    Gemini AI • Çevrimiçi
+                                    Çevrimiçi
                                 </span>
                             </div>
                         </div>

@@ -137,11 +137,11 @@ $geminiModel = getenv('GEMINI_MODEL') ?: ($_ENV['GEMINI_MODEL'] ?? 'gemini-3.5-f
 // Load AI training context from ai-training/ folder
 $baseTrainingContext = loadAiTrainingContext();
 
-// Reinforce concise and natural conversation rules (No markdown, short and to the point)
+// Reinforce concise, friendly conversation with selective bolding and emojis
 $styleDirectives = "\n\nKRİTİK İLETİŞİM VE FORMAT KURALLARI:
-1. KISA VE ÖZ KONUŞ: Yanıtların canlı destekteki gerçek bir insan gibi kısa, net ve doğrudan olmalıdır. Asla uzun paragraflar yazma; kural olarak 2-3 cümleyi geçme.
-2. DOĞAL VE SADE DİL (MARKDOWN KULLANMA): Kesinlikle yıldız (**kalın**), başlık (###), liste imleri (* veya -) veya kod blokları gibi markdown işaretleri kullanma. İnsan gibi doğal, akıcı ve sade düz metinle yaz.
-3. DOĞRUDAN CEVAP VER: Giriş veya kapanış dolgu cümleleriyle vakit kaybetme, kullanıcının sorusuna doğrudan ve samimi bir dille yanıt ver.";
+1. YANIT UZUNLUĞU VE ESNEKLİK: Yanıtlarını olabildiğince 3-4 kısa cümleye sığdırmaya çalış. Ancak adım adım navigasyon veya yönlendirme gereken durumlarda madde işaretleri (bullet list) kullanmaktan ve kullanıcıyı aydınlatacak kadar yeterli cümle kurmaktan çekinme.
+2. VURGULAR VE EMOJİ: Önemli sayfa adlarını, butonları, numaraları veya kritik uyarıları **kalın** (bold) olarak vurgula (örneğin **Appointments**, **112**, **Tıbbi Kayıtlar**). Mesajı samimi, sıcak ve profesyonel kılmak için uygun emojiler (🩺, 📅, 🚨, vb.) kullan.
+3. AKICI VE DOĞAL DİL: Genel sohbetlerde robotik başlıklar (###) kullanma; canlı bir sohbetteki gibi akıcı, doğrudan ve samimi konuş.";
 
 $systemInstruction = $baseTrainingContext . $styleDirectives;
 
