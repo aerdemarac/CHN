@@ -42,6 +42,7 @@ $chnPageTitles = [
     'medical-cases.php'   => 'Medical Cases',
     'feedback.php'        => 'Feedback',
     'profile.php'         => 'Profile',
+    'account-settings.php' => 'Account Settings',
     'sidebar-test.php'         => 'Sidebar Preview',
     'top-and-sidebar-test.php' => 'Top Bar & UI Preview',
 ];
@@ -52,13 +53,8 @@ $chnActiveTitle = (isset($chnPageTitle) && trim((string) $chnPageTitle) !== '')
 
 $chnHasHomePage = is_file($chnProjectRoot . '/index.php');
 $chnHasLogoutEndpoint = is_file($chnProjectRoot . '/backend/logout.php');
-$chnAccountSettingsFile = null;
-foreach (['account-settings.php', 'settings.php', 'profile.php'] as $chnCandidate) {
-    if (is_file($chnProjectRoot . '/' . $chnCandidate)) {
-        $chnAccountSettingsFile = $chnCandidate;
-        break;
-    }
-}
+$chnAccountSettingsFile = is_file($chnProjectRoot . '/test-endpoints/account-settings.php')
+    ? 'test-endpoints/account-settings.php' : null;
 
 $chnSessionActive = session_status() === PHP_SESSION_ACTIVE;
 
@@ -73,6 +69,8 @@ $chnResolvedRole = (isset($chnUserRole) && trim((string) $chnUserRole) !== '')
     : ($chnSessionActive
         ? ($_SESSION['user_role'] ?? $_SESSION['role'] ?? 'Patient')
         : 'Patient');
+
+$chnAccountLinkRole = str_replace([' ', '-'], '_', strtolower(trim((string) $chnResolvedRole)));
 
 $chnNameParts = preg_split('/\s+/u', trim((string) $chnResolvedName), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 $chnInitials = '';
@@ -248,7 +246,9 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
             <div class="topbar__menu topbar__menu--user" id="chn-user-menu" data-dropdown-menu role="menu" hidden>
                 <?php if ($chnAccountSettingsFile !== null): ?>
                     <a class="topbar__menu-item" role="menuitem"
-                       href="<?= htmlspecialchars($chnBaseUrl . rawurlencode($chnAccountSettingsFile), ENT_QUOTES, 'UTF-8') ?>">
+                       href="<?= htmlspecialchars($chnBaseUrl . implode('/', array_map('rawurlencode', explode('/', $chnAccountSettingsFile)))
+                           . (in_array($chnAccountLinkRole, ['patient', 'doctor', 'healthcare_staff', 'admin'], true)
+                               ? '?role=' . rawurlencode($chnAccountLinkRole) : ''), ENT_QUOTES, 'UTF-8') ?>">
                         <span>Account Settings</span>
                     </a>
                 <?php else: ?>
