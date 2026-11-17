@@ -93,6 +93,8 @@ Assume every page already has the following overarching layout wrapper. You DO N
 - **Verify files:** Ensure downloaded assets are valid, render correctly, and work through local paths.
 - **No placeholders:** Do not leave broken image URLs, temporary placeholders, or references to assets that were never downloaded.
 - **Report changes:** When finishing a task, list any new assets downloaded and their locations.
+- **Single Shared Files Only:** Pages that serve multiple user types (such as appointments, medical records, and medical cases) must exist as a single shared page. Never create separate duplicate files like doctor-appointments or patient-appointments.
+- **Action Buttons:** Only actions relevant to the current role must be displayed (patients see options to book or cancel; doctors see clinical actions such as adding diagnoses, writing prescriptions, or starting visits).
 
 ### Project Layout Structure:
 ```text
