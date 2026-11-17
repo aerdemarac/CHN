@@ -5,6 +5,48 @@
     const status = document.getElementById('emergency-status');
     const empty = document.getElementById('emergency-empty');
     if (!table || !search || !status || !empty) return;
+    const dialog = document.getElementById('emergency-action-dialog');
+    const title = document.getElementById('emergency-action-title');
+    const description = document.getElementById('emergency-action-description');
+    const result = document.getElementById('emergency-action-result');
+    const cancel = document.getElementById('emergency-action-cancel');
+    const confirm = document.getElementById('emergency-action-confirm');
+    let actionTrigger = null;
+
+    // No request is sent: authenticated, authorized server handlers are required for either action.
+    const openAction = (trigger, action) => {
+        const id = action === 'ban' ? trigger.dataset.userId : trigger.dataset.emergencyId;
+        const validId = /^[1-9]\d*$/.test(id || '');
+        actionTrigger = trigger;
+        result.hidden = true;
+        result.textContent = '';
+        cancel.textContent = 'Cancel';
+        confirm.hidden = !validId;
+        confirm.className = action === 'ban' ? 'btn btn--danger' : 'btn btn--primary';
+        title.textContent = action === 'ban' ? 'Confirm ban' : 'Flag as fraud';
+        description.textContent = !validId
+            ? (action === 'ban' ? 'No user account is identified for this report. A ban cannot be prepared.' : 'This report has no valid identifier.')
+            : (action === 'ban' ? `Ban user #${id}? This action requires confirmation.` : `Flag emergency #${id} as fraud? Flagging concerns the report and does not ban a user.`);
+        confirm.textContent = action === 'ban' ? 'Confirm ban' : 'Confirm flag';
+        dialog.showModal();
+        cancel.focus();
+    };
+    if (dialog && title && description && result && cancel && confirm) {
+        table.addEventListener('click', (event) => {
+            const flag = event.target.closest('.emergency-demo__flag');
+            const ban = event.target.closest('.emergency-demo__ban');
+            if (flag || ban) openAction(flag || ban, ban ? 'ban' : 'flag');
+        });
+        cancel.addEventListener('click', () => dialog.close());
+        confirm.addEventListener('click', () => {
+            result.textContent = 'This action is not connected. No changes were made.';
+            result.hidden = false;
+            confirm.hidden = true;
+            cancel.textContent = 'Close';
+            cancel.focus();
+        });
+        dialog.addEventListener('close', () => { if (actionTrigger) actionTrigger.focus(); });
+    }
     const rows = [...table.querySelectorAll('tr[data-status]')];
     const apply = () => {
         const query = search.value.trim().toLocaleLowerCase();
