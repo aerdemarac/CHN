@@ -1,0 +1,27 @@
+/* Styles scoped to the emergency prototype pages. */
+.emergency-demo .emergency-demo__header { margin-top: 32px; }
+.emergency-demo__summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; }
+.emergency-demo__summary .card + .card { margin-top: 0; }
+.emergency-demo__metric-label { color: #64748B; margin: 0; font-weight: 500; }
+.emergency-demo__metric { color: #123B5D; font-size: 1.75rem; font-weight: 600; margin: 8px 0 4px; }
+.emergency-demo__muted { color: #64748B; font-size: .875rem; margin: 0; }
+.emergency-demo__filters { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+.emergency-demo__filters > div { flex: 1 1 200px; }
+.emergency-demo__table { min-width: 850px; }
+.emergency-demo__table td { vertical-align: middle; }
+.emergency-demo__status { display: inline-block; padding: 4px 8px; border-radius: 8px; font-size: .875rem; font-weight: 500; white-space: nowrap; }
+.emergency-demo__status--pending { color: #E59700; background: rgba(229, 151, 0, .12); }
+.emergency-demo__status--in_progress { color: #2D74DA; background: rgba(45, 116, 218, .12); }
+.emergency-demo__status--resolved { color: #2E935A; background: rgba(46, 147, 90, .12); }
+.emergency-demo__status--fraud { color: #D64545; background: rgba(214, 69, 69, .12); }
+.emergency-demo__detail { padding: 16px; background: #F4F7FA; border-radius: 8px; white-space: normal; }
+.emergency-demo__detail h3 { margin: 0 0 16px; color: #123B5D; }
+.emergency-demo__detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 0 0 16px; }
+.emergency-demo__detail dt { color: #64748B; font-size: .875rem; }
+.emergency-demo__detail dd { margin: 4px 0 0; overflow-wrap: anywhere; }
+.emergency-demo__moderation { padding: 16px; border: 1px solid #E2E8F0; border-radius: 8px; background: #FFFFFF; }
+.emergency-demo__moderation p { margin: 8px 0 16px; }
+.emergency-demo__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.emergency-demo button:disabled { opacity: .65; cursor: not-allowed; }
+.emergency-demo [hidden] { display: none !important; }
+@media (max-width: 767px) { .emergency-demo__summary { grid-template-columns: 1fr; gap: 16px; } .emergency-demo__filters > div { flex-basis: 100%; } }
