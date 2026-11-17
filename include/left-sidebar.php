@@ -84,3 +84,7 @@ if (!empty($chnSidebarShowTestLink)) {
     </nav>
     <div class="sidebar__footer">CHN · Academic prototype</div>
 </aside>
+
+<!-- Molehi-AI Chatbot (Gemini + LocalStorage) Component -->
+<link rel="stylesheet" href="<?= htmlspecialchars($chnBaseUrl . 'css/chatwidget.css', ENT_QUOTES, 'UTF-8') ?>">
+<script src="<?= htmlspecialchars($chnBaseUrl . 'js/chatwidget.js', ENT_QUOTES, 'UTF-8') ?>" defer></script>
