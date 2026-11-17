@@ -30,11 +30,11 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'icon' => 'records'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'test-endpoints/medical-cases.php', 'icon' => 'cases'],
             'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
-            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'emergency-alerts.php', 'icon' => 'cases'],
+            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'test-endpoints/emergency-alerts.php', 'icon' => 'cases'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'test-endpoints/feedback.php', 'icon' => 'feedback'],
             'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'icon' => 'records'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'complaints.php', 'icon' => 'feedback'],
-            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'emergency-logs.php', 'icon' => 'cases'],
+            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'test-endpoints/emergency-logs.php', 'icon' => 'cases'],
             'settings' => ['label' => 'Settings', 'file' => 'settings.php', 'icon' => 'preview'],
         ];
 
