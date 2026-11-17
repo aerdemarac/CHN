@@ -20,6 +20,13 @@
 .emergency-demo__detail dt { color: #64748B; font-size: .875rem; }
 .emergency-demo__detail dd { margin: 4px 0 0; overflow-wrap: anywhere; }
 .emergency-demo__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.emergency-demo .emergency-demo__flag { color: var(--color-text); background: rgba(229, 151, 0, .12); border-color: var(--color-warning); }
+.emergency-demo .emergency-demo__flag:hover:not(:disabled) { color: var(--color-text); background: rgba(229, 151, 0, .24); border-color: var(--color-warning); }
+.emergency-demo .emergency-demo__flag:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 2px; }
+.emergency-demo .emergency-demo__flag:disabled { opacity: .65; cursor: not-allowed; }
+/* Decorative symbols inherit the buttons' accessible text labels. */
+.emergency-demo .emergency-demo__flag::before { content: "⚑"; color: var(--color-warning); font-size: 1.25rem; line-height: 1; }
+.emergency-demo .emergency-demo__ban::before { content: "⊘"; color: var(--color-surface); font-size: 1.25rem; line-height: 1; }
 .emergency-demo button:disabled { opacity: .65; cursor: not-allowed; }
 .emergency-demo [hidden] { display: none !important; }
 @media (max-width: 767px) { .emergency-demo__summary { grid-template-columns: 1fr; gap: 16px; } .emergency-demo__filters > div { flex-basis: 100%; } }
