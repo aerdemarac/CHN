@@ -35,7 +35,7 @@ Contains the PHP backend endpoints shared by the web and Electron applications.
 - `login.php` - Handles login requests.
 - `register.php` - Handles user registration.
 - `appointments.php` - Appointment management.
-- `medical-cases.php` - Medical case operations.
+- `test-endpoints/medical-cases.php` - Shared Medical Cases prototype.
 - `chatbot.php` - AI chatbot requests.
 - `emergency.php` - Emergency alert requests.
 

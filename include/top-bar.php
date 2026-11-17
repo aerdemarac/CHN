@@ -263,7 +263,9 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
 
                 <?php if ($chnHasLogoutEndpoint): ?>
                     <a class="topbar__menu-item topbar__menu-item--danger" role="menuitem"
-                       href="<?= htmlspecialchars($chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>">
+                       href="<?= htmlspecialchars(isset($chnPrototypeRole)
+                           ? chnPrototypeUrl($chnBaseUrl . 'backend/logout.php', $chnPrototypeRole)
+                           : $chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>">
                         <span>Log out</span>
                     </a>
                 <?php else: ?>

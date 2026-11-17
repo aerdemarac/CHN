@@ -1,0 +1,65 @@
+/* Medical Cases only; shared shell and tokens remain authoritative. */
+.medical-cases .content__inner { min-width: 0; }
+.medical-cases__notice, .medical-cases__summary { margin-bottom: 24px; }
+.medical-cases__role-picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+.medical-cases__role-picker .form-label { display: block; }
+.medical-cases__role-picker > div { flex: 0 1 320px; min-width: 0; }
+.medical-cases__filters { display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 16px; }
+.medical-cases__filters > div { min-width: 0; }
+.medical-cases__filters .form-label { display: block; }
+.medical-cases__filter-actions { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; }
+.medical-cases__count { margin: 16px 0; }
+.medical-cases .card { min-width: 0; }
+.medical-cases .table { min-width: 800px; }
+.medical-cases .table tbody th { background: transparent; }
+.medical-cases__caption { text-align: left; color: var(--color-text-muted); padding: 0 0 12px; }
+.medical-cases__case-link { display: inline-block; padding: 8px 0; border-radius: var(--radius); }
+.medical-cases__selected { background: var(--color-bg); }
+.medical-cases__selected .medical-cases__case-link { font-weight: 600; }
+.medical-cases__triage { color: var(--color-text); background: var(--color-bg); border: 1px solid var(--color-border); }
+/* Orange and yellow share the approved warning token; explicit labels preserve the distinction. */
+.medical-cases__triage::before { content: ''; width: 8px; height: 8px; background: var(--color-warning); border-radius: 8px; }
+.medical-cases__triage--orange::before { border-radius: 0; transform: rotate(45deg); }
+.medical-cases__triage--green::before { background: var(--color-success); }
+.medical-cases__details { scroll-margin-top: 96px; }
+.medical-cases__metadata { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 0 0 24px; }
+.medical-cases__metadata dt { color: var(--color-text-muted); font-size: 0.875rem; }
+.medical-cases__metadata dd { margin: 4px 0 0; }
+.medical-cases__heading, .medical-cases__empty h3 { margin: 0 0 8px; font-size: 1.25rem; font-weight: 600; color: var(--color-primary); }
+.medical-cases__description { margin: 0; white-space: pre-wrap; }
+.medical-cases__diagnoses { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-border); }
+.medical-cases__empty { padding: 24px; margin: 0; background: var(--color-bg); border-radius: var(--radius); color: var(--color-text-muted); }
+.medical-cases__history { margin: 0; padding-left: 24px; }
+.medical-cases__history li { padding: 16px 0; border-bottom: 1px solid var(--color-border); }
+.medical-cases__history p { margin: 4px 0; white-space: pre-wrap; }
+.medical-cases__metadata dd, .medical-cases__description, .medical-cases__history, .medical-cases__empty { overflow-wrap: anywhere; }
+.medical-cases :is(a, .table-responsive, .medical-cases__details):focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 2px; }
+@media (max-width: 1024px) {
+    .medical-cases__filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .medical-cases__filters > div:first-of-type { grid-column: 1 / -1; }
+    .medical-cases__metadata { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+    .medical-cases .card { padding: 16px; }
+    .medical-cases__filters, .medical-cases__metadata { grid-template-columns: minmax(0, 1fr); }
+    .medical-cases__empty { padding: 16px; }
+}
+
+.medical-cases__creation { margin-bottom: 24px; scroll-margin-top: 96px; }
+.medical-cases__creation-help { color: var(--color-text-muted); font-size: 0.875rem; margin: 0 0 16px; }
+.medical-cases__create-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.medical-cases__create-grid > div { min-width: 0; }
+.medical-cases__create-grid .form-label { display: block; }
+.medical-cases__create-description { grid-column: 1 / -1; }
+@media (max-width: 767px) {
+    .medical-cases__create-grid { grid-template-columns: minmax(0, 1fr); }
+}
+.medical-cases__review-field { max-width: 480px; margin: 16px 0; }
+.medical-cases__review-field .form-label { display: block; }
+
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) summary { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 8px; padding: 4px 8px; color: var(--color-secondary); }
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) summary:focus-visible { outline: 2px solid var(--color-secondary); outline-offset: 2px; }
+.medical-cases__edit-pencil { font-size: 1.25rem; }
+.medical-cases__edit-label { font-size: 0.875rem; }
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) form { margin-top: 12px; }
+:is(.medical-cases__triage-editor, .medical-cases__status-editor) button { margin-top: 8px; }

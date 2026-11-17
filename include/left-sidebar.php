@@ -3,7 +3,8 @@
  * CHN shared sidebar component.
  * Usage from a root PHP page: require __DIR__ . '/include/left-sidebar.php';
  * Optional demo-only link: $chnSidebarShowTestLink = true; (before require)
- * Set $chnUserRole using a verified backend value before requiring this file.
+ * Live pages set $chnUserRole from a verified backend value.
+ * Fictional prototypes opt into include/prototype-role.php before this file.
  * IMPORTANT: Hiding links is NOT authorization. The backend must enforce roles.
  */
 $chnProjectRoot = dirname(__DIR__);
