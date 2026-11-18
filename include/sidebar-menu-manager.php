@@ -32,7 +32,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
             'alerts' => ['label' => 'Emergency Alerts', 'file' => 'test-endpoints/emergency-demo.php', 'icon' => 'cases'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'test-endpoints/feedback.php', 'icon' => 'feedback'],
-            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'icon' => 'records'],
+            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'test-endpoints/user-management-test.php', 'icon' => 'records'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'complaints.php', 'icon' => 'feedback'],
             'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'test-endpoints/emergency-demo.php', 'icon' => 'cases'],
             'settings' => ['label' => 'Settings', 'file' => 'settings.php', 'icon' => 'preview'],
