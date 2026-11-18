@@ -69,7 +69,7 @@ if (!empty($chnSidebarShowTestLink)) {
                 $chnExists = is_file($chnProjectRoot . '/' . $chnFile);
                 $chnIsCurrent = $chnCurrentPage === basename($chnFile);
                 $chnHref = $chnBaseUrl . implode('/', array_map('rawurlencode', explode('/', $chnFile)))
-                    . (in_array($chnUserRole ?? null, ['patient', 'doctor', 'healthcare_staff', 'admin'], true)
+                    . (in_array($chnUserRole ?? null, ['patient', 'doctor', 'healthcare_staff', 'staff', 'admin'], true)
                         ? '?' . http_build_query(['role' => $chnUserRole]) : '');
             ?>
             <?php if ($chnExists): ?>
