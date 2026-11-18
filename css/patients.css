@@ -11,27 +11,6 @@
     display: none;
 }
 
-.patients-demo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
-    margin-bottom: 24px;
-}
-
-.patients-demo__text {
-    margin: 0;
-}
-
-.patients-demo__examples {
-    display: flex;
-    flex-wrap: wrap;
-    flex-basis: 100%;
-    align-items: center;
-    gap: 8px 16px;
-}
-
-.patients-demo__list,
 .patients-form__options,
 .patients-result__cases {
     display: flex;
@@ -42,10 +21,9 @@
     list-style: none;
 }
 
-.patients-demo__link,
 .patients-form__option-label {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 8px 16px;
     font-family: inherit;
     font-size: 0.875rem;
     font-weight: 500;
@@ -59,24 +37,17 @@
     transition: var(--transition);
 }
 
-.patients-form__option-label {
-    padding: 8px 16px;
-}
-
-.patients-demo__link:hover,
 .patients-form__option-label:hover {
     color: var(--color-secondary);
     border-color: var(--color-secondary);
 }
 
-.patients-demo__link[aria-current="page"],
 .patients-form__radio:checked + .patients-form__option-label {
     color: var(--color-surface);
     background: var(--color-secondary);
     border-color: var(--color-secondary);
 }
 
-.patients-demo__link:focus-visible,
 .patients-form__radio:focus-visible + .patients-form__option-label,
 .patients-result__link:focus-visible {
     outline: 2px solid var(--color-secondary);
@@ -216,10 +187,6 @@
 }
 
 @media (max-width: 767px) {
-    .patients-demo {
-        margin-bottom: 16px;
-    }
-
     .patients-form__field {
         flex-basis: 100%;
     }
@@ -230,7 +197,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .patients-demo__link,
     .patients-form__option-label,
     .patients-result__link {
         transition: none;

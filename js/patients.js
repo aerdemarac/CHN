@@ -11,7 +11,6 @@
     var hint = document.getElementById('patients-q-hint');
     var error = document.getElementById('patients-q-error');
     var radios = Array.prototype.slice.call(form.querySelectorAll('input[name="search_by"]'));
-    var examples = Array.prototype.slice.call(document.querySelectorAll('[data-patients-example]'));
 
     var tests = {
         phone: function (value) {
@@ -85,17 +84,5 @@
             event.preventDefault();
             input.focus();
         }
-    });
-
-    examples.forEach(function (button) {
-        button.addEventListener('click', function () {
-            radios.forEach(function (radio) {
-                radio.checked = radio.value === button.dataset.searchBy;
-            });
-            applyType(selectedType());
-            input.value = button.dataset.q;
-            showError('');
-            form.submit();
-        });
     });
 })();
