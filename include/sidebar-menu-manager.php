@@ -27,7 +27,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
         $items = [
             'dashboard' => ['label' => 'Dashboard', 'file' => 'index.php', 'demo' => 'test-endpoints/dashboard-test.php', 'icon' => 'dashboard'],
             'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'test-endpoints/appointments-test.php', 'icon' => 'appointments'],
-            'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'icon' => 'records'],
+            'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'test-endpoints/patients-test.php', 'icon' => 'records'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'test-endpoints/medical-cases.php', 'icon' => 'cases'],
             'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
             'alerts' => ['label' => 'Emergency Alerts', 'file' => 'test-endpoints/emergency-alerts.php', 'icon' => 'cases'],
