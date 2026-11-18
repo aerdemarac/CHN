@@ -1,7 +1,7 @@
 <?php
 /** Fictional UI fixtures only. Never use as a fallback for a failed live request. */
 return [
-    'user_ids' => ['patient' => 901, 'doctor' => 902, 'staff' => 903],
+    'user_ids' => ['patient' => 901, 'doctor' => 902, 'healthcare_staff' => 903, 'staff' => 903],
     'feedback' => [
         ['feedback_id' => 701, 'user_id' => 901, 'feedback_msg' => 'Fictional feedback: the case overview is easy to read. Could the date labels be clearer?', 'feedback_date' => '2026-11-10'],
         ['feedback_id' => 702, 'user_id' => 901, 'feedback_msg' => 'Fictional feedback: please make the appointment instructions easier to find.', 'feedback_date' => '2026-11-12'],

@@ -30,11 +30,11 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'test-endpoints/patients-test.php', 'icon' => 'records'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'test-endpoints/medical-cases.php', 'icon' => 'cases'],
             'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
-            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'emergency-alerts.php', 'icon' => 'cases'],
+            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'test-endpoints/emergency-demo.php', 'icon' => 'cases'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'test-endpoints/feedback.php', 'icon' => 'feedback'],
             'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'icon' => 'records'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'complaints.php', 'icon' => 'feedback'],
-            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'emergency-logs.php', 'icon' => 'cases'],
+            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'test-endpoints/emergency-demo.php', 'icon' => 'cases'],
             'settings' => ['label' => 'Settings', 'file' => 'settings.php', 'icon' => 'preview'],
         ];
 
@@ -45,7 +45,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'doctor' => [
                 'dashboard', 'appointments', 'patients', 'cases', 'records', 'feedback',
             ],
-            'staff' => [
+            'healthcare_staff' => [
                 'dashboard', 'alerts', 'appointments', 'patients', 'cases', 'records', 'feedback',
             ],
             'admin' => [
@@ -55,8 +55,10 @@ if (!function_exists('chnSidebarItemsForRole')) {
 
         $normalized = strtolower(trim($role));
         $normalized = str_replace([' ', '-'], '_', $normalized);
-        // Compatibility for older callers; new prototype URLs use staff only.
-        if ($normalized === 'healthcare_staff') $normalized = 'staff';
+        // Compatibility alias: if an older link still passes 'staff', map to 'healthcare_staff'
+        if ($normalized === 'staff') {
+            $normalized = 'healthcare_staff';
+        }
         $keys = $byRole[$normalized] ?? []; // Unknown roles see no protected navigation.
         return array_map(static fn(string $key): array => $items[$key], $keys);
     }

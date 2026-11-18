@@ -8,6 +8,7 @@ $isAdmin = $chnPrototypeRole === 'admin';
 $view = [
     'patient' => ['subtitle' => 'Share your experience as a patient and review responses to your own feedback.', 'form' => 'Share your patient experience', 'history' => 'My feedback history'],
     'doctor' => ['subtitle' => 'Share feedback about your clinical workflow and review responses to your own suggestions.', 'form' => 'Share your doctor workflow feedback', 'history' => 'My doctor feedback history'],
+    'healthcare_staff' => ['subtitle' => 'Share feedback about care coordination and review responses to your own suggestions.', 'form' => 'Share your staff workflow feedback', 'history' => 'My staff feedback history'],
     'staff' => ['subtitle' => 'Share feedback about care coordination and review responses to your own suggestions.', 'form' => 'Share your staff workflow feedback', 'history' => 'My staff feedback history'],
     'admin' => ['subtitle' => 'Review fictional feedback and associated responses in a read-only overview.', 'form' => '', 'history' => 'Feedback overview'],
 ][$chnPrototypeRole];

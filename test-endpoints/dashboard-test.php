@@ -53,6 +53,10 @@ function dashboardPage(?string $file, string $role): ?string
         return '../' . $file . $query;
     }
 
+    if (is_file(__DIR__ . '/' . basename($file))) {
+        return basename($file) . $query;
+    }
+
     $demo = pathinfo($file, PATHINFO_FILENAME) . '-test.php';
 
     return is_file(__DIR__ . '/' . $demo) ? $demo . $query : null;
@@ -66,7 +70,6 @@ function dashboardButton(string $label, ?string $file, string $class, string $ro
         return '<button type="button" class="' . $class . '" disabled>' . dashboardEscape($label) . '</button>';
     }
 
-    if (in_array($file, ['test-endpoints/medical-cases.php', 'test-endpoints/feedback.php'], true)) $page .= '?role=' . rawurlencode($GLOBALS['dashboardRole'] === 'healthcare_staff' ? 'staff' : $GLOBALS['dashboardRole']);
     return '<a class="' . $class . '" href="' . dashboardEscape($page) . '">' . dashboardEscape($label) . '</a>';
 }
 
