@@ -45,6 +45,14 @@ $patientsSearchTypes = [
         'empty'     => 'Please enter a national ID or passport number.',
         'invalid'   => 'Please enter a valid national ID or passport number.',
     ],
+    'name' => [
+        'label'     => 'Name',
+        'type'      => 'text',
+        'inputmode' => 'text',
+        'hint'      => 'Enter the patient\'s first name, last name or both.',
+        'empty'     => 'Please enter a name.',
+        'invalid'   => 'Please enter a valid name (letters only, 2 to 100 characters).',
+    ],
 ];
 
 $patientsCaseStates = [
@@ -85,6 +93,14 @@ function patientsSearchValue(string $type, string $value): ?string
     if ($type === 'email') {
         return strlen($value) <= 254 && filter_var($value, FILTER_VALIDATE_EMAIL) !== false
             ? mb_strtolower($value)
+            : null;
+    }
+
+    if ($type === 'name') {
+        $name = preg_replace('/\s+/u', ' ', $value);
+
+        return is_string($name) && preg_match('/^\p{L}[\p{L}\p{M}\s\'.-]*$/u', $name) === 1 && mb_strlen($name) >= 2 && mb_strlen($name) <= 100
+            ? mb_strtolower($name)
             : null;
     }
 
@@ -172,7 +188,7 @@ require __DIR__ . '/../include/top-bar.php';
                 <header class="card__header">
                     <div>
                         <h2 class="card__title" id="patients-search-title">Find a patient</h2>
-                        <p class="card__subtitle">Search with an exact phone number, email address or national ID. Only patients who have a case in <?= patientsEscape($patientsScope) ?> can be found.</p>
+                        <p class="card__subtitle">Search with an exact phone number, email address or national ID, or with the patient's name. Only patients who have a case in <?= patientsEscape($patientsScope) ?> can be found.</p>
                     </div>
                 </header>
 

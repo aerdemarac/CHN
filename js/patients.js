@@ -23,6 +23,10 @@
         national_id: function (value) {
             var clean = value.replace(/[\s-]/g, '');
             return /^[A-Za-z0-9\s-]+$/.test(value) && clean.length >= 5 && clean.length <= 50;
+        },
+        name: function (value) {
+            var clean = value.replace(/\s+/g, ' ');
+            return /^\p{L}[\p{L}\p{M}\s'.-]*$/u.test(clean) && clean.length >= 2 && clean.length <= 100;
         }
     };
 
