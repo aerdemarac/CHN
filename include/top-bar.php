@@ -53,8 +53,8 @@ $chnActiveTitle = (isset($chnPageTitle) && trim((string) $chnPageTitle) !== '')
 
 $chnHasHomePage = is_file($chnProjectRoot . '/index.php');
 $chnHasLogoutEndpoint = is_file($chnProjectRoot . '/backend/logout.php');
-$chnAccountSettingsFile = is_file($chnProjectRoot . '/test-endpoints/account-settings.php')
-    ? 'test-endpoints/account-settings.php' : null;
+$chnAccountSettingsFile = is_file($chnProjectRoot . '/pages/account-settings.php')
+    ? 'pages/account-settings.php' : null;
 
 $chnSessionActive = session_status() === PHP_SESSION_ACTIVE;
 
