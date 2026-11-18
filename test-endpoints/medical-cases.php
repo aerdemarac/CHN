@@ -14,6 +14,7 @@ if ($chnPrototypeRole === 'doctor') {
 $view = [
     'patient' => ['title' => 'My Medical Cases', 'subtitle' => 'Create a case and follow your cases and diagnosis history.', 'overview' => 'My cases', 'action' => 'View my case'],
     'doctor' => ['title' => 'Medical Cases — Clinical Review', 'subtitle' => 'Review assigned demonstration patients, case details and diagnosis history.', 'overview' => 'Assigned patient cases', 'action' => 'View clinical details'],
+    'healthcare_staff' => ['title' => 'Medical Cases — Care Coordination', 'subtitle' => 'Review demonstration case routing within an illustrative department scope.', 'overview' => 'Department case routing', 'action' => 'View routing details'],
     'staff' => ['title' => 'Medical Cases — Care Coordination', 'subtitle' => 'Review demonstration case routing within an illustrative department scope.', 'overview' => 'Department case routing', 'action' => 'View routing details'],
     'admin' => ['title' => 'Medical Cases — Admin', 'subtitle' => 'Clinical case access has not been defined for the admin role.', 'overview' => '', 'action' => ''],
 ][$chnPrototypeRole];
@@ -23,6 +24,7 @@ $cases = array_values(array_filter($cases, static function (array $case) use ($c
     switch ($chnPrototypeRole) {
         case 'patient': return $case['patient_id'] === $preview['context']['patient_id'];
         case 'doctor': return $case['doctor_id'] === $preview['context']['doctor_id'];
+        case 'healthcare_staff':
         case 'staff': return $case['department_id'] === $preview['context']['staff_department_id'];
         default: return false;
     }
@@ -149,7 +151,7 @@ usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagn
         <header class="card__header"><h2 class="card__title" id="case-details-title"><?= $selected ? 'Case ' . $casePrefix . $selected['case_id'] : 'Case details' ?></h2><?php if ($selected): ?><span class="badge badge--info">Demonstration case</span><?php endif; ?></header>
         <?php if ($selected): ?>
         <dl class="medical-cases__metadata">
-            <?php if ($chnPrototypeRole !== 'patient'): ?><div><dt>Demo patient<?= $chnPrototypeRole === 'staff' ? ' reference' : '' ?></dt><dd><?= $chnPrototypeRole === 'doctor' ? mcEscape($selected['patient_name']) . ' · ' : '' ?>DEMO-P-<?= $selected['patient_id'] ?></dd></div><?php endif; ?>
+            <?php if ($chnPrototypeRole !== 'patient'): ?><div><dt>Demo patient<?= in_array($chnPrototypeRole, ['healthcare_staff', 'staff'], true) ? ' reference' : '' ?></dt><dd><?= $chnPrototypeRole === 'doctor' ? mcEscape($selected['patient_name']) . ' · ' : '' ?>DEMO-P-<?= $selected['patient_id'] ?></dd></div><?php endif; ?>
             <div><dt>Department</dt><dd><?= mcEscape($selected['department_name']) ?></dd></div>
             <div><dt>Responsible doctor</dt><dd><?= mcEscape($selected['doctor_name'] ?? 'Not assigned') ?></dd></div>
             <div><dt>Created</dt><dd><?= mcEscape(mcDate($selected['created_at'])) ?></dd></div>
@@ -166,7 +168,7 @@ usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagn
             <?php else: ?><?= $selected['case_state'] === 'open' ? 'Active (open)' : 'Closed' ?><?php endif; ?>
             </dd></div>
             <div><dt>Medical triage</dt><dd data-current-triage>
-            <?php if (in_array($chnPrototypeRole, ['doctor','staff'], true)): ?>
+            <?php if (in_array($chnPrototypeRole, ['doctor','healthcare_staff','staff'], true)): ?>
             <details class="medical-cases__triage-editor">
                 <summary aria-label="Edit medical triage"><span><?= mcEscape(ucfirst($selected['tier_color'])) ?></span><span class="medical-cases__edit-pencil" aria-hidden="true">&#9998;</span><span class="medical-cases__edit-label">Edit</span></summary>
         <form method="post" action="<?= mcEscape(chnPrototypeUrl('medical-cases.php#case-details', $chnPrototypeRole, ['case' => $selected['case_id']])) ?>" data-case-demo data-original-state="<?= mcEscape($selected['case_state']) ?>">

@@ -1,0 +1,204 @@
+.icon--search   { --icon: url("../assets/icons/search.svg"); }
+.icon--envelope { --icon: url("../assets/icons/envelope.svg"); }
+.icon--geo      { --icon: url("../assets/icons/geo-alt.svg"); }
+.icon--cases    { --icon: url("../assets/icons/clipboard2-pulse.svg"); }
+
+.topbar + .content {
+    min-height: 0;
+}
+
+.patients [hidden] {
+    display: none;
+}
+
+.patients-form__options,
+.patients-result__cases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.patients-form__option-label {
+    display: inline-block;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--color-text);
+    text-decoration: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.patients-form__option-label:hover {
+    color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.patients-form__radio:checked + .patients-form__option-label {
+    color: var(--color-surface);
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.patients-form__radio:focus-visible + .patients-form__option-label,
+.patients-result__link:focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+}
+
+.patients-form__types {
+    min-width: 0;
+    margin: 0 0 16px;
+    padding: 0;
+    border: 0;
+}
+
+.patients-form__types .form-label {
+    padding: 0;
+}
+
+.patients-form__option {
+    display: inline-flex;
+}
+
+.patients-form__radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.patients-form__control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.patients-form__field {
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.patients-form__control .btn {
+    height: calc(1.5em + 26px);
+}
+
+.patients-results {
+    scroll-margin-top: 88px;
+}
+
+.patients-result {
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.patients-result + .patients-result {
+    margin-top: 16px;
+}
+
+.patients-result__header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.patients-result__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    font-weight: 600;
+    color: var(--color-secondary);
+    background: rgba(22, 125, 141, 0.1);
+    border-radius: var(--radius);
+}
+
+.patients-result__name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-primary);
+}
+
+.patients-result__meta {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.patients-result__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: 16px 24px;
+    margin: 0;
+}
+
+.patients-result__item {
+    min-width: 0;
+}
+
+.patients-result__term {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.patients-result__value {
+    margin: 4px 0 0;
+    overflow-wrap: anywhere;
+}
+
+.patients-result__link {
+    font-weight: 500;
+    color: var(--color-secondary);
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.patients-result__link:hover {
+    color: var(--color-secondary-hover);
+    text-decoration: underline;
+}
+
+.patients-result__cases li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 767px) {
+    .patients-form__field {
+        flex-basis: 100%;
+    }
+
+    .patients-form__control .btn {
+        flex: 1 1 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .patients-form__option-label,
+    .patients-result__link {
+        transition: none;
+    }
+}

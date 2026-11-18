@@ -3,11 +3,14 @@
 $chnPrototypeRoles = [
     'patient' => 'Patient',
     'doctor' => 'Doctor',
-    'staff' => 'Healthcare Staff',
+    'healthcare_staff' => 'Healthcare Staff',
     'admin' => 'Admin',
 ];
-$chnPrototypeRole = isset($_GET['role']) && is_string($_GET['role'])
-    && array_key_exists($_GET['role'], $chnPrototypeRoles) ? $_GET['role'] : 'patient';
+$requestedRole = isset($_GET['role']) && is_string($_GET['role']) ? trim($_GET['role']) : '';
+if ($requestedRole === 'staff') {
+    $requestedRole = 'healthcare_staff';
+}
+$chnPrototypeRole = array_key_exists($requestedRole, $chnPrototypeRoles) ? $requestedRole : 'patient';
 $chnUserRole = $chnPrototypeRole;
 
 /** Use only for authored internal prototype routes. Preserve query and fragment. */
