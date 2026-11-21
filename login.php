@@ -8,8 +8,8 @@ require_once __DIR__ . '/include/i18n.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= te('login.page_title') ?> | Cyprus Health-Care Network</title>
     <link rel="preload" href="assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="css/auth.css">
-    <script src="js/auth.js" defer></script>
+    <link rel="stylesheet" href="css/auth.css?v=<?= filemtime(__DIR__ . '/css/auth.css') ?>">
+    <script src="js/auth.js?v=<?= filemtime(__DIR__ . '/js/auth.js') ?>" defer></script>
 </head>
 <body class="auth">
 
