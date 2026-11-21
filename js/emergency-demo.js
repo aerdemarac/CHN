@@ -12,6 +12,8 @@
     const cancel = document.getElementById('emergency-action-cancel');
     const confirm = document.getElementById('emergency-action-confirm');
     let actionTrigger = null;
+    const messages = JSON.parse(table.dataset.messages || '{}');
+    const msg = (key, params = {}) => (messages[key] || key).replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
 
     // No request is sent: authenticated, authorized server handlers are required for either action.
     const openAction = (trigger, action) => {
@@ -20,14 +22,14 @@
         actionTrigger = trigger;
         result.hidden = true;
         result.textContent = '';
-        cancel.textContent = 'Cancel';
+        cancel.textContent = msg('cancel');
         confirm.hidden = !validId;
         confirm.className = action === 'ban' ? 'btn btn--danger' : 'btn btn--primary';
-        title.textContent = action === 'ban' ? 'Confirm ban' : 'Flag as fraud';
+        title.textContent = action === 'ban' ? msg('confirmBan') : msg('flagTitle');
         description.textContent = !validId
-            ? (action === 'ban' ? 'No user account is identified for this report. A ban cannot be prepared.' : 'This report has no valid identifier.')
-            : (action === 'ban' ? `Ban user #${id}? This action requires confirmation.` : `Flag emergency #${id} as fraud? Flagging concerns the report and does not ban a user.`);
-        confirm.textContent = action === 'ban' ? 'Confirm ban' : 'Confirm flag';
+            ? (action === 'ban' ? msg('banNoUser') : msg('flagNoId'))
+            : (action === 'ban' ? msg('banQuestion', { id }) : msg('flagQuestion', { id }));
+        confirm.textContent = action === 'ban' ? msg('confirmBan') : msg('confirmFlag');
         dialog.showModal();
         cancel.focus();
     };
@@ -39,10 +41,10 @@
         });
         cancel.addEventListener('click', () => dialog.close());
         confirm.addEventListener('click', () => {
-            result.textContent = 'This action is not connected. No changes were made.';
+            result.textContent = msg('notConnected');
             result.hidden = false;
             confirm.hidden = true;
-            cancel.textContent = 'Close';
+            cancel.textContent = msg('close');
             cancel.focus();
         });
         dialog.addEventListener('close', () => { if (actionTrigger) actionTrigger.focus(); });
@@ -68,7 +70,7 @@
         button.addEventListener('click', () => {
             const expanded = button.getAttribute('aria-expanded') === 'true';
             button.setAttribute('aria-expanded', String(!expanded));
-            button.textContent = expanded ? 'View details' : 'Hide details';
+            button.textContent = expanded ? msg('viewDetails') : msg('hideDetails');
             document.getElementById(button.getAttribute('aria-controls')).hidden = expanded;
         });
     });

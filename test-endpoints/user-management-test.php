@@ -1,9 +1,11 @@
 <?php
+require_once __DIR__ . '/../include/i18n.php';
+
 $usersRoles = [
-    'patient'          => 'Patient',
-    'doctor'           => 'Doctor',
-    'healthcare_staff' => 'Healthcare Staff',
-    'admin'            => 'Admin',
+    'patient'          => t('role.patient'),
+    'doctor'           => t('role.doctor'),
+    'healthcare_staff' => t('role.healthcare_staff'),
+    'admin'            => t('role.admin'),
 ];
 
 $usersRole = isset($_GET['role']) && is_string($_GET['role']) && isset($usersRoles[$_GET['role']])
@@ -18,10 +20,10 @@ $usersRoleBadges = [
 ];
 
 $usersRoleTabs = [
-    'patient'          => 'Patients',
-    'doctor'           => 'Doctors',
-    'healthcare_staff' => 'Healthcare staff',
-    'admin'            => 'Admins',
+    'patient'          => t('users.tab_patient'),
+    'doctor'           => t('users.tab_doctor'),
+    'healthcare_staff' => t('users.tab_healthcare_staff'),
+    'admin'            => t('users.tab_admin'),
 ];
 
 $usersPrivilegedRoles = ['doctor', 'healthcare_staff', 'admin'];
@@ -47,6 +49,18 @@ function usersUrl(array $state, array $changes = []): string
     );
 
     return '?' . http_build_query($params);
+}
+
+function usersCountText(string $key, array $params, int $count): string
+{
+    $parts = explode('{count}', t($key), 2);
+    $html = usersEscape(chnFill($parts[0], $params));
+
+    if (count($parts) === 2) {
+        $html .= '<span data-users-count="shown">' . $count . '</span>' . usersEscape(chnFill($parts[1], $params));
+    }
+
+    return $html;
 }
 
 $usersCurrentUserId = 1;
@@ -133,15 +147,15 @@ $usersRows = array_filter(
 
 uasort($usersRows, fn (array $a, array $b): int => $b['created_at'] <=> $a['created_at']);
 
-$chnPageTitle = 'User Management';
+$chnPageTitle = t('users.page_title');
 $chnUserName = $usersNames[$usersRole];
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHN | User Management</title>
+    <title>CHN | <?= te('users.page_title') ?></title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/user-management.css">
     <script src="../js/sidebar.js" defer></script>
@@ -159,9 +173,9 @@ require __DIR__ . '/../include/top-bar.php';
 
 <main class="content" id="main-content" tabindex="-1">
     <div class="content__inner users">
-        <aside class="alert alert--info users-demo" aria-label="Demo notice">
-            <p class="users-demo__text"><strong>Demo data.</strong> All names and records are fictional. Preview a role:</p>
-            <nav aria-label="Preview role">
+        <aside class="alert alert--info users-demo" aria-label="<?= te('users.demo_notice') ?>">
+            <p class="users-demo__text"><strong><?= te('common.demo_title') ?></strong> <?= te('common.demo_text') ?></p>
+            <nav aria-label="<?= te('users.preview_role') ?>">
                 <ul class="users-demo__roles">
                     <?php foreach ($usersRoles as $usersRoleKey => $usersRoleLabel): ?>
                         <li>
@@ -178,14 +192,14 @@ require __DIR__ . '/../include/top-bar.php';
 
         <div class="page-header">
             <div>
-                <h1 class="page-header__title">User management</h1>
+                <h1 class="page-header__title"><?= te('users.title') ?></h1>
                 <p class="page-header__subtitle">
-                    <?= $usersRole === 'admin' ? 'Create privileged accounts and remove users of the network.' : 'Account administration for admins.' ?>
+                    <?= $usersRole === 'admin' ? te('users.subtitle_admin') : te('users.subtitle_other') ?>
                 </p>
             </div>
             <?php if ($usersRole === 'admin'): ?>
                 <div class="page-header__actions">
-                    <a class="btn btn--primary" href="<?= usersEscape(usersUrl($usersState, ['form' => 'create']) . '#users-form') ?>">Create account</a>
+                    <a class="btn btn--primary" href="<?= usersEscape(usersUrl($usersState, ['form' => 'create']) . '#users-form') ?>"><?= te('users.create_account') ?></a>
                 </div>
             <?php endif; ?>
         </div>
@@ -193,20 +207,48 @@ require __DIR__ . '/../include/top-bar.php';
         <?php if ($usersRole !== 'admin'): ?>
             <section class="card" aria-labelledby="users-denied-title">
                 <div class="empty-state">
-                    <h2 class="empty-state__title" id="users-denied-title">Only available for admins</h2>
-                    <p class="empty-state__text">Admins create doctor, healthcare staff and admin accounts here and remove existing users.</p>
-                    <a class="btn btn--outline" href="<?= usersEscape('dashboard-test.php' . usersUrl(['role' => $usersRole])) ?>">Back to dashboard</a>
+                    <h2 class="empty-state__title" id="users-denied-title"><?= te('common.admins_only') ?></h2>
+                    <p class="empty-state__text"><?= te('users.denied_text') ?></p>
+                    <a class="btn btn--outline" href="<?= usersEscape('dashboard-test.php' . usersUrl(['role' => $usersRole])) ?>"><?= te('users.back_to_dashboard') ?></a>
                 </div>
             </section>
         <?php else: ?>
-            <p class="alert alert--info users-notice" id="users-notice" role="status" tabindex="-1" hidden></p>
+            <p class="alert alert--info users-notice" id="users-notice" role="status" tabindex="-1" hidden
+               data-messages="<?= chnJsMessages([
+                   'role_required'             => 'users.role_required',
+                   'first_name_required'       => 'users.first_name_required',
+                   'first_name_invalid'        => 'register.first_name_invalid',
+                   'last_name_required'        => 'users.last_name_required',
+                   'last_name_invalid'         => 'register.last_name_invalid',
+                   'email_required'            => 'users.email_required',
+                   'email_invalid'             => 'auth.email_invalid',
+                   'hospital_required'         => 'users.hospital_required',
+                   'department_required'       => 'users.department_required',
+                   'phone_required'            => 'users.phone_required',
+                   'phone_invalid'             => 'register.phone_invalid',
+                   'birth_date_required'       => 'users.birth_date_required',
+                   'birth_date_invalid'        => 'register.birth_date_invalid',
+                   'nationality_required'      => 'users.nationality_required',
+                   'national_id_required'      => 'users.national_id_required',
+                   'national_id_invalid'       => 'register.national_id_invalid',
+                   'tc_invalid'                => 'register.tc_invalid',
+                   'password_required'         => 'register.password_required',
+                   'password_weak'             => 'register.password_weak',
+                   'password_confirm_required' => 'users.password_confirm_required',
+                   'password_mismatch'         => 'register.password_mismatch',
+                   'show_password'             => 'auth.show_password',
+                   'hide_password'             => 'auth.hide_password',
+                   'create_notice'             => 'users.create_notice',
+                   'delete_confirm'            => 'users.delete_confirm',
+                   'delete_notice'             => 'users.delete_notice',
+               ]) ?>"></p>
 
             <?php if ($usersShowForm): ?>
                 <section class="card users-form-card" id="users-form" aria-labelledby="users-form-title">
                     <header class="card__header">
                         <div>
-                            <h2 class="card__title" id="users-form-title">Create account</h2>
-                            <p class="card__subtitle">For doctors, healthcare staff and admins. Patients sign up themselves. All fields are required.</p>
+                            <h2 class="card__title" id="users-form-title"><?= te('users.create_account') ?></h2>
+                            <p class="card__subtitle"><?= te('users.form_subtitle') ?></p>
                         </div>
                     </header>
 
@@ -216,10 +258,10 @@ require __DIR__ . '/../include/top-bar.php';
 
                         <div class="users-form__grid">
                             <div class="form-group">
-                                <label class="form-label" for="users-user-role">Role</label>
+                                <label class="form-label" for="users-user-role"><?= te('users.role') ?></label>
                                 <select class="form-control" id="users-user-role" name="user_role" required
                                         aria-describedby="users-user-role-error">
-                                    <option value="">Select a role</option>
+                                    <option value=""><?= te('users.role_placeholder') ?></option>
                                     <?php foreach ($usersPrivilegedRoles as $usersRoleKey): ?>
                                         <option value="<?= usersEscape($usersRoleKey) ?>"><?= usersEscape($usersRoles[$usersRoleKey]) ?></option>
                                     <?php endforeach; ?>
@@ -228,21 +270,21 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-first-name">First name</label>
+                                <label class="form-label" for="users-first-name"><?= te('register.first_name') ?></label>
                                 <input class="form-control" type="text" id="users-first-name" name="first_name" maxlength="100" required
                                        autocomplete="off" aria-describedby="users-first-name-error">
                                 <p class="form-error" id="users-first-name-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-last-name">Last name</label>
+                                <label class="form-label" for="users-last-name"><?= te('register.last_name') ?></label>
                                 <input class="form-control" type="text" id="users-last-name" name="last_name" maxlength="100" required
                                        autocomplete="off" aria-describedby="users-last-name-error">
                                 <p class="form-error" id="users-last-name-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-email">Email</label>
+                                <label class="form-label" for="users-email"><?= te('users.email') ?></label>
                                 <input class="form-control" type="email" id="users-email" name="email" maxlength="254" required
                                        autocomplete="off" autocapitalize="none" spellcheck="false"
                                        aria-describedby="users-email-error">
@@ -250,10 +292,10 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group" data-users-workplace hidden>
-                                <label class="form-label" for="users-hospital-id">Hospital</label>
+                                <label class="form-label" for="users-hospital-id"><?= te('users.hospital') ?></label>
                                 <select class="form-control" id="users-hospital-id" name="hospital_id" required
                                         aria-describedby="users-hospital-id-error" disabled>
-                                    <option value="">Select a hospital</option>
+                                    <option value=""><?= te('users.hospital_placeholder') ?></option>
                                     <?php foreach ($usersHospitals as $usersHospitalId => $usersHospitalName): ?>
                                         <option value="<?= (int) $usersHospitalId ?>"><?= usersEscape($usersHospitalName) ?></option>
                                     <?php endforeach; ?>
@@ -262,10 +304,10 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group" data-users-workplace hidden>
-                                <label class="form-label" for="users-department-id">Department</label>
+                                <label class="form-label" for="users-department-id"><?= te('users.department') ?></label>
                                 <select class="form-control" id="users-department-id" name="department_id" required
                                         aria-describedby="users-department-id-error" disabled>
-                                    <option value="">Select a department</option>
+                                    <option value=""><?= te('users.department_placeholder') ?></option>
                                     <?php foreach ($usersDepartments as $usersDepartmentId => $usersDepartment): ?>
                                         <option value="<?= (int) $usersDepartmentId ?>" data-hospital-id="<?= (int) $usersDepartment['hospital_id'] ?>">
                                             <?= usersEscape($usersDepartment['department_name']) ?>
@@ -276,14 +318,14 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-phone">Phone</label>
+                                <label class="form-label" for="users-phone"><?= te('users.phone') ?></label>
                                 <input class="form-control" type="tel" id="users-phone" name="phone" maxlength="24" inputmode="tel" required
                                        autocomplete="off" aria-describedby="users-phone-error">
                                 <p class="form-error" id="users-phone-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-birth-date">Date of birth</label>
+                                <label class="form-label" for="users-birth-date"><?= te('register.birth_date') ?></label>
                                 <input class="form-control" type="date" id="users-birth-date" name="birth_date" required
                                        min="1900-01-01" max="<?= usersEscape(usersDate(0)) ?>"
                                        aria-describedby="users-birth-date-error">
@@ -291,9 +333,9 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-nationality">Nationality</label>
+                                <label class="form-label" for="users-nationality"><?= te('register.nationality') ?></label>
                                 <select class="form-control" id="users-nationality" name="nationality" required aria-describedby="users-nationality-error">
-                                    <option value="">Select a nationality</option>
+                                    <option value=""><?= te('users.nationality_placeholder') ?></option>
                                     <?php foreach ($usersPinnedCountries as $usersCode): ?>
                                         <option value="<?= usersEscape($usersCode) ?>"><?= usersEscape($usersCountries[$usersCode]) ?></option>
                                     <?php endforeach; ?>
@@ -306,7 +348,7 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-national-id">National ID</label>
+                                <label class="form-label" for="users-national-id"><?= te('users.national_id') ?></label>
                                 <input class="form-control" type="text" id="users-national-id" name="national_id" maxlength="50" required
                                        autocomplete="off" autocapitalize="characters" spellcheck="false"
                                        aria-describedby="users-national-id-error">
@@ -314,26 +356,26 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-password">Password</label>
+                                <label class="form-label" for="users-password"><?= te('auth.password') ?></label>
                                 <div class="users-form__password">
                                     <input class="form-control" type="password" id="users-password" name="password" maxlength="255" required
                                            autocomplete="new-password" aria-describedby="users-password-hint users-password-error">
                                     <button class="users-form__toggle" type="button"
-                                            aria-label="Show password" aria-controls="users-password" aria-pressed="false">
+                                            aria-label="<?= te('auth.show_password') ?>" aria-controls="users-password" aria-pressed="false">
                                         <span class="icon icon--eye" aria-hidden="true"></span>
                                     </button>
                                 </div>
-                                <p class="form-hint" id="users-password-hint">At least 8 characters with a letter and a number.</p>
+                                <p class="form-hint" id="users-password-hint"><?= te('register.password_hint') ?></p>
                                 <p class="form-error" id="users-password-error" role="alert" hidden></p>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label" for="users-password-confirm">Confirm password</label>
+                                <label class="form-label" for="users-password-confirm"><?= te('register.password_confirm') ?></label>
                                 <div class="users-form__password">
                                     <input class="form-control" type="password" id="users-password-confirm" name="password_confirm" maxlength="255" required
                                            autocomplete="new-password" aria-describedby="users-password-confirm-error">
                                     <button class="users-form__toggle" type="button"
-                                            aria-label="Show password" aria-controls="users-password-confirm" aria-pressed="false">
+                                            aria-label="<?= te('auth.show_password') ?>" aria-controls="users-password-confirm" aria-pressed="false">
                                         <span class="icon icon--eye" aria-hidden="true"></span>
                                     </button>
                                 </div>
@@ -342,8 +384,8 @@ require __DIR__ . '/../include/top-bar.php';
                         </div>
 
                         <div class="card__footer">
-                            <a class="btn btn--outline" href="<?= usersEscape(usersUrl($usersState) . '#users-list') ?>">Cancel</a>
-                            <button type="submit" class="btn btn--primary">Create account</button>
+                            <a class="btn btn--outline" href="<?= usersEscape(usersUrl($usersState) . '#users-list') ?>"><?= te('users.cancel') ?></a>
+                            <button type="submit" class="btn btn--primary"><?= te('users.create_account') ?></button>
                         </div>
                     </form>
                 </section>
@@ -352,19 +394,21 @@ require __DIR__ . '/../include/top-bar.php';
             <section class="card users-list" id="users-list" aria-labelledby="users-list-title">
                 <header class="card__header">
                     <div>
-                        <h2 class="card__title" id="users-list-title">Users</h2>
+                        <h2 class="card__title" id="users-list-title"><?= te('users.list_title') ?></h2>
                         <p class="card__subtitle">
-                            <span data-users-count="shown"><?= count($usersRows) ?></span> shown<?= $usersQuery !== '' ? ' for “' . usersEscape($usersQuery) . '”' : '' ?>, newest first.
+                            <?= $usersQuery !== ''
+                                ? usersCountText('users.shown_query', ['query' => $usersQuery], count($usersRows))
+                                : usersCountText('users.shown', [], count($usersRows)) ?>
                         </p>
                     </div>
                 </header>
 
-                <nav aria-label="Filter by role">
+                <nav aria-label="<?= te('users.filter_by_role') ?>">
                     <ul class="users-tabs">
                         <li>
                             <a class="users-tabs__link" href="<?= usersEscape(usersUrl($usersState, ['filter_role' => null]) . '#users-list') ?>"
                                <?= $usersFilterRole === null ? 'aria-current="page"' : '' ?>>
-                                All <span class="users-tabs__count" data-users-count="all"><?= count($usersMatching) ?></span>
+                                <?= te('users.tab_all') ?> <span class="users-tabs__count" data-users-count="all"><?= count($usersMatching) ?></span>
                             </a>
                         </li>
                         <?php foreach ($usersRoleTabs as $usersRoleKey => $usersRoleLabel): ?>
@@ -383,30 +427,30 @@ require __DIR__ . '/../include/top-bar.php';
                     <?php if ($usersFilterRole !== null): ?>
                         <input type="hidden" name="filter_role" value="<?= usersEscape($usersFilterRole) ?>">
                     <?php endif; ?>
-                    <label class="form-label" for="users-q">Name or email</label>
+                    <label class="form-label" for="users-q"><?= te('users.search_label') ?></label>
                     <div class="users-search__control">
                         <input class="form-control" type="search" id="users-q" name="q" maxlength="100"
                                autocomplete="off" value="<?= usersEscape($usersQuery) ?>">
-                        <button type="submit" class="btn btn--primary">Search</button>
-                        <a class="btn btn--outline" href="<?= usersEscape(usersUrl($usersState, ['q' => null]) . '#users-list') ?>">Clear</a>
+                        <button type="submit" class="btn btn--primary"><?= te('users.search') ?></button>
+                        <a class="btn btn--outline" href="<?= usersEscape(usersUrl($usersState, ['q' => null]) . '#users-list') ?>"><?= te('users.clear') ?></a>
                     </div>
                 </form>
 
                 <div class="empty-state" id="users-empty" <?= $usersRows === [] ? '' : 'hidden' ?>>
-                    <p class="empty-state__title">No users found</p>
-                    <p class="empty-state__text">Try another name, email or role.</p>
+                    <p class="empty-state__title"><?= te('users.empty_title') ?></p>
+                    <p class="empty-state__text"><?= te('users.empty_text') ?></p>
                 </div>
 
                 <div class="table-responsive" id="users-table" <?= $usersRows === [] ? 'hidden' : '' ?>>
                     <table class="table users-table">
                         <thead>
                             <tr>
-                                <th scope="col">User</th>
-                                <th scope="col">Role</th>
-                                <th scope="col">Workplace</th>
-                                <th scope="col">Phone</th>
-                                <th scope="col">Registered</th>
-                                <th scope="col">Actions</th>
+                                <th scope="col"><?= te('users.col_user') ?></th>
+                                <th scope="col"><?= te('users.role') ?></th>
+                                <th scope="col"><?= te('users.col_workplace') ?></th>
+                                <th scope="col"><?= te('users.phone') ?></th>
+                                <th scope="col"><?= te('users.col_registered') ?></th>
+                                <th scope="col"><?= te('users.col_actions') ?></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -421,23 +465,23 @@ require __DIR__ . '/../include/top-bar.php';
                                         <span class="users-table__name">
                                             <?= usersEscape($usersFullName) ?>
                                             <?php if ($usersId === $usersCurrentUserId): ?>
-                                                <span class="badge badge--neutral">You</span>
+                                                <span class="badge badge--neutral"><?= te('users.you') ?></span>
                                             <?php endif; ?>
                                         </span>
                                         <span class="users-table__sub"><?= usersEscape($usersItem['email']) ?></span>
                                     </th>
                                     <td><span class="badge badge--<?= usersEscape($usersRoleBadges[$usersItem['role']]) ?>"><?= usersEscape($usersRoles[$usersItem['role']]) ?></span></td>
-                                    <td class="users-table__workplace"><?= $usersWorkplace !== '' ? usersEscape($usersWorkplace) : '<span class="users-table__none">Not applicable</span>' ?></td>
-                                    <td class="users-table__nowrap"><?= $usersItem['phone'] !== null ? usersEscape($usersItem['phone']) : '<span class="users-table__none">Not provided</span>' ?></td>
-                                    <td class="users-table__nowrap"><time datetime="<?= usersEscape($usersCreated->format('Y-m-d')) ?>"><?= usersEscape($usersCreated->format('j M Y')) ?></time></td>
+                                    <td class="users-table__workplace"><?= $usersWorkplace !== '' ? usersEscape($usersWorkplace) : '<span class="users-table__none">' . te('users.not_applicable') . '</span>' ?></td>
+                                    <td class="users-table__nowrap"><?= $usersItem['phone'] !== null ? usersEscape($usersItem['phone']) : '<span class="users-table__none">' . te('users.not_provided') . '</span>' ?></td>
+                                    <td class="users-table__nowrap"><time datetime="<?= usersEscape($usersCreated->format('Y-m-d')) ?>"><?= usersEscape(chnDate($usersCreated, 'medium')) ?></time></td>
                                     <td>
                                         <form method="post" data-users-delete data-users-name="<?= usersEscape($usersFullName) ?>"
                                               action="<?= usersEscape('../backend/users.php' . usersUrl(['role' => $usersRole])) ?>">
                                             <input type="hidden" name="action" value="delete_user">
                                             <input type="hidden" name="user_id" value="<?= (int) $usersId ?>">
                                             <button type="submit" class="btn btn--outline btn--sm users-table__delete"
-                                                    aria-label="Delete <?= usersEscape($usersFullName) ?>"
-                                                    <?= $usersId === $usersCurrentUserId ? 'disabled title="You cannot delete your own account"' : '' ?>>Delete</button>
+                                                    aria-label="<?= te('users.delete_label', ['name' => $usersFullName]) ?>"
+                                                    <?= $usersId === $usersCurrentUserId ? 'disabled title="' . te('users.delete_self') . '"' : '' ?>><?= te('users.delete') ?></button>
                                         </form>
                                     </td>
                                 </tr>

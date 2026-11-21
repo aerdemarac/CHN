@@ -11,12 +11,12 @@
         const rows = [...table.tBodies[0].rows];
 
         const apply = () => {
-            const query = search.value.trim().toLocaleLowerCase();
+            const query = search.value.trim().toLocaleLowerCase(document.documentElement.lang || undefined);
             const selectedTier = tier.value;
             let visible = 0;
 
             rows.forEach((row) => {
-                const matchesText = query === '' || row.textContent.toLocaleLowerCase().includes(query);
+                const matchesText = query === '' || row.textContent.toLocaleLowerCase(document.documentElement.lang || undefined).includes(query);
                 const matchesTier = selectedTier === '' || row.dataset.tier === selectedTier;
                 row.hidden = !(matchesText && matchesTier);
                 if (!row.hidden) visible += 1;

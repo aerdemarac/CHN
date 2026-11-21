@@ -1,9 +1,11 @@
 <?php
+require_once __DIR__ . '/../include/i18n.php';
+
 $patientsRoles = [
-    'patient'          => 'Patient',
-    'doctor'           => 'Doctor',
-    'healthcare_staff' => 'Healthcare Staff',
-    'admin'            => 'Admin',
+    'patient'          => t('role.patient'),
+    'doctor'           => t('role.doctor'),
+    'healthcare_staff' => t('role.healthcare_staff'),
+    'admin'            => t('role.admin'),
 ];
 
 $patientsRole = isset($_GET['role']) && is_string($_GET['role']) && isset($patientsRoles[$_GET['role']])
@@ -11,53 +13,65 @@ $patientsRole = isset($_GET['role']) && is_string($_GET['role']) && isset($patie
     : 'patient';
 
 $patientsScopes = [
-    'doctor'           => 'your department',
-    'healthcare_staff' => 'your hospital',
+    'doctor'           => [
+        'subtitle'  => t('patients.search_subtitle_doctor'),
+        'no_result' => 'patients.no_result_doctor',
+        'cases'     => t('patients.cases_doctor'),
+    ],
+    'healthcare_staff' => [
+        'subtitle'  => t('patients.search_subtitle_healthcare_staff'),
+        'no_result' => 'patients.no_result_healthcare_staff',
+        'cases'     => t('patients.cases_healthcare_staff'),
+    ],
 ];
 
 $patientsHasAccess = isset($patientsScopes[$patientsRole]);
-$patientsScope = $patientsScopes[$patientsRole] ?? '';
+$patientsScope = $patientsScopes[$patientsRole] ?? ['subtitle' => '', 'no_result' => '', 'cases' => ''];
 
 $patientsToday = new DateTimeImmutable('today');
 
 $patientsSearchTypes = [
     'phone' => [
-        'label'     => 'Phone number',
+        'label'     => t('register.phone'),
+        'field'     => t('patients.field_phone'),
         'type'      => 'tel',
         'inputmode' => 'tel',
-        'hint'      => 'Enter the full number, with or without the country code. Example: +90 533 000 01 01',
-        'empty'     => 'Please enter a phone number.',
-        'invalid'   => 'Please enter a valid phone number (7 to 15 digits).',
+        'hint'      => t('patients.hint_phone'),
+        'empty'     => t('patients.empty_phone'),
+        'invalid'   => t('patients.invalid_phone'),
     ],
     'email' => [
-        'label'     => 'Email address',
+        'label'     => t('auth.email'),
+        'field'     => t('patients.field_email'),
         'type'      => 'email',
         'inputmode' => 'email',
-        'hint'      => 'Enter the complete email address. Example: name@example.com',
-        'empty'     => 'Please enter an email address.',
-        'invalid'   => 'Please enter a valid email address.',
+        'hint'      => t('patients.hint_email'),
+        'empty'     => t('patients.empty_email'),
+        'invalid'   => t('auth.email_invalid'),
     ],
     'national_id' => [
-        'label'     => 'National ID',
+        'label'     => t('patients.type_national_id'),
+        'field'     => t('patients.field_national_id'),
         'type'      => 'text',
         'inputmode' => 'text',
-        'hint'      => 'Enter the complete national ID or passport number.',
-        'empty'     => 'Please enter a national ID or passport number.',
-        'invalid'   => 'Please enter a valid national ID or passport number.',
+        'hint'      => t('patients.hint_national_id'),
+        'empty'     => t('patients.empty_national_id'),
+        'invalid'   => t('register.national_id_invalid'),
     ],
     'name' => [
-        'label'     => 'Name',
+        'label'     => t('patients.type_name'),
+        'field'     => t('patients.field_name'),
         'type'      => 'text',
         'inputmode' => 'text',
-        'hint'      => 'Enter the patient\'s first name, last name or both.',
-        'empty'     => 'Please enter a name.',
-        'invalid'   => 'Please enter a valid name (letters only, 2 to 100 characters).',
+        'hint'      => t('patients.hint_name'),
+        'empty'     => t('patients.empty_name'),
+        'invalid'   => t('patients.invalid_name'),
     ],
 ];
 
 $patientsCaseStates = [
-    'open'   => ['label' => 'Open',   'badge' => 'success'],
-    'closed' => ['label' => 'Closed', 'badge' => 'neutral'],
+    'open'   => ['label' => t('case_state.open'),   'badge' => 'success'],
+    'closed' => ['label' => t('case_state.closed'), 'badge' => 'neutral'],
 ];
 
 function patientsEscape(string $value): string
@@ -142,15 +156,15 @@ if ($patientsHasAccess && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 }
 
 $patientsSearchType = $patientsSearchTypes[$patientsSearchBy];
-$chnPageTitle = 'Patients';
-$chnUserName = $patientsRoles[$patientsRole] . ' User';
+$chnPageTitle = t('nav.patients');
+$chnUserName = t('patients.user_name', ['role' => $patientsRoles[$patientsRole]]);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHN | Patients</title>
+    <title>CHN | <?= te('nav.patients') ?></title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/patients.css">
     <script src="../js/sidebar.js" defer></script>
@@ -170,32 +184,32 @@ require __DIR__ . '/../include/top-bar.php';
     <div class="content__inner patients">
         <div class="page-header">
             <div>
-                <h1 class="page-header__title">Patients</h1>
-                <p class="page-header__subtitle">Contact lookup for doctors and healthcare staff.</p>
+                <h1 class="page-header__title"><?= te('nav.patients') ?></h1>
+                <p class="page-header__subtitle"><?= te('patients.subtitle') ?></p>
             </div>
         </div>
 
         <?php if (!$patientsHasAccess): ?>
             <section class="card" aria-labelledby="patients-denied-title">
                 <div class="empty-state">
-                    <h2 class="empty-state__title" id="patients-denied-title">Only available for doctors and healthcare staff</h2>
-                    <p class="empty-state__text">Doctors and healthcare staff use this page to look up the contact details of patients who have a case in their department or hospital.</p>
-                    <a class="btn btn--outline" href="<?= patientsEscape('dashboard-test.php' . patientsQuery(['role' => $patientsRole])) ?>">Back to dashboard</a>
+                    <h2 class="empty-state__title" id="patients-denied-title"><?= te('patients.denied_title') ?></h2>
+                    <p class="empty-state__text"><?= te('patients.denied_text') ?></p>
+                    <a class="btn btn--outline" href="<?= patientsEscape('dashboard-test.php' . patientsQuery(['role' => $patientsRole])) ?>"><?= te('patients.back_dashboard') ?></a>
                 </div>
             </section>
         <?php else: ?>
             <section class="card" aria-labelledby="patients-search-title">
                 <header class="card__header">
                     <div>
-                        <h2 class="card__title" id="patients-search-title">Find a patient</h2>
-                        <p class="card__subtitle">Search with an exact phone number, email address or national ID, or with the patient's name. Only patients who have a case in <?= patientsEscape($patientsScope) ?> can be found.</p>
+                        <h2 class="card__title" id="patients-search-title"><?= te('patients.search_title') ?></h2>
+                        <p class="card__subtitle"><?= patientsEscape($patientsScope['subtitle']) ?></p>
                     </div>
                 </header>
 
                 <form class="patients-form" id="patients-form" method="post" novalidate
                       action="<?= patientsEscape('patients-test.php' . patientsQuery(['role' => $patientsRole]) . '#patients-results') ?>">
                     <fieldset class="patients-form__types">
-                        <legend class="form-label">Search by</legend>
+                        <legend class="form-label"><?= te('patients.search_by') ?></legend>
                         <div class="patients-form__options">
                             <?php foreach ($patientsSearchTypes as $patientsTypeKey => $patientsType): ?>
                                 <label class="patients-form__option">
@@ -230,9 +244,9 @@ require __DIR__ . '/../include/top-bar.php';
                             </div>
                             <button type="submit" class="btn btn--primary">
                                 <span class="icon icon--search" aria-hidden="true"></span>
-                                Search
+                                <?= te('patients.search') ?>
                             </button>
-                            <a class="btn btn--outline" href="<?= patientsEscape(patientsQuery(['role' => $patientsRole])) ?>">Clear</a>
+                            <a class="btn btn--outline" href="<?= patientsEscape(patientsQuery(['role' => $patientsRole])) ?>"><?= te('patients.clear') ?></a>
                         </div>
                     </div>
                 </form>
@@ -242,13 +256,13 @@ require __DIR__ . '/../include/top-bar.php';
                 <section class="card patients-results" id="patients-results" aria-labelledby="patients-results-title">
                     <?php if ($patientsResults === []): ?>
                         <div class="empty-state">
-                            <h2 class="empty-state__title" id="patients-results-title">No patient found</h2>
-                            <p class="empty-state__text">No patient with a case in <?= patientsEscape($patientsScope) ?> matches this <?= patientsEscape(mb_strtolower($patientsSearchType['label'])) ?>. Check the value and try again.</p>
+                            <h2 class="empty-state__title" id="patients-results-title"><?= te('patients.no_result_title') ?></h2>
+                            <p class="empty-state__text"><?= te($patientsScope['no_result'], ['field' => $patientsSearchType['field']]) ?></p>
                         </div>
                     <?php else: ?>
                         <header class="card__header">
                             <h2 class="card__title" id="patients-results-title">
-                                <?= count($patientsResults) === 1 ? '1 patient found' : count($patientsResults) . ' patients found' ?>
+                                <?= patientsEscape(tn('patients.found', count($patientsResults))) ?>
                             </h2>
                         </header>
 
@@ -264,10 +278,11 @@ require __DIR__ . '/../include/top-bar.php';
                                         <h3 class="patients-result__name" id="patients-result-<?= (int) $patientsId ?>"><?= patientsEscape($patientsFullName) ?></h3>
                                         <p class="patients-result__meta">
                                             <?php if ($patientsBirth !== null): ?>
-                                                <?= (int) $patientsBirth->diff($patientsToday)->y ?> years old · born
-                                                <time datetime="<?= patientsEscape($patientsBirth->format('Y-m-d')) ?>"><?= patientsEscape($patientsBirth->format('j M Y')) ?></time>
+                                                <?= strtr(patientsEscape(tn('patients.age_born', (int) $patientsBirth->diff($patientsToday)->y)), [
+                                                    '{date}' => '<time datetime="' . patientsEscape($patientsBirth->format('Y-m-d')) . '">' . patientsEscape(chnDate($patientsBirth, 'medium')) . '</time>',
+                                                ]) ?>
                                             <?php else: ?>
-                                                Birth date not provided
+                                                <?= te('patients.birth_not_provided') ?>
                                             <?php endif; ?>
                                         </p>
                                     </div>
@@ -275,27 +290,27 @@ require __DIR__ . '/../include/top-bar.php';
 
                                 <dl class="patients-result__list">
                                     <div class="patients-result__item">
-                                        <dt class="patients-result__term"><span class="icon icon--phone" aria-hidden="true"></span>Phone</dt>
+                                        <dt class="patients-result__term"><span class="icon icon--phone" aria-hidden="true"></span><?= te('patients.phone') ?></dt>
                                         <dd class="patients-result__value">
                                             <?php if ($patientsItem['phone'] !== null): ?>
                                                 <a class="patients-result__link" href="<?= patientsEscape('tel:' . preg_replace('/[^0-9+]/', '', $patientsItem['phone'])) ?>"><?= patientsEscape($patientsItem['phone']) ?></a>
                                             <?php else: ?>
-                                                Not provided
+                                                <?= te('patients.not_provided') ?>
                                             <?php endif; ?>
                                         </dd>
                                     </div>
                                     <div class="patients-result__item">
-                                        <dt class="patients-result__term"><span class="icon icon--envelope" aria-hidden="true"></span>Email</dt>
+                                        <dt class="patients-result__term"><span class="icon icon--envelope" aria-hidden="true"></span><?= te('patients.email') ?></dt>
                                         <dd class="patients-result__value">
                                             <a class="patients-result__link" href="<?= patientsEscape('mailto:' . str_replace('%40', '@', rawurlencode($patientsItem['email']))) ?>"><?= patientsEscape($patientsItem['email']) ?></a>
                                         </dd>
                                     </div>
                                     <div class="patients-result__item">
-                                        <dt class="patients-result__term"><span class="icon icon--geo" aria-hidden="true"></span>Address</dt>
-                                        <dd class="patients-result__value"><?= patientsEscape($patientsItem['full_address'] ?? 'Not provided') ?></dd>
+                                        <dt class="patients-result__term"><span class="icon icon--geo" aria-hidden="true"></span><?= te('patients.address') ?></dt>
+                                        <dd class="patients-result__value"><?= patientsEscape($patientsItem['full_address'] ?? t('patients.not_provided')) ?></dd>
                                     </div>
                                     <div class="patients-result__item">
-                                        <dt class="patients-result__term"><span class="icon icon--cases" aria-hidden="true"></span>Cases in <?= patientsEscape($patientsScope) ?></dt>
+                                        <dt class="patients-result__term"><span class="icon icon--cases" aria-hidden="true"></span><?= patientsEscape($patientsScope['cases']) ?></dt>
                                         <dd class="patients-result__value">
                                             <ul class="patients-result__cases">
                                                 <?php foreach ($patientsItem['cases'] as $patientsCase): ?>

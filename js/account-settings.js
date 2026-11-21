@@ -8,6 +8,8 @@
     if (!form) return;
     const result = document.getElementById('account-result');
     const unsaved = document.getElementById('account-unsaved');
+    const messages = JSON.parse(form.dataset.messages || '{}');
+    const msg = (key, params = {}) => (messages[key] || key).replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
     // Presentation only; the server must authorize fields against a verified session.
     const fields = [...form.querySelectorAll('input, select')].filter(field => !field.readOnly && !field.disabled);
     const snapshot = () => JSON.stringify(fields.map(field => [field.name, field.type === 'checkbox' ? field.checked : field.value]));
@@ -15,22 +17,22 @@
     let dirty = false;
     const track = () => {
         dirty = snapshot() !== initial;
-        unsaved.textContent = dirty ? 'You have unsaved changes.' : 'No unsaved changes.';
+        unsaved.textContent = dirty ? msg('unsaved') : msg('noUnsaved');
     };
     const validate = (field) => {
         const error = document.getElementById(`${field.id}-error`);
         if (!error) return true;
         let message = '';
         const value = field.value.trim();
-        if (field.required && !value) message = 'This field is required.';
-        else if (field.maxLength > 0 && field.value.length > field.maxLength) message = `Use at most ${field.maxLength} characters.`;
-        else if (field.name === 'email' && (field.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))) message = 'Enter a valid email address.';
-        else if (field.name === 'phone' && value && !/^\+[1-9][0-9]{6,14}$/.test(value)) message = 'Use + followed by 7–15 digits, without spaces.';
-        else if (field.name === 'nationality' && value && !/^[A-Za-z]{2}$/.test(value)) message = 'Enter a two-letter country code.';
+        if (field.required && !value) message = msg('required');
+        else if (field.maxLength > 0 && field.value.length > field.maxLength) message = msg('maxChars', { max: field.maxLength });
+        else if (field.name === 'email' && (field.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))) message = msg('email');
+        else if (field.name === 'phone' && value && !/^\+[1-9][0-9]{6,14}$/.test(value)) message = msg('phone');
+        else if (field.name === 'nationality' && value && !/^[A-Za-z]{2}$/.test(value)) message = msg('nationality');
         else if (field.name === 'birth_date') {
             const today = new Date();
             const localDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-            if (field.validity.badInput || (value && (Number.isNaN(Date.parse(value)) || value > localDate))) message = 'Enter a valid date that is not in the future.';
+            if (field.validity.badInput || (value && (Number.isNaN(Date.parse(value)) || value > localDate))) message = msg('birthDate');
         }
         error.textContent = message;
         field.setAttribute('aria-invalid', String(Boolean(message)));
@@ -48,7 +50,7 @@
         event.preventDefault();
         const invalid = fields.filter(field => !validate(field));
         result.dataset.error = String(invalid.length > 0);
-        result.textContent = invalid.length ? 'Review the highlighted fields.' : 'Details validated. Your changes have not been saved; account updates cannot be sent yet.';
+        result.textContent = invalid.length ? msg('review') : msg('validated');
         if (invalid.length) invalid[0].focus();
     };
     form.addEventListener('submit', reviewAccount);
@@ -60,7 +62,7 @@
             if (error) error.textContent = '';
         });
         result.dataset.error = 'false';
-        result.textContent = 'Changes cancelled. Original details restored.';
+        result.textContent = msg('cancelled');
         queueMicrotask(track);
     });
     window.addEventListener('beforeunload', event => {
@@ -106,8 +108,8 @@
     window.addEventListener('pagehide', clearPasswords);
     const reviewPassword = event => {
         event.preventDefault();
-        const errors = [password.value.length < 12 ? 'Use at least 12 characters.' : '',
-            !confirmation.value || confirmation.value !== password.value ? 'Passwords must match.' : ''];
+        const errors = [password.value.length < 12 ? msg('passwordShort') : '',
+            !confirmation.value || confirmation.value !== password.value ? msg('passwordMismatch') : ''];
         [password, confirmation].forEach((field, index) => {
             field.setAttribute('aria-invalid', String(Boolean(errors[index])));
             document.getElementById(`${field.id}-error`).textContent = errors[index];
@@ -116,7 +118,7 @@
         passwordResult.textContent = '';
         if (invalid) { invalid.focus(); return; }
         clearPasswords();
-        passwordResult.textContent = 'Password checks passed. Your password has not changed; password updates cannot be sent yet.';
+        passwordResult.textContent = msg('passwordPassed');
     };
     passwordForm.addEventListener('submit', reviewPassword);
     document.getElementById('password-check').addEventListener('click', reviewPassword);

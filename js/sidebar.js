@@ -19,8 +19,14 @@
             backdrop.classList.toggle('is-open', actualOpen);
             document.body.classList.toggle('chn-sidebar-open', actualOpen);
             toggle.setAttribute('aria-expanded', String(actualOpen));
-            toggle.setAttribute('aria-label', actualOpen ? 'Close navigation menu' : 'Open navigation menu');
-            if (label) label.textContent = actualOpen ? 'Close' : 'Menu';
+            toggle.setAttribute('aria-label', actualOpen
+                ? (toggle.dataset.labelClose || 'Close navigation menu')
+                : (toggle.dataset.labelOpen || 'Open navigation menu'));
+            if (label) {
+                label.textContent = actualOpen
+                    ? (toggle.dataset.textClose || 'Close')
+                    : (toggle.dataset.textOpen || 'Menu');
+            }
             if (icon) {
                 icon.classList.toggle('sidebar__toggle-icon--menu', !actualOpen);
                 icon.classList.toggle('sidebar__toggle-icon--close', actualOpen);

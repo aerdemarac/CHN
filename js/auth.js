@@ -14,7 +14,9 @@ function initPasswordToggles() {
             const show = input.type === 'password';
             input.type = show ? 'text' : 'password';
             toggle.setAttribute('aria-pressed', String(show));
-            toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            toggle.setAttribute('aria-label', show
+                ? (toggle.dataset.labelHide || 'Hide password')
+                : (toggle.dataset.labelShow || 'Show password'));
             icon?.classList.toggle('icon--eye', !show);
             icon?.classList.toggle('icon--eye-slash', show);
         });
@@ -25,15 +27,17 @@ function initLoginForm() {
     const form = document.getElementById('login-form');
     if (!form) return;
 
+    const msg = getMessages(form);
+
     form.addEventListener('submit', (event) => {
         const emailOk = validateField(form.email, 'email-error', (value) => {
-            if (!value) return 'Please enter your email address.';
-            if (!form.email.validity.valid) return 'Please enter a valid email address.';
+            if (!value) return msg('email_required');
+            if (!form.email.validity.valid) return msg('email_invalid');
             return '';
         });
 
         const passwordOk = validateField(form.password, 'password-error', (value) => {
-            if (!value) return 'Please enter your password.';
+            if (!value) return msg('password_required');
             return '';
         });
 
@@ -48,6 +52,7 @@ function initRegisterForm() {
     const form = document.getElementById('register-form');
     if (!form) return;
 
+    const msg = getMessages(form);
     const namePattern = /^\p{L}[\p{L}\p{M}\s'.-]*$/u;
     const phonePattern = /^\+?[0-9\s()-]+$/;
     const documentPattern = /^[A-Za-z0-9\s-]+$/;
@@ -73,9 +78,9 @@ function initRegisterForm() {
         }
     });
 
-    const getNameError = (value, label) => {
-        if (!value) return `Please enter your ${label}.`;
-        if (!namePattern.test(value)) return `Please enter a valid ${label}.`;
+    const getNameError = (value, field) => {
+        if (!value) return msg(`${field}_required`);
+        if (!namePattern.test(value)) return msg(`${field}_invalid`);
         return '';
     };
 
@@ -83,54 +88,54 @@ function initRegisterForm() {
         const password = form.password.value;
 
         const checks = [
-            [form.first_name, 'first-name-error', (value) => getNameError(value, 'first name')],
-            [form.last_name, 'last-name-error', (value) => getNameError(value, 'last name')],
+            [form.first_name, 'first-name-error', (value) => getNameError(value, 'first_name')],
+            [form.last_name, 'last-name-error', (value) => getNameError(value, 'last_name')],
             [form.birth_date, 'birth-date-error', (value) => {
-                if (form.birth_date.validity.badInput) return 'Please enter a valid date of birth.';
-                if (!value) return 'Please enter your date of birth.';
-                if (!form.birth_date.validity.valid) return 'Please enter a valid date of birth.';
+                if (form.birth_date.validity.badInput) return msg('birth_date_invalid');
+                if (!value) return msg('birth_date_required');
+                if (!form.birth_date.validity.valid) return msg('birth_date_invalid');
                 return '';
             }],
             [form.nationality, 'nationality-error', (value) => {
-                if (!value) return 'Please select your nationality.';
+                if (!value) return msg('nationality_required');
                 return '';
             }],
             [form.national_id, 'national-id-error', (value) => {
-                if (!value) return 'Please enter your national ID or passport number.';
+                if (!value) return msg('national_id_required');
                 if (form.nationality.value === 'TR') {
-                    if (!isValidTcKimlikNo(value.replace(/\s/g, ''))) return 'Please enter a valid T.C. Kimlik No.';
+                    if (!isValidTcKimlikNo(value.replace(/\s/g, ''))) return msg('tc_invalid');
                     return '';
                 }
                 const clean = value.replace(/[\s-]/g, '');
                 if (!documentPattern.test(value) || clean.length < 5 || clean.length > 50 || value.length > 50) {
-                    return 'Please enter a valid national ID or passport number.';
+                    return msg('national_id_invalid');
                 }
                 return '';
             }],
             [form.email, 'email-error', (value) => {
-                if (!value) return 'Please enter your email address.';
-                if (!form.email.validity.valid) return 'Please enter a valid email address.';
+                if (!value) return msg('email_required');
+                if (!form.email.validity.valid) return msg('email_invalid');
                 return '';
             }],
             [form.phone, 'phone-error', (value) => {
-                if (!value) return 'Please enter your phone number.';
+                if (!value) return msg('phone_required');
                 const normalized = normalizePhone(value);
                 const digits = normalized.replace(/\D/g, '');
                 if (!phonePattern.test(value) || digits.length < 7 || normalized.length > 16) {
-                    return 'Please enter a valid phone number.';
+                    return msg('phone_invalid');
                 }
                 return '';
             }],
             [form.password, 'password-error', () => {
-                if (!password) return 'Please enter a password.';
+                if (!password) return msg('password_required');
                 if (password.length < 8 || !/\p{L}/u.test(password) || !/\d/.test(password)) {
-                    return 'Password does not meet the requirements.';
+                    return msg('password_weak');
                 }
                 return '';
             }],
             [form.password_confirm, 'password-confirm-error', () => {
-                if (!form.password_confirm.value) return 'Please confirm your password.';
-                if (form.password_confirm.value !== password) return 'Passwords do not match.';
+                if (!form.password_confirm.value) return msg('password_confirm_required');
+                if (form.password_confirm.value !== password) return msg('password_mismatch');
                 return '';
             }],
         ];
@@ -149,6 +154,16 @@ function initRegisterForm() {
                 : form.national_id.value.trim();
         }
     });
+}
+
+function getMessages(form) {
+    let messages = {};
+    try {
+        messages = JSON.parse(form.dataset.messages || '{}');
+    } catch {
+        messages = {};
+    }
+    return (key) => messages[key] || key;
 }
 
 function normalizePhone(value) {

@@ -60,6 +60,6 @@ if (!function_exists('chnSidebarItemsForRole')) {
             $normalized = 'healthcare_staff';
         }
         $keys = $byRole[$normalized] ?? []; // Unknown roles see no protected navigation.
-        return array_map(static fn(string $key): array => $items[$key], $keys);
+        return array_map(static fn(string $key): array => $items[$key] + ['key' => $key], $keys);
     }
 }

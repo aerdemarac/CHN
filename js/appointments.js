@@ -2,6 +2,30 @@
     'use strict';
 
     var notice = document.getElementById('appointments-notice');
+    var locale = document.documentElement.lang || 'en';
+    var messages = {};
+
+    if (locale === 'en') {
+        locale = 'en-GB';
+    }
+
+    try {
+        messages = JSON.parse((notice && notice.dataset.messages) || '{}');
+    } catch (error) {
+        messages = {};
+    }
+
+    function msg(key, params) {
+        var text = Object.prototype.hasOwnProperty.call(messages, key) ? messages[key] : key;
+        params = params || {};
+        return text.replace(/\{(\w+)\}/g, function (match, name) {
+            return Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match;
+        });
+    }
+
+    function capitalize(text) {
+        return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
+    }
 
     function showNotice(message, type) {
         if (!notice) {
@@ -27,7 +51,7 @@
     }
 
     function formatDay(key) {
-        return fromKey(key).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        return fromKey(key).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
     }
 
     function initBooking() {
@@ -126,8 +150,8 @@
             });
 
             doctorHint.textContent = value === ''
-                ? 'Choose a case to see the doctors of its department.'
-                : visibleDoctors + (visibleDoctors === 1 ? ' doctor' : ' doctors') + ' in the department of this case.';
+                ? msg('doctorHint')
+                : msg('doctorsFound', { count: visibleDoctors });
 
             updateSlots();
             updateSummary();
@@ -152,7 +176,7 @@
                 parts.push(time.value);
             }
 
-            summary.textContent = parts.length ? parts.join(' · ') : 'Nothing selected yet.';
+            summary.textContent = parts.length ? parts.join(' · ') : msg('nothingSelected');
         }
 
         function buildCalendar() {
@@ -164,10 +188,15 @@
             var head = document.createElement('thead');
             var headRow = document.createElement('tr');
             var body = document.createElement('tbody');
-            var weekdays = [
-                ['Mo', 'Monday'], ['Tu', 'Tuesday'], ['We', 'Wednesday'], ['Th', 'Thursday'],
-                ['Fr', 'Friday'], ['Sa', 'Saturday'], ['Su', 'Sunday']
-            ];
+            var weekdays = [];
+
+            for (var w = 0; w < 7; w += 1) {
+                var weekdayDate = new Date(2024, 0, 1 + w);
+                weekdays.push([
+                    weekdayDate.toLocaleDateString(locale, { weekday: 'short' }),
+                    weekdayDate.toLocaleDateString(locale, { weekday: 'long' })
+                ]);
+            }
 
             function arrow(label, icon) {
                 var button = document.createElement('button');
@@ -181,8 +210,8 @@
                 return button;
             }
 
-            var prev = arrow('Previous month', 'chevron-left');
-            var next = arrow('Next month', 'chevron-right');
+            var prev = arrow(msg('prevMonth'), 'chevron-left');
+            var next = arrow(msg('nextMonth'), 'chevron-right');
 
             dateInput.type = 'hidden';
             calendar.insertBefore(dateInput, group);
@@ -226,7 +255,7 @@
                 var maxMonth = fromKey(maxKey);
                 var row = document.createElement('tr');
 
-                monthTitle.textContent = first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                monthTitle.textContent = capitalize(first.toLocaleDateString(locale, { month: 'long', year: 'numeric' }));
                 prev.disabled = year === minMonth.getFullYear() && month === minMonth.getMonth();
                 next.disabled = year === maxMonth.getFullYear() && month === maxMonth.getMonth();
 
@@ -249,7 +278,7 @@
                     button.className = 'appointments-calendar__day' + (key === todayKey ? ' appointments-calendar__day--today' : '');
                     button.textContent = String(day);
                     button.setAttribute('data-date', key);
-                    button.setAttribute('aria-label', date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+                    button.setAttribute('aria-label', date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
                     button.setAttribute('aria-pressed', key === dateInput.value ? 'true' : 'false');
                     button.disabled = key < minKey || key > maxKey || weekday === 0 || weekday === 6;
                     cell.appendChild(button);
@@ -318,9 +347,9 @@
                 doctor.checked = true;
             }
 
-            title.textContent = 'Reschedule appointment #' + id;
-            subtitle.textContent = 'Pick a new date and time. You can also switch to another doctor of the same department.';
-            submit.textContent = 'Confirm new time';
+            title.textContent = msg('rescheduleTitle', { id: id });
+            subtitle.textContent = msg('rescheduleSubtitle');
+            submit.textContent = msg('rescheduleSubmit');
             resetButton.hidden = false;
 
             updateSlots();
@@ -372,21 +401,21 @@
             var firstInvalid = null;
 
             if (!caseId) {
-                setError('caseId', 'Choose one of your open cases.');
+                setError('caseId', msg('errorCase'));
                 firstInvalid = firstInvalid || caseInputs[0];
             }
             if (!doctor) {
-                setError('doctor', caseId ? 'Choose a doctor.' : 'Choose a case first, then a doctor.');
+                setError('doctor', caseId ? msg('errorDoctor') : msg('errorCaseFirst'));
                 firstInvalid = firstInvalid || doctorChoices.map(function (choice) {
                     return choice.hidden ? null : choice.querySelector('input');
                 }).filter(Boolean)[0] || null;
             }
             if (dateInput.value === '') {
-                setError('date', 'Choose a date.');
+                setError('date', msg('errorDate'));
                 firstInvalid = firstInvalid || calendar.querySelector('.appointments-calendar__day:not(:disabled)');
             }
             if (!time) {
-                setError('time', 'Choose a time.');
+                setError('time', msg('errorTime'));
                 firstInvalid = firstInvalid || slotInputs.filter(function (input) { return !input.disabled; })[0] || null;
             }
 
@@ -395,15 +424,17 @@
                 return;
             }
 
-            var when = formatDay(dateInput.value) + ' at ' + time.value;
-            var doctorLabel = doctor.getAttribute('data-label');
+            var params = {
+                id: appointmentId.value,
+                date: formatDay(dateInput.value),
+                time: time.value,
+                doctor: doctor.getAttribute('data-label')
+            };
 
             if (appointmentId.value !== '') {
-                showNotice('Demo only: appointment #' + appointmentId.value + ' would move to ' + when + ' with ' + doctorLabel
-                    + '. Nothing was saved because the backend is not ready yet.', 'success');
+                showNotice(msg('noticeReschedule', params), 'success');
             } else {
-                showNotice('Demo only: your appointment with ' + doctorLabel + ' on ' + when
-                    + ' was not saved. Booking will work once the backend is ready.', 'success');
+                showNotice(msg('noticeBook', params), 'success');
             }
         });
 
@@ -425,9 +456,7 @@
 
             if (cancel) {
                 var id = cancel.getAttribute('data-appointment-cancel');
-                var label = cancel.getAttribute('data-appointment-label');
-
-                if (!window.confirm('Cancel the appointment on ' + label + '?')) {
+                if (!window.confirm(cancel.getAttribute('data-appointment-confirm'))) {
                     return;
                 }
 
@@ -438,19 +467,18 @@
                 var none = document.createElement('span');
 
                 badge.className = 'badge badge--danger';
-                badge.textContent = 'Cancelled';
+                badge.textContent = msg('cancelled');
                 statusCell.replaceChildren(badge);
 
                 none.className = 'appointments-actions__none';
                 none.textContent = '—';
                 actions.replaceChildren(none);
 
-                showNotice('Demo only: appointment #' + id + ' is shown as cancelled on this page. Once saved, it would move to the Cancelled tab. Nothing was saved.', 'warning');
+                showNotice(msg('noticeCancel', { id: id }), 'warning');
             }
 
             if (start) {
-                showNotice('Demo only: the visit with ' + start.getAttribute('data-appointment-start')
-                    + ' would open here once the medical records page is ready.', 'info');
+                showNotice(msg('noticeStart', { name: start.getAttribute('data-appointment-start') }), 'info');
             }
         });
     }

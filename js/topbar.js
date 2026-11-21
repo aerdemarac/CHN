@@ -52,61 +52,6 @@
             closeAll();
             openDropdown.querySelector('[data-dropdown-toggle]')?.focus();
         });
-
-        initLanguageSelector(closeAll);
-    }
-
-    function initLanguageSelector(closeAll) {
-        const dropdown = document.getElementById('chn-lang-dropdown');
-        const toggle = document.getElementById('chn-lang-toggle');
-        const menu = document.getElementById('chn-lang-menu');
-        if (!dropdown || !toggle || !menu) return;
-
-        const currentLabel = toggle.querySelector('[data-lang-current]');
-        const options = [...menu.querySelectorAll('.topbar__lang-option')];
-
-        const applyLanguage = (lang) => {
-            const match = options.find((opt) => opt.dataset.lang === lang);
-            if (!match) return;
-
-            options.forEach((opt) => {
-                const active = opt === match;
-                opt.classList.toggle('is-active', active);
-                opt.setAttribute('aria-checked', String(active));
-            });
-
-            if (currentLabel && match.dataset.langCode) {
-                currentLabel.textContent = match.dataset.langCode;
-            }
-            document.documentElement.lang = lang;
-        };
-
-        try {
-            const params = new URLSearchParams(window.location.search);
-            const saved = localStorage.getItem('chn_lang');
-            if (!params.has('lang') && saved) {
-                applyLanguage(saved);
-            }
-        } catch {
-            // Ignore storage access errors in restricted contexts.
-        }
-
-        options.forEach((option) => {
-            option.addEventListener('click', () => {
-                const lang = option.dataset.lang;
-                if (lang) {
-                    applyLanguage(lang);
-                    try {
-                        localStorage.setItem('chn_lang', lang);
-                    } catch {
-                        // Ignore storage errors.
-                    }
-                    document.dispatchEvent(new CustomEvent('chn:languagechange', { detail: { lang } }));
-                }
-                closeAll();
-                toggle.focus();
-            });
-        });
     }
 
     if (document.readyState === 'loading') {

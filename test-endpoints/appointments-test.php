@@ -1,9 +1,11 @@
 <?php
+require_once __DIR__ . '/../include/i18n.php';
+
 $appointmentsRoles = [
-    'patient'          => 'Patient',
-    'doctor'           => 'Doctor',
-    'healthcare_staff' => 'Healthcare Staff',
-    'admin'            => 'Admin',
+    'patient'          => t('role.patient'),
+    'doctor'           => t('role.doctor'),
+    'healthcare_staff' => t('role.healthcare_staff'),
+    'admin'            => t('role.admin'),
 ];
 
 $appointmentsRole = isset($_GET['role']) && is_string($_GET['role']) && isset($appointmentsRoles[$_GET['role']])
@@ -14,16 +16,16 @@ $appointmentsToday = new DateTimeImmutable('today');
 $appointmentsTodayKey = $appointmentsToday->format('Y-m-d');
 
 $appointmentsTiers = [
-    'orange' => ['label' => 'Orange', 'note' => 'Needs care'],
-    'yellow' => ['label' => 'Yellow', 'note' => 'Important'],
-    'green'  => ['label' => 'Green',  'note' => 'No vital risk'],
+    'orange' => ['label' => t('tier.orange'), 'note' => t('tier.orange_note')],
+    'yellow' => ['label' => t('tier.yellow'), 'note' => t('tier.yellow_note')],
+    'green'  => ['label' => t('tier.green'),  'note' => t('tier.green_note')],
 ];
 
 $appointmentsStatuses = [
-    'pending'   => ['label' => 'Pending',   'badge' => 'warning'],
-    'confirmed' => ['label' => 'Confirmed', 'badge' => 'success'],
-    'cancelled' => ['label' => 'Cancelled', 'badge' => 'danger'],
-    'completed' => ['label' => 'Completed', 'badge' => 'neutral'],
+    'pending'   => ['label' => t('appointment_status.pending'),   'badge' => 'warning'],
+    'confirmed' => ['label' => t('appointment_status.confirmed'), 'badge' => 'success'],
+    'cancelled' => ['label' => t('appointment_status.cancelled'), 'badge' => 'danger'],
+    'completed' => ['label' => t('appointment_status.completed'), 'badge' => 'neutral'],
 ];
 
 $appointmentsSlots = [
@@ -66,19 +68,19 @@ function appointmentsRelativeDay(string $date, DateTimeImmutable $today): string
     $days = (int) $today->diff(new DateTimeImmutable($date))->format('%r%a');
 
     if ($days === 0) {
-        return 'Today';
+        return t('appointments.relative_today');
     }
     if ($days === 1) {
-        return 'Tomorrow';
+        return t('appointments.relative_tomorrow');
     }
     if ($days === -1) {
-        return 'Yesterday';
+        return t('appointments.relative_yesterday');
     }
     if ($days < 0) {
-        return abs($days) . ' days ago';
+        return tn('appointments.relative_days_ago', abs($days));
     }
 
-    return 'In ' . $days . ' days';
+    return tn('appointments.relative_in_days', $days);
 }
 
 function appointmentsTierBadge(string $tier, array $tiers): string
@@ -208,7 +210,12 @@ $appointmentsAll = array_map(function (array $item) use ($appointmentsCases, $ap
     ];
 }, $appointmentsAll);
 
-$appointmentsViews = ['today' => 'Today', 'upcoming' => 'Upcoming', 'past' => 'Past', 'cancelled' => 'Cancelled'];
+$appointmentsViews = [
+    'today'     => t('appointments.view_today'),
+    'upcoming'  => t('appointments.view_upcoming'),
+    'past'      => t('appointments.view_past'),
+    'cancelled' => t('appointments.view_cancelled'),
+];
 
 $appointmentsView = isset($_GET['view']) && is_string($_GET['view']) && isset($appointmentsViews[$_GET['view']])
     ? $_GET['view']
@@ -322,18 +329,19 @@ usort($appointmentsRows, function (array $a, array $b) use ($appointmentsView): 
 });
 
 $appointmentsHeaders = [
-    'patient'          => ['title' => 'My appointments',       'subtitle' => 'Book a new visit, or reschedule and cancel the ones you have.'],
-    'doctor'           => ['title' => 'My schedule',           'subtitle' => 'Dr. Andreas Kyrou · Cardiology, Nicosia State Hospital'],
-    'healthcare_staff' => ['title' => 'Hospital appointments', 'subtitle' => 'Nicosia State Hospital · all departments'],
-    'admin'            => ['title' => 'Appointments',          'subtitle' => 'Appointments are managed by patients, doctors and healthcare staff.'],
+    'patient'          => ['title' => t('appointments.header_patient_title'), 'subtitle' => t('appointments.header_patient_subtitle')],
+    'doctor'           => ['title' => t('appointments.header_doctor_title'),  'subtitle' => 'Dr. Andreas Kyrou · Cardiology, Nicosia State Hospital'],
+    'healthcare_staff' => ['title' => t('appointments.header_staff_title'),   'subtitle' => t('appointments.header_staff_subtitle', ['hospital' => 'Nicosia State Hospital'])],
+    'admin'            => ['title' => t('nav.appointments'),                  'subtitle' => t('appointments.header_admin_subtitle')],
 ];
 
-$appointmentsEmpty = [
-    'today'    => ['title' => 'No appointments today',    'text' => 'New bookings for today will appear here.'],
-    'upcoming' => ['title' => 'No upcoming appointments', 'text' => 'Future bookings will appear here.'],
-    'past'      => ['title' => 'No past appointments',      'text' => 'Finished visits will appear here.'],
-    'cancelled' => ['title' => 'No cancelled appointments', 'text' => 'Cancelled visits will appear here.'],
-];
+$appointmentsEmpty = [];
+foreach (array_keys($appointmentsViews) as $appointmentsViewKey) {
+    $appointmentsEmpty[$appointmentsViewKey] = [
+        'title' => t('appointments.empty_' . $appointmentsViewKey . '_title'),
+        'text'  => t('appointments.empty_' . $appointmentsViewKey . '_text'),
+    ];
+}
 
 if ($appointmentsRole === 'patient') {
     $appointmentsPatientCases = array_filter(
@@ -349,20 +357,25 @@ $appointmentsFormatted = function (array $item) use ($appointmentsToday): array 
     return [
         'iso'      => $when->format('Y-m-d\TH:i'),
         'time'     => $when->format('H:i'),
-        'date'     => $when->format('D, j M'),
+        'date'     => chnDate($when, 'short_weekday'),
         'relative' => appointmentsRelativeDay($item['appointment_date'], $appointmentsToday),
     ];
 };
 
-$chnPageTitle = 'Appointments';
+$appointmentsCasesPage = appointmentsEscape(t('nav.cases'));
+$appointmentsCasesHint = $appointmentsRole === 'patient' && $appointmentsCasesLink !== null
+    ? '<a href="' . appointmentsEscape($appointmentsCasesLink) . '">' . $appointmentsCasesPage . '</a>'
+    : $appointmentsCasesPage;
+
+$chnPageTitle = t('nav.appointments');
 $chnUserName = $appointmentsUser['name'];
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHN | Appointments</title>
+    <title>CHN | <?= te('nav.appointments') ?></title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/appointments.css">
     <script src="../js/sidebar.js" defer></script>
@@ -380,9 +393,9 @@ require __DIR__ . '/../include/top-bar.php';
 
 <main class="content" id="main-content" tabindex="-1">
     <div class="content__inner appointments">
-        <aside class="alert alert--info appointments-demo" aria-label="Demo notice">
-            <p class="appointments-demo__text"><strong>Demo data.</strong> All names and records are fictional. Preview a role:</p>
-            <nav aria-label="Preview role">
+        <aside class="alert alert--info appointments-demo" aria-label="<?= te('appointments.demo_label') ?>">
+            <p class="appointments-demo__text"><strong><?= te('common.demo_title') ?></strong> <?= te('common.demo_text') ?></p>
+            <nav aria-label="<?= te('appointments.preview_role') ?>">
                 <ul class="appointments-demo__roles">
                     <?php foreach ($appointmentsRoles as $appointmentsRoleKey => $appointmentsRoleLabel): ?>
                         <li>
@@ -404,14 +417,34 @@ require __DIR__ . '/../include/top-bar.php';
             </div>
         </div>
 
-        <p class="alert alert--info appointments-notice" id="appointments-notice" role="status" hidden></p>
+        <p class="alert alert--info appointments-notice" id="appointments-notice" role="status" hidden
+           data-messages="<?= chnJsMessages([
+               'doctorHint'         => 'appointments.doctor_hint',
+               'doctorsFound'       => 'appointments.doctors_found',
+               'nothingSelected'    => 'appointments.nothing_selected',
+               'prevMonth'          => 'appointments.prev_month',
+               'nextMonth'          => 'appointments.next_month',
+               'rescheduleTitle'    => 'appointments.reschedule_title',
+               'rescheduleSubtitle' => 'appointments.reschedule_subtitle',
+               'rescheduleSubmit'   => 'appointments.reschedule_submit',
+               'errorCase'          => 'appointments.error_case',
+               'errorDoctor'        => 'appointments.error_doctor',
+               'errorCaseFirst'     => 'appointments.error_case_first',
+               'errorDate'          => 'appointments.error_date',
+               'errorTime'          => 'appointments.error_time',
+               'noticeReschedule'   => 'appointments.notice_reschedule',
+               'noticeBook'         => 'appointments.notice_book',
+               'noticeCancel'       => 'appointments.notice_cancel',
+               'noticeStart'        => 'appointments.notice_start',
+               'cancelled'          => 'appointment_status.cancelled',
+           ]) ?>"></p>
 
         <?php if ($appointmentsRole === 'admin'): ?>
             <section class="card" aria-labelledby="appointments-admin-title">
                 <div class="empty-state">
-                    <h2 class="empty-state__title" id="appointments-admin-title">Not available for admins</h2>
-                    <p class="empty-state__text">Admins manage accounts and complaints. Doctors and healthcare staff manage the schedule.</p>
-                    <a class="btn btn--outline" href="<?= appointmentsEscape('dashboard-test.php' . appointmentsQuery(['role' => 'admin'])) ?>">Back to dashboard</a>
+                    <h2 class="empty-state__title" id="appointments-admin-title"><?= te('appointments.admin_title') ?></h2>
+                    <p class="empty-state__text"><?= te('appointments.admin_text') ?></p>
+                    <a class="btn btn--outline" href="<?= appointmentsEscape('dashboard-test.php' . appointmentsQuery(['role' => 'admin'])) ?>"><?= te('appointments.back_dashboard') ?></a>
                 </div>
             </section>
         <?php else: ?>
@@ -419,18 +452,18 @@ require __DIR__ . '/../include/top-bar.php';
                 <section class="card appointments-book" aria-labelledby="appointments-book-title">
                     <header class="card__header">
                         <div>
-                            <h2 class="card__title" id="appointments-book-title" tabindex="-1">Book an appointment</h2>
-                            <p class="card__subtitle" id="appointments-book-subtitle">Choose one of your open cases, a doctor, then a free time.</p>
+                            <h2 class="card__title" id="appointments-book-title" tabindex="-1"><?= te('appointments.book_title') ?></h2>
+                            <p class="card__subtitle" id="appointments-book-subtitle"><?= te('appointments.book_subtitle') ?></p>
                         </div>
-                        <button type="button" class="btn btn--outline btn--sm" id="appointments-book-reset" hidden>Stop rescheduling</button>
+                        <button type="button" class="btn btn--outline btn--sm" id="appointments-book-reset" hidden><?= te('appointments.stop_reschedule') ?></button>
                     </header>
 
                     <?php if ($appointmentsPatientCases === []): ?>
                         <div class="empty-state">
-                            <p class="empty-state__title">No open cases</p>
-                            <p class="empty-state__text">Appointments are booked for an open case. New cases are opened on the Medical Cases page.</p>
+                            <p class="empty-state__title"><?= te('appointments.no_cases_title') ?></p>
+                            <p class="empty-state__text"><?= te('appointments.no_cases_text', ['page' => t('nav.cases')]) ?></p>
                             <?php if ($appointmentsCasesLink !== null): ?>
-                                <a class="btn btn--outline" href="<?= appointmentsEscape($appointmentsCasesLink) ?>">Go to medical cases</a>
+                                <a class="btn btn--outline" href="<?= appointmentsEscape($appointmentsCasesLink) ?>"><?= te('appointments.go_cases') ?></a>
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
@@ -441,14 +474,9 @@ require __DIR__ . '/../include/top-bar.php';
                         <div class="appointments-book__grid">
                             <div class="appointments-book__column">
                                 <fieldset class="appointments-step">
-                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">1</span> Case</legend>
+                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">1</span> <?= te('appointments.step_case') ?></legend>
                                     <p class="form-hint appointments-step__hint">
-                                        Appointments are booked for one of your open cases. New cases are opened on the
-                                        <?php if ($appointmentsCasesLink !== null): ?>
-                                            <a href="<?= appointmentsEscape($appointmentsCasesLink) ?>">Medical Cases</a> page.
-                                        <?php else: ?>
-                                            Medical Cases page.
-                                        <?php endif; ?>
+                                        <?= strtr(appointmentsEscape(t('appointments.case_hint')), ['{page}' => $appointmentsCasesHint]) ?>
                                     </p>
 
                                     <div class="appointments-choices">
@@ -457,10 +485,10 @@ require __DIR__ . '/../include/top-bar.php';
                                             <label class="appointments-choice">
                                                 <input type="radio" class="appointments-choice__input" name="case_id" value="<?= (int) $appointmentsCaseId ?>"
                                                        data-department="<?= (int) $appointmentsCase['department_id'] ?>"
-                                                       data-label="Case #<?= (int) $appointmentsCaseId ?>">
+                                                       data-label="<?= te('appointments.case_label', ['id' => (int) $appointmentsCaseId]) ?>">
                                                 <span class="appointments-choice__body">
                                                     <span class="appointments-choice__title">
-                                                        Case #<?= (int) $appointmentsCaseId ?>
+                                                        <?= te('appointments.case_label', ['id' => (int) $appointmentsCaseId]) ?>
                                                         <?= appointmentsTierBadge($appointmentsCase['tier_color'], $appointmentsTiers) ?>
                                                     </span>
                                                     <span class="appointments-choice__meta"><?= appointmentsEscape($appointmentsDepartment['department_name'] . ' · ' . $appointmentsDepartment['hospital_name']) ?></span>
@@ -473,9 +501,9 @@ require __DIR__ . '/../include/top-bar.php';
                                 </fieldset>
 
                                 <fieldset class="appointments-step">
-                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">2</span> Doctor</legend>
+                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">2</span> <?= te('appointments.step_doctor') ?></legend>
 
-                                    <p class="form-hint appointments-step__hint" id="appointments-doctor-hint">Choose a case to see the doctors of its department.</p>
+                                    <p class="form-hint appointments-step__hint" id="appointments-doctor-hint"><?= te('appointments.doctor_hint') ?></p>
                                     <div class="appointments-choices" id="appointments-doctors">
                                         <?php foreach ($appointmentsDoctors as $appointmentsDoctorId => $appointmentsDoctor): ?>
                                             <?php $appointmentsDepartment = $appointmentsDepartments[$appointmentsDoctor['department_id']]; ?>
@@ -496,21 +524,21 @@ require __DIR__ . '/../include/top-bar.php';
 
                             <div class="appointments-book__column">
                                 <fieldset class="appointments-step">
-                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">3</span> Date and time</legend>
+                                    <legend class="appointments-step__title"><span class="appointments-step__number" aria-hidden="true">3</span> <?= te('appointments.step_datetime') ?></legend>
 
                                     <div class="appointments-calendar" id="appointments-calendar"
                                          data-min="<?= appointmentsEscape(appointmentsDate(1)) ?>"
                                          data-max="<?= appointmentsEscape(appointmentsDate(60)) ?>">
                                         <div class="form-group">
-                                            <label class="form-label" for="appointments-date">Date</label>
+                                            <label class="form-label" for="appointments-date"><?= te('appointments.date') ?></label>
                                             <input type="date" class="form-control" id="appointments-date" name="appointment_date"
                                                    min="<?= appointmentsEscape(appointmentsDate(1)) ?>" max="<?= appointmentsEscape(appointmentsDate(60)) ?>">
                                         </div>
                                     </div>
                                     <p class="form-error" id="appointments-date-error" hidden></p>
 
-                                    <p class="form-label appointments-slots__label" id="appointments-slots-label">Available times</p>
-                                    <p class="form-hint appointments-step__hint" id="appointments-slots-hint">Choose a doctor and a date first.</p>
+                                    <p class="form-label appointments-slots__label" id="appointments-slots-label"><?= te('appointments.available_times') ?></p>
+                                    <p class="form-hint appointments-step__hint" id="appointments-slots-hint"><?= te('appointments.slots_hint') ?></p>
                                     <div class="appointments-slots" role="radiogroup" aria-labelledby="appointments-slots-label">
                                         <?php foreach ($appointmentsSlots as $appointmentsSlot): ?>
                                             <label class="appointments-slot">
@@ -523,9 +551,9 @@ require __DIR__ . '/../include/top-bar.php';
                                 </fieldset>
 
                                 <div class="appointments-summary">
-                                    <p class="appointments-summary__label">Selected</p>
-                                    <p class="appointments-summary__value" id="appointments-summary">Nothing selected yet.</p>
-                                    <button type="submit" class="btn btn--primary btn--block" id="appointments-submit">Confirm appointment</button>
+                                    <p class="appointments-summary__label"><?= te('appointments.selected') ?></p>
+                                    <p class="appointments-summary__value" id="appointments-summary"><?= te('appointments.nothing_selected') ?></p>
+                                    <button type="submit" class="btn btn--primary btn--block" id="appointments-submit"><?= te('appointments.confirm') ?></button>
                                 </div>
                             </div>
                         </div>
@@ -538,15 +566,15 @@ require __DIR__ . '/../include/top-bar.php';
                 <header class="card__header">
                     <div>
                         <h2 class="card__title" id="appointments-list-title">
-                            <?= $appointmentsRole === 'patient' ? 'My visits' : 'Appointments' ?>
+                            <?= $appointmentsRole === 'patient' ? te('appointments.list_title_patient') : te('nav.appointments') ?>
                         </h2>
                         <p class="card__subtitle">
-                            <?= count($appointmentsRows) ?> <?= count($appointmentsRows) === 1 ? 'appointment' : 'appointments' ?>
+                            <?= appointmentsEscape(tn('appointments.count', count($appointmentsRows))) ?>
                             · <?= appointmentsEscape($appointmentsViews[$appointmentsView]) ?>
-                            <?= $appointmentsIsFiltered ? '· Filtered' : '' ?>
+                            <?= $appointmentsIsFiltered ? '· ' . te('appointments.filtered') : '' ?>
                         </p>
                     </div>
-                    <nav aria-label="Appointment period">
+                    <nav aria-label="<?= te('appointments.period_nav') ?>">
                         <ul class="appointments-tabs">
                             <?php foreach ($appointmentsViews as $appointmentsViewKey => $appointmentsViewLabel): ?>
                                 <li>
@@ -562,22 +590,22 @@ require __DIR__ . '/../include/top-bar.php';
                 </header>
 
                 <?php if ($appointmentsRole !== 'patient' || $appointmentsHasDateFilter): ?>
-                    <form class="appointments-filters" method="get" action="#appointments-list" aria-label="Filter appointments">
+                    <form class="appointments-filters" method="get" action="#appointments-list" aria-label="<?= te('appointments.filter_label') ?>">
                         <input type="hidden" name="role" value="<?= appointmentsEscape($appointmentsRole) ?>">
                         <input type="hidden" name="view" value="<?= appointmentsEscape($appointmentsView) ?>">
                         <?php if ($appointmentsRole !== 'patient'): ?>
                         <div class="form-group">
-                            <label class="form-label" for="appointments-filter-patient">Patient name</label>
+                            <label class="form-label" for="appointments-filter-patient"><?= te('appointments.patient_name') ?></label>
                             <input type="search" class="form-control" id="appointments-filter-patient" name="patient_name"
                                    value="<?= appointmentsEscape($appointmentsFilterPatient) ?>" maxlength="100"
-                                   autocomplete="off" placeholder="Search by name">
+                                   autocomplete="off" placeholder="<?= te('appointments.search_name') ?>">
                         </div>
                         <?php endif; ?>
                         <?php if ($appointmentsRole === 'healthcare_staff'): ?>
                         <div class="form-group">
-                            <label class="form-label" for="appointments-filter-department">Department</label>
+                            <label class="form-label" for="appointments-filter-department"><?= te('appointments.department') ?></label>
                             <select class="form-control appointments-select" id="appointments-filter-department" name="department_id">
-                                <option value="">All departments</option>
+                                <option value=""><?= te('appointments.all_departments') ?></option>
                                 <?php foreach ($appointmentsStaffDepartments as $appointmentsDepartmentId => $appointmentsDepartment): ?>
                                     <option value="<?= (int) $appointmentsDepartmentId ?>" <?= $appointmentsFilterDepartment === $appointmentsDepartmentId ? 'selected' : '' ?>>
                                         <?= appointmentsEscape($appointmentsDepartment['department_name']) ?>
@@ -588,9 +616,9 @@ require __DIR__ . '/../include/top-bar.php';
                         <?php endif; ?>
                         <?php if ($appointmentsHasStatusFilter): ?>
                         <div class="form-group">
-                            <label class="form-label" for="appointments-filter-status">Status</label>
+                            <label class="form-label" for="appointments-filter-status"><?= te('appointments.status') ?></label>
                             <select class="form-control appointments-select" id="appointments-filter-status" name="status">
-                                <option value="">All statuses</option>
+                                <option value=""><?= te('appointments.all_statuses') ?></option>
                                 <?php foreach ($appointmentsStatusOptions as $appointmentsStatusKey => $appointmentsStatus): ?>
                                     <option value="<?= appointmentsEscape($appointmentsStatusKey) ?>" <?= $appointmentsFilterStatus === $appointmentsStatusKey ? 'selected' : '' ?>>
                                         <?= appointmentsEscape($appointmentsStatus['label']) ?>
@@ -601,14 +629,14 @@ require __DIR__ . '/../include/top-bar.php';
                         <?php endif; ?>
                         <?php if ($appointmentsHasDateFilter): ?>
                         <div class="form-group">
-                            <label class="form-label" for="appointments-filter-from">From</label>
+                            <label class="form-label" for="appointments-filter-from"><?= te('appointments.date_from') ?></label>
                             <input type="date" class="form-control" id="appointments-filter-from" name="date_from"
                                    value="<?= appointmentsEscape($appointmentsFilterFrom ?? '') ?>"
                                    <?= $appointmentsDateMin !== null ? 'min="' . appointmentsEscape($appointmentsDateMin) . '"' : '' ?>
                                    <?= $appointmentsDateMax !== null ? 'max="' . appointmentsEscape($appointmentsDateMax) . '"' : '' ?>>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="appointments-filter-to">To</label>
+                            <label class="form-label" for="appointments-filter-to"><?= te('appointments.date_to') ?></label>
                             <input type="date" class="form-control" id="appointments-filter-to" name="date_to"
                                    value="<?= appointmentsEscape($appointmentsFilterTo ?? '') ?>"
                                    <?= $appointmentsDateMin !== null ? 'min="' . appointmentsEscape($appointmentsDateMin) . '"' : '' ?>
@@ -616,9 +644,9 @@ require __DIR__ . '/../include/top-bar.php';
                         </div>
                         <?php endif; ?>
                         <div class="appointments-filters__actions">
-                            <button type="submit" class="btn btn--outline">Filter</button>
+                            <button type="submit" class="btn btn--outline"><?= te('appointments.filter') ?></button>
                             <?php if ($appointmentsIsFiltered): ?>
-                                <a class="btn btn--outline" href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsView]) . '#appointments-list') ?>">Clear</a>
+                                <a class="btn btn--outline" href="<?= appointmentsEscape(appointmentsQuery(['role' => $appointmentsRole, 'view' => $appointmentsView]) . '#appointments-list') ?>"><?= te('appointments.clear') ?></a>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -627,8 +655,8 @@ require __DIR__ . '/../include/top-bar.php';
                 <?php if ($appointmentsRows === []): ?>
                     <div class="empty-state">
                         <?php if ($appointmentsIsFiltered): ?>
-                            <p class="empty-state__title">No matching appointments</p>
-                            <p class="empty-state__text">Try another name or date range, or clear the filters.</p>
+                            <p class="empty-state__title"><?= te('appointments.no_match_title') ?></p>
+                            <p class="empty-state__text"><?= te('appointments.no_match_text') ?></p>
                         <?php else: ?>
                             <p class="empty-state__title"><?= appointmentsEscape($appointmentsEmpty[$appointmentsView]['title']) ?></p>
                             <p class="empty-state__text"><?= appointmentsEscape($appointmentsEmpty[$appointmentsView]['text']) ?></p>
@@ -639,23 +667,23 @@ require __DIR__ . '/../include/top-bar.php';
                         <table class="table appointments-table">
                             <thead>
                                 <tr>
-                                    <th scope="col">Date</th>
+                                    <th scope="col"><?= te('appointments.date') ?></th>
                                     <?php if ($appointmentsRole === 'patient'): ?>
-                                        <th scope="col">Doctor</th>
-                                        <th scope="col">Department</th>
-                                        <th scope="col">Case</th>
+                                        <th scope="col"><?= te('appointments.col_doctor') ?></th>
+                                        <th scope="col"><?= te('appointments.department') ?></th>
+                                        <th scope="col"><?= te('appointments.step_case') ?></th>
                                     <?php elseif ($appointmentsRole === 'doctor'): ?>
-                                        <th scope="col">Patient</th>
-                                        <th scope="col">Case</th>
-                                        <th scope="col">Clinical note</th>
+                                        <th scope="col"><?= te('appointments.col_patient') ?></th>
+                                        <th scope="col"><?= te('appointments.step_case') ?></th>
+                                        <th scope="col"><?= te('appointments.col_note') ?></th>
                                     <?php else: ?>
-                                        <th scope="col">Patient</th>
-                                        <th scope="col">Doctor</th>
-                                        <th scope="col">Department</th>
+                                        <th scope="col"><?= te('appointments.col_patient') ?></th>
+                                        <th scope="col"><?= te('appointments.col_doctor') ?></th>
+                                        <th scope="col"><?= te('appointments.department') ?></th>
                                     <?php endif; ?>
-                                    <th scope="col">Status</th>
+                                    <th scope="col"><?= te('appointments.status') ?></th>
                                     <?php if ($appointmentsRole !== 'healthcare_staff'): ?>
-                                        <th scope="col"><span class="appointments-table__actions-label">Actions</span></th>
+                                        <th scope="col"><span class="appointments-table__actions-label"><?= te('appointments.col_actions') ?></span></th>
                                     <?php endif; ?>
                                 </tr>
                             </thead>
@@ -665,8 +693,11 @@ require __DIR__ . '/../include/top-bar.php';
                                         $appointmentsWhen = $appointmentsFormatted($appointmentsItem);
                                         $appointmentsIsOpen = in_array($appointmentsItem['appointment_status'], ['pending', 'confirmed'], true)
                                             && $appointmentsItem['appointment_date'] >= $appointmentsTodayKey;
-                                        $appointmentsLabel = $appointmentsWhen['date'] . ' at ' . $appointmentsWhen['time'] . ' with '
-                                            . ($appointmentsRole === 'patient' ? $appointmentsItem['doctor_name'] : $appointmentsItem['patient_name']);
+                                        $appointmentsConfirm = t('appointments.cancel_confirm', [
+                                            'date' => $appointmentsWhen['date'],
+                                            'time' => $appointmentsWhen['time'],
+                                            'name' => $appointmentsRole === 'patient' ? $appointmentsItem['doctor_name'] : $appointmentsItem['patient_name'],
+                                        ]);
                                         $appointmentsCanReschedule = $appointmentsRole === 'patient' && $appointmentsIsOpen;
                                         $appointmentsCanStart = $appointmentsRole === 'doctor'
                                             && $appointmentsItem['appointment_date'] === $appointmentsTodayKey
@@ -696,7 +727,7 @@ require __DIR__ . '/../include/top-bar.php';
                                         <?php elseif ($appointmentsRole === 'doctor'): ?>
                                             <td>
                                                 <span class="appointments-table__name"><?= appointmentsEscape($appointmentsItem['patient_name']) ?></span>
-                                                <span class="appointments-table__sub">Age <?= (int) $appointmentsItem['patient_age'] ?></span>
+                                                <span class="appointments-table__sub"><?= te('appointments.age', ['age' => (int) $appointmentsItem['patient_age']]) ?></span>
                                             </td>
                                             <td>
                                                 <span class="appointments-table__nowrap">#<?= (int) $appointmentsItem['case_id'] ?></span>
@@ -706,7 +737,7 @@ require __DIR__ . '/../include/top-bar.php';
                                         <?php else: ?>
                                             <td>
                                                 <span class="appointments-table__name"><?= appointmentsEscape($appointmentsItem['patient_name']) ?></span>
-                                                <span class="appointments-table__sub">Case #<?= (int) $appointmentsItem['case_id'] ?></span>
+                                                <span class="appointments-table__sub"><?= te('appointments.case_label', ['id' => (int) $appointmentsItem['case_id']]) ?></span>
                                             </td>
                                             <td><span class="appointments-table__nowrap"><?= appointmentsEscape($appointmentsItem['doctor_name']) ?></span></td>
                                             <td><span class="appointments-table__nowrap"><?= appointmentsEscape($appointmentsItem['department_name']) ?></span></td>
@@ -719,24 +750,24 @@ require __DIR__ . '/../include/top-bar.php';
                                                         <button type="button" class="btn btn--outline btn--sm"
                                                                 data-appointment-reschedule="<?= (int) $appointmentsItem['appointment_id'] ?>"
                                                                 data-doctor-id="<?= (int) $appointmentsItem['doctor_id'] ?>"
-                                                                data-case-id="<?= (int) $appointmentsItem['case_id'] ?>">Reschedule</button>
+                                                                data-case-id="<?= (int) $appointmentsItem['case_id'] ?>"><?= te('appointments.reschedule') ?></button>
                                                     <?php endif; ?>
                                                     <?php if ($appointmentsCanStart): ?>
                                                         <button type="button" class="btn btn--primary btn--sm"
-                                                                data-appointment-start="<?= appointmentsEscape($appointmentsItem['patient_name']) ?>">Start visit</button>
+                                                                data-appointment-start="<?= appointmentsEscape($appointmentsItem['patient_name']) ?>"><?= te('appointments.start_visit') ?></button>
                                                     <?php endif; ?>
                                                     <?php if ($appointmentsCanDiagnose): ?>
                                                         <?php $appointmentsRecordsLink = appointmentsPageLink('medical-records.php', $appointmentsRole); ?>
                                                         <?php if ($appointmentsRecordsLink !== null): ?>
-                                                            <a class="btn btn--outline btn--sm" href="<?= appointmentsEscape($appointmentsRecordsLink) ?>">Add diagnosis</a>
+                                                            <a class="btn btn--outline btn--sm" href="<?= appointmentsEscape($appointmentsRecordsLink) ?>"><?= te('appointments.add_diagnosis') ?></a>
                                                         <?php else: ?>
-                                                            <button type="button" class="btn btn--outline btn--sm" disabled>Add diagnosis</button>
+                                                            <button type="button" class="btn btn--outline btn--sm" disabled><?= te('appointments.add_diagnosis') ?></button>
                                                         <?php endif; ?>
                                                     <?php endif; ?>
                                                     <?php if ($appointmentsIsOpen): ?>
                                                         <button type="button" class="btn btn--outline btn--sm appointments-actions__cancel"
                                                                 data-appointment-cancel="<?= (int) $appointmentsItem['appointment_id'] ?>"
-                                                                data-appointment-label="<?= appointmentsEscape($appointmentsLabel) ?>">Cancel</button>
+                                                                data-appointment-confirm="<?= appointmentsEscape($appointmentsConfirm) ?>"><?= te('appointments.cancel') ?></button>
                                                     <?php endif; ?>
                                                     <?php if (!$appointmentsHasActions): ?>
                                                         <span class="appointments-actions__none">—</span>
