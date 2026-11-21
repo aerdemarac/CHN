@@ -46,7 +46,7 @@ return [
     'date.month_year' => '{month} {Y}',
 
     'topbar.label' => 'Верхняя панель',
-    'topbar.emergency_call' => 'Позвонить в экстренную службу 112',
+    'topbar.emergency_call' => 'Открыть страницу экстренной помощи (112)',
     'topbar.notifications' => 'Уведомления',
     'topbar.notifications_unread' => [
         'one' => 'Уведомления ({count} непрочитанное)',

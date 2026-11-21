@@ -69,7 +69,7 @@ require_once __DIR__ . '/include/i18n.php';
         </section>
     </main>
 
-    <a class="auth__emergency" href="tel:112">
+    <a class="auth__emergency" href="<?= htmlspecialchars('pages/emergency-call.php?' . http_build_query(['lang' => chnLang()]), ENT_QUOTES, 'UTF-8') ?>">
         <span class="icon icon--phone" aria-hidden="true"></span>
         <?= te('common.emergency') ?>
     </a>

@@ -45,7 +45,7 @@ return [
     'date.month_year' => '{month} {Y}',
 
     'topbar.label' => 'Top header',
-    'topbar.emergency_call' => 'Call Emergency 112',
+    'topbar.emergency_call' => 'Open emergency assistance (112)',
     'topbar.notifications' => 'Notifications',
     'topbar.notifications_unread' => [
         'one' => 'Notifications ({count} unread)',

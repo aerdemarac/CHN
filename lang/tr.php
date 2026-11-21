@@ -45,7 +45,7 @@ return [
     'date.month_year' => '{month} {Y}',
 
     'topbar.label' => 'Üst bilgi çubuğu',
-    'topbar.emergency_call' => '112 Acil Çağrı Merkezini ara',
+    'topbar.emergency_call' => 'Acil yardım sayfasını aç (112)',
     'topbar.notifications' => 'Bildirimler',
     'topbar.notifications_unread' => [
         'other' => 'Bildirimler ({count} okunmamış)',

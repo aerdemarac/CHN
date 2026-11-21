@@ -154,7 +154,7 @@ $chnActiveLang = chnLang();
 <header class="topbar" aria-label="<?= te('topbar.label') ?>">
     <div class="topbar__brand">Cyprus Healthcare Network</div>
     <div class="topbar__actions">
-        <a class="btn btn--danger btn--sm topbar__emergency" href="tel:112" aria-label="<?= te('topbar.emergency_call') ?>">
+        <a class="btn btn--danger btn--sm topbar__emergency" href="<?= htmlspecialchars($chnBaseUrl . 'pages/emergency-call.php?' . http_build_query(['lang' => $chnActiveLang]), ENT_QUOTES, 'UTF-8') ?>" aria-label="<?= te('topbar.emergency_call') ?>">
             <span class="icon icon--phone" aria-hidden="true"></span>
             <span class="topbar__emergency-label"><?= te('common.emergency') ?></span>
             <span class="topbar__emergency-number">112</span>
