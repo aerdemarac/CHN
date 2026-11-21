@@ -91,17 +91,54 @@ if ($isAuthenticated) {
             </div>
 
             <div id="emergency-review" hidden>
-                <h3 id="emergency-review-title" tabindex="-1">Review and confirm your location</h3>
+                <h3 id="emergency-review-title" tabindex="-1">Review your location</h3>
                 <dl class="emergency__location">
-                    <dt id="emergency-source"></dt>
-                    <dd id="emergency-location"></dd>
+                    <div>
+                        <dt>Current GPS Location</dt>
+                        <dd id="emergency-gps"></dd>
+                    </div>
+                    <div>
+                        <dt>Saved Full Address</dt>
+                        <dd id="emergency-address"></dd>
+                    </div>
                 </dl>
+                <details id="emergency-unlock" hidden>
+                    <summary>Unlock a saved address</summary>
+                    <p>Use the passphrase you chose when you enabled access after signing out.</p>
+                    <form id="emergency-unlock-form">
+                        <label for="emergency-unlock-passphrase">Address passphrase</label>
+                        <input id="emergency-unlock-passphrase" type="password" autocomplete="off" required maxlength="128">
+                        <button class="btn btn--outline" type="submit">Unlock address</button>
+                    </form>
+                </details>
+                <details id="emergency-enable" hidden>
+                    <summary>Make this address available after signing out</summary>
+                    <p>This saves an encrypted copy in this browser and replaces any previous copy. Anyone with the passphrase can unlock it. Choose a separate passphrase and enable this only on a device you trust.</p>
+                    <form id="emergency-enable-form">
+                        <label for="emergency-enable-passphrase">New address passphrase (at least 12 characters)</label>
+                        <input id="emergency-enable-passphrase" type="password" autocomplete="new-password" required minlength="12" maxlength="128">
+                        <button class="btn btn--outline" type="submit">Save encrypted address</button>
+                    </form>
+                </details>
                 <p id="emergency-instructions"></p>
                 <div class="emergency__actions">
-                    <button class="btn btn--secondary" type="button" id="emergency-confirm">Confirm request preview</button>
+                    <button class="btn btn--secondary" type="button" id="emergency-continue" disabled>Continue to confirmation</button>
                     <button class="btn btn--outline" type="button" id="emergency-cancel">Cancel</button>
                 </div>
             </div>
+
+            <section id="emergency-warning" class="emergency__warning" aria-labelledby="emergency-warning-title" hidden>
+                <div class="emergency__warning-heading">
+                    <img src="../assets/icons/exclamation-triangle.svg" alt="" width="32" height="32">
+                    <h3 id="emergency-warning-title" tabindex="-1" aria-describedby="emergency-warning-copy">Are You Sure?</h3>
+                </div>
+                <p id="emergency-warning-copy">Intentionally false emergency reports may be flagged, reviewed by administrators, and result in account restrictions or bans.</p>
+                <p id="emergency-warning-location"></p>
+                <div class="emergency__actions">
+                    <button class="btn btn--secondary" type="button" id="emergency-confirm">Confirm request preview</button>
+                    <button class="btn btn--outline" type="button" id="emergency-warning-cancel">Cancel request</button>
+                </div>
+            </section>
 
             <div id="emergency-result" hidden>
                 <h3 id="emergency-result-title" tabindex="-1">Preview confirmed</h3>

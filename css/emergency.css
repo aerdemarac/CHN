@@ -88,3 +88,69 @@
         padding-inline: max(16px, calc((100% - 720px) / 2));
     }
 }
+
+.emergency__location > div + div {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+}
+
+.emergency details {
+    margin-bottom: 16px;
+}
+
+.emergency summary {
+    color: var(--color-primary);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.emergency details p {
+    margin-top: 8px;
+}
+
+.emergency details input {
+    display: block;
+    width: min(100%, 360px);
+    margin: 4px 0 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.emergency__warning {
+    padding: 16px;
+    border: 1px solid var(--color-danger-hover);
+    border-inline-start-width: 4px;
+    border-radius: var(--radius);
+    background: rgba(214, 69, 69, .06);
+}
+
+.emergency__warning-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.emergency__warning-heading img {
+    padding: 4px;
+    background: var(--color-warning);
+    border-radius: var(--radius);
+}
+
+.emergency .emergency__warning-heading h3 {
+    margin: 0;
+    color: var(--color-danger-hover);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.emergency__warning .btn--secondary {
+    background: var(--color-danger-hover);
+}
+
+.emergency__warning .btn--secondary:hover {
+    background: var(--color-primary);
+}
