@@ -21,6 +21,8 @@
     const enable = document.getElementById('emergency-enable');
     const protectedAddressKey = 'chn.emergency.protected-address.v1';
     const authenticated = page.dataset.authenticated === 'true';
+    const messages = JSON.parse(page.dataset.messages || '{}');
+    const msg = (key, params = {}) => (messages[key] || key).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match));
 
     let state = 'idle';
     let requestNumber = 0;
@@ -95,17 +97,17 @@
 
     function updateReview() {
         const pending = state === 'locating';
-        addressField.textContent = address ?? 'No last active account address available.';
-        if (!address && !unlock.hidden) addressField.textContent = 'Last active account address locked.';
+        addressField.textContent = address ?? msg('noAddress');
+        if (!address && !unlock.hidden) addressField.textContent = msg('addressLocked');
         advance.disabled = pending || (!gps && !address);
         advance.textContent = !pending && !gps && address
-            ? 'Use this address and continue'
-            : 'Continue to confirmation';
+            ? msg('useAddress')
+            : msg('continue');
         instructions.textContent = pending
-            ? 'You can continue once the location check finishes.'
-            : gps ? 'The request preview will use your current GPS location.'
-                : address ? 'Continue only if this address is where help is needed.'
-                    : 'A location is required to continue. Cancel to try again, or call 112 for immediate help.';
+            ? msg('waitLocating')
+            : gps ? msg('usesGps')
+                : address ? msg('usesAddress')
+                    : msg('needLocation');
     }
 
     initiate.addEventListener('click', async () => {
@@ -114,7 +116,7 @@
         const currentRequest = ++requestNumber;
         start.hidden = true;
         review.hidden = false;
-        gpsField.textContent = 'Finding your current location…';
+        gpsField.textContent = msg('finding');
         status.textContent = '';
         unlock.hidden = authenticated || !readProtectedAddress();
         updateReview();
@@ -142,18 +144,18 @@
         const { latitude, longitude, code } = await gpsResult;
         if (currentRequest !== requestNumber) return;
         const messages = {
-            1: 'Location permission was denied.',
-            2: 'Current GPS location is unavailable.',
-            3: 'The location request timed out.',
+            1: msg('denied'),
+            2: msg('unavailable'),
+            3: msg('timeout'),
         };
         if (Number.isFinite(latitude) && Math.abs(latitude) <= 90
             && Number.isFinite(longitude) && Math.abs(longitude) <= 180) {
             gps = { source: 'gps', latitude, longitude };
         }
         gpsField.textContent = gps
-            ? `Latitude ${latitude.toFixed(6)}, longitude ${longitude.toFixed(6)}`
+            ? msg('coords', { lat: latitude.toFixed(6), lng: longitude.toFixed(6) })
             : messages[code] ?? messages[2];
-        status.textContent = gps ? 'Current GPS location is ready for review.' : gpsField.textContent;
+        status.textContent = gps ? msg('gpsReady') : gpsField.textContent;
         state = 'review';
         updateReview();
     });
@@ -187,7 +189,7 @@
                     unlock.hidden = true;
                     updateReview();
                     reviewTitle.focus();
-                    status.textContent = 'Saved address unlocked for this preview.';
+                    status.textContent = msg('unlocked');
                 } else {
                     if (!authenticated || !copy || passphrase.length < 12) return;
                     const salt = window.crypto.getRandomValues(new Uint8Array(16));
@@ -201,13 +203,13 @@
                     localStorage.setItem(protectedAddressKey, JSON.stringify({
                         salt: encode(salt), iv: encode(iv), ciphertext: encode(ciphertext),
                     }));
-                    status.textContent = 'Encrypted address saved for access after signing out.';
+                    status.textContent = msg('saved');
                 }
             } catch {
                 if (currentRequest === requestNumber && !review.hidden) {
                     status.textContent = isUnlock
-                        ? 'Could not unlock the saved address. Check your passphrase and try again.'
-                        : 'Could not save the encrypted address in this browser.';
+                        ? msg('unlockFailed')
+                        : msg('saveFailed');
                 }
             } finally {
                 button.disabled = false;
@@ -216,7 +218,7 @@
     }
 
     function cancel() {
-        reset('Request preview cancelled.');
+        reset(msg('cancelled'));
         initiate.focus();
     }
 
@@ -232,8 +234,8 @@
         };
         state = 'warning';
         warningLocation.textContent = gps
-            ? 'Location for this preview: Current GPS location.'
-            : 'Location for this preview: Last active account address.';
+            ? msg('locGps')
+            : msg('locAddress');
         for (const panel of [unlock, enable]) {
             panel.open = false;
             panel.querySelector('form').reset();
