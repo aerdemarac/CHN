@@ -29,11 +29,11 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'pages/appointments-test.php', 'icon' => 'appointments'],
             'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'pages/patients-test.php', 'icon' => 'records'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'pages/medical-cases.php', 'icon' => 'cases'],
-            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'icon' => 'cases'],
+            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'cases'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'pages/feedback.php', 'icon' => 'feedback'],
             'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'pages/user-management-test.php', 'icon' => 'records'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'pages/complaints-test.php', 'icon' => 'feedback'],
-            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-audit.php', 'icon' => 'cases'],
+            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'cases'],
         ];
 
         $byRole = [
@@ -58,6 +58,6 @@ if (!function_exists('chnSidebarItemsForRole')) {
             $normalized = 'healthcare_staff';
         }
         $keys = $byRole[$normalized] ?? []; // Unknown roles see no protected navigation.
-        return array_map(static fn(string $key): array => $items[$key], $keys);
+        return array_map(static fn(string $key): array => $items[$key] + ['key' => $key], $keys);
     }
 }

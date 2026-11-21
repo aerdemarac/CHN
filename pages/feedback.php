@@ -1,23 +1,24 @@
 <?php
+require_once dirname(__DIR__) . '/include/i18n.php';
 // Frontend prototype only: no database writes, session identity or live records.
 require_once dirname(__DIR__) . '/include/prototype-role.php';
 $preview = require dirname(__DIR__) . '/include/feedback-preview-data.php';
-$chnPageTitle = 'Feedback & Support';
-$chnUserName = 'Preview User';
+$chnPageTitle = t('feedback.page_title');
+$chnUserName = t('feedback.preview_user');
 $isAdmin = $chnPrototypeRole === 'admin';
 $view = [
-    'patient' => ['subtitle' => 'Share your experience as a patient and review responses to your own feedback.', 'form' => 'Share your patient experience', 'history' => 'My feedback history'],
-    'doctor' => ['subtitle' => 'Share feedback about your clinical workflow and review responses to your own suggestions.', 'form' => 'Share your doctor workflow feedback', 'history' => 'My doctor feedback history'],
-    'healthcare_staff' => ['subtitle' => 'Share feedback about care coordination and review responses to your own suggestions.', 'form' => 'Share your staff workflow feedback', 'history' => 'My staff feedback history'],
-    'staff' => ['subtitle' => 'Share feedback about care coordination and review responses to your own suggestions.', 'form' => 'Share your staff workflow feedback', 'history' => 'My staff feedback history'],
-    'admin' => ['subtitle' => 'Review fictional feedback and associated responses in a read-only overview.', 'form' => '', 'history' => 'Feedback overview'],
+    'patient' => ['subtitle' => t('feedback.patient_subtitle'), 'form' => t('feedback.patient_form'), 'history' => t('feedback.patient_history')],
+    'doctor' => ['subtitle' => t('feedback.doctor_subtitle'), 'form' => t('feedback.doctor_form'), 'history' => t('feedback.doctor_history')],
+    'healthcare_staff' => ['subtitle' => t('feedback.staff_subtitle'), 'form' => t('feedback.staff_form'), 'history' => t('feedback.staff_history')],
+    'staff' => ['subtitle' => t('feedback.staff_subtitle'), 'form' => t('feedback.staff_form'), 'history' => t('feedback.staff_history')],
+    'admin' => ['subtitle' => t('feedback.admin_subtitle'), 'form' => '', 'history' => t('feedback.admin_history')],
 ][$chnPrototypeRole];
 function fbEscape($value): string {
     return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 function fbDate(string $value): string {
     $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-    return $date ? $date->format('d M Y') : 'Not available';
+    return $date ? chnDate($date, 'medium') : t('feedback.not_available');
 }
 $responseView = isset($_GET['view']) && is_string($_GET['view'])
     && in_array($_GET['view'], ['pending', 'answered'], true) ? $_GET['view'] : '';
@@ -34,11 +35,11 @@ usort($history, static fn(array $a, array $b): int => strcmp($b['feedback_date']
 $feedbackUrl = chnPrototypeUrl('feedback.php', $chnPrototypeRole);
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback &amp; Support | CHN</title>
+    <title><?= te('feedback.page_title') ?> | CHN</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/feedback.css">
     <script src="../js/sidebar.js" defer></script>
@@ -51,50 +52,50 @@ $feedbackUrl = chnPrototypeUrl('feedback.php', $chnPrototypeRole);
 <main class="content feedback" id="main-content" tabindex="-1">
 <div class="content__inner">
     <header class="page-header">
-        <div><h1 class="page-header__title">Feedback &amp; Support</h1>
+        <div><h1 class="page-header__title"><?= te('feedback.page_title') ?></h1>
         <p class="page-header__subtitle"><?= fbEscape($view['subtitle']) ?></p></div>
-        <span class="badge badge--info">Frontend preview</span>
+        <span class="badge badge--info"><?= te('feedback.preview_badge') ?></span>
     </header>
-    <div class="alert feedback__notice"><strong>Fictional demonstration data.</strong> Role selection changes this preview only and does not authenticate users. No feedback is sent or saved. Active demo role: <strong><?= fbEscape($chnPrototypeRoles[$chnPrototypeRole]) ?></strong>.</div>
-    <form method="get" action="<?= fbEscape($feedbackUrl) ?>" class="feedback__toolbar" aria-label="Choose prototype role">
-        <div><label class="form-label" for="feedback-role">Demo role</label>
+    <div class="alert feedback__notice"><strong><?= te('feedback.notice_title') ?></strong> <?= te('feedback.notice_text') ?> <?= strtr(te('feedback.active_role'), ['{role}' => '<strong>' . fbEscape($chnPrototypeRoles[$chnPrototypeRole]) . '</strong>']) ?></div>
+    <form method="get" action="<?= fbEscape($feedbackUrl) ?>" class="feedback__toolbar" aria-label="<?= te('feedback.role_picker') ?>">
+        <div><label class="form-label" for="feedback-role"><?= te('feedback.demo_role') ?></label>
         <select class="form-control" name="role" id="feedback-role"><?php foreach ($chnPrototypeRoles as $role => $label): ?><option value="<?= $role ?>" <?= $role === $chnPrototypeRole ? 'selected' : '' ?>><?= fbEscape($label) ?></option><?php endforeach; ?></select></div>
-        <button class="btn btn--outline" type="submit">Preview role</button>
+        <button class="btn btn--outline" type="submit"><?= te('feedback.preview_role') ?></button>
     </form>
     <?php if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST'): ?>
-    <div class="alert alert--warning feedback__notice" role="status">Nothing was submitted or saved. Feedback submission is not connected in this frontend preview.</div>
+    <div class="alert alert--warning feedback__notice" role="status"><?= te('feedback.post_notice') ?></div>
     <?php endif; ?>
     <?php if (!$isAdmin): ?>
     <section class="card" aria-labelledby="feedback-form-title">
         <header class="card__header"><div><h2 class="card__title" id="feedback-form-title"><?= fbEscape($view['form']) ?></h2>
-        <p class="card__subtitle">Check a draft before submission becomes available.</p></div></header>
-        <form id="feedback-form" method="post" action="<?= fbEscape($feedbackUrl) ?>" novalidate aria-describedby="feedback-preview-help">
-            <p class="feedback__help" id="feedback-preview-help">This form checks your draft only. It will not send it, save it, or add it to the history below.</p>
+        <p class="card__subtitle"><?= te('feedback.form_subtitle') ?></p></div></header>
+        <form id="feedback-form" method="post" action="<?= fbEscape($feedbackUrl) ?>" novalidate aria-describedby="feedback-preview-help" data-messages="<?= chnJsMessages(['required' => 'feedback.message_required', 'tooLong' => 'feedback.message_too_long', 'counter' => 'feedback.counter', 'checked' => 'feedback.draft_checked']) ?>">
+            <p class="feedback__help" id="feedback-preview-help"><?= te('feedback.form_help') ?></p>
             <div class="form-group">
-                <label class="form-label" for="feedback-message">Your feedback <span class="feedback__muted">(required)</span></label>
-                <textarea class="form-control" id="feedback-message" name="feedback_msg" rows="4" maxlength="255" required aria-describedby="feedback-message-help feedback-counter feedback-error" placeholder="Tell us what worked well or what could be clearer."></textarea>
-                <div class="feedback__input-meta"><p class="form-hint" id="feedback-message-help">Maximum 255 characters. Please leave out personal or medical details.</p>
-                <span class="feedback__counter" id="feedback-counter">0 / 255 characters</span></div>
+                <label class="form-label" for="feedback-message"><?= te('feedback.message_label') ?> <span class="feedback__muted"><?= te('feedback.required') ?></span></label>
+                <textarea class="form-control" id="feedback-message" name="feedback_msg" rows="4" maxlength="255" required aria-describedby="feedback-message-help feedback-counter feedback-error" placeholder="<?= te('feedback.message_placeholder') ?>"></textarea>
+                <div class="feedback__input-meta"><p class="form-hint" id="feedback-message-help"><?= te('feedback.message_hint') ?></p>
+                <span class="feedback__counter" id="feedback-counter"><?= te('feedback.counter', ['count' => 0]) ?></span></div>
                 <p class="form-error" id="feedback-error" aria-live="polite"></p>
             </div>
-            <div class="feedback__form-actions"><button class="btn btn--primary" id="feedback-check" type="submit" disabled>Check feedback (preview)</button><button class="btn btn--outline" type="reset">Clear draft</button></div>
+            <div class="feedback__form-actions"><button class="btn btn--primary" id="feedback-check" type="submit" disabled><?= te('feedback.check') ?></button><button class="btn btn--outline" type="reset"><?= te('feedback.clear') ?></button></div>
             <p class="feedback__result" id="feedback-result" role="status" aria-live="polite"></p>
-            <noscript><p class="form-hint">JavaScript is needed to check your draft. Submission is unavailable; nothing will be sent. You can still read the demonstration history below.</p></noscript>
+            <noscript><p class="form-hint"><?= te('feedback.noscript') ?></p></noscript>
         </form>
     </section>
     <?php else: ?>
-    <div class="alert feedback__notice"><strong>Read-only admin preview.</strong> This fictional overview does not grant management permissions. Replying, editing and moderation are not enabled.</div>
+    <div class="alert feedback__notice"><strong><?= te('feedback.admin_notice_title') ?></strong> <?= te('feedback.admin_notice_text') ?></div>
     <?php endif; ?>
     <section class="card feedback__history" aria-labelledby="feedback-history-title">
         <header class="card__header"><div><h2 class="card__title" id="feedback-history-title"><?= fbEscape($view['history']) ?></h2>
-        <p class="card__subtitle"><?= $isAdmin ? 'Fictional entries across demo identities.' : 'Only entries belonging to your current demonstration identity.' ?> Answered means an associated response exists.</p></div></header>
-        <form class="feedback__toolbar" method="get" action="<?= fbEscape($feedbackUrl) ?>" aria-label="Filter feedback history">
+        <p class="card__subtitle"><?= $isAdmin ? te('feedback.history_admin_subtitle') : te('feedback.history_own_subtitle') ?></p></div></header>
+        <form class="feedback__toolbar" method="get" action="<?= fbEscape($feedbackUrl) ?>" aria-label="<?= te('feedback.filter_label') ?>">
             <input type="hidden" name="role" value="<?= $chnPrototypeRole ?>">
-            <div><label class="form-label" for="feedback-view">Response</label><select class="form-control" id="feedback-view" name="view"><option value="">All feedback</option><option value="pending" <?= $responseView === 'pending' ? 'selected' : '' ?>>Pending response</option><option value="answered" <?= $responseView === 'answered' ? 'selected' : '' ?>>Answered</option></select></div>
-            <button class="btn btn--outline" type="submit">Apply filter</button>
-            <?php if ($responseView !== ''): ?><a class="btn btn--outline" href="<?= fbEscape($feedbackUrl) ?>#feedback-history-title">Reset filter</a><?php endif; ?>
+            <div><label class="form-label" for="feedback-view"><?= te('feedback.filter_response') ?></label><select class="form-control" id="feedback-view" name="view"><option value=""><?= te('feedback.filter_all') ?></option><option value="pending" <?= $responseView === 'pending' ? 'selected' : '' ?>><?= te('feedback.status_pending') ?></option><option value="answered" <?= $responseView === 'answered' ? 'selected' : '' ?>><?= te('feedback.status_answered') ?></option></select></div>
+            <button class="btn btn--outline" type="submit"><?= te('feedback.apply_filter') ?></button>
+            <?php if ($responseView !== ''): ?><a class="btn btn--outline" href="<?= fbEscape($feedbackUrl) ?>#feedback-history-title"><?= te('feedback.reset_filter') ?></a><?php endif; ?>
         </form>
-        <p class="card__subtitle feedback__count"><?= count($history) ?> of <?= count($ownFeedback) ?> demonstration entries</p>
+        <p class="card__subtitle feedback__count"><?= fbEscape(tn('feedback.count', count($ownFeedback), ['shown' => count($history)])) ?></p>
         <?php if ($history): ?>
         <ol class="feedback__entries">
             <?php foreach ($history as $entry): ?>
@@ -102,25 +103,25 @@ $feedbackUrl = chnPrototypeUrl('feedback.php', $chnPrototypeRole);
             <li><article class="feedback__entry" aria-labelledby="feedback-entry-<?= $entry['feedback_id'] ?>">
                 <header class="feedback__entry-header">
                     <div><h3 class="feedback__entry-title" id="feedback-entry-<?= $entry['feedback_id'] ?>">DEMO-F-<?= $entry['feedback_id'] ?></h3>
-                    <p class="card__subtitle">Feedback date: <time datetime="<?= fbEscape($entry['feedback_date']) ?>"><?= fbEscape(fbDate($entry['feedback_date'])) ?></time><?php if ($isAdmin): ?> · Demo user DEMO-U-<?= $entry['user_id'] ?><?php endif; ?></p></div>
-                    <span class="badge <?= $response ? 'badge--success' : 'badge--warning' ?>"><?= $response ? 'Answered' : 'Pending response' ?></span>
+                    <p class="card__subtitle"><?= te('feedback.feedback_date') ?> <time datetime="<?= fbEscape($entry['feedback_date']) ?>"><?= fbEscape(fbDate($entry['feedback_date'])) ?></time><?php if ($isAdmin): ?> · <?= te('feedback.demo_user', ['id' => 'DEMO-U-' . $entry['user_id']]) ?><?php endif; ?></p></div>
+                    <span class="badge <?= $response ? 'badge--success' : 'badge--warning' ?>"><?= $response ? te('feedback.status_answered') : te('feedback.status_pending') ?></span>
                 </header>
                 <p class="feedback__message"><?= fbEscape($entry['feedback_msg']) ?></p>
                 <div class="feedback__response">
                     <?php if ($response): ?>
-                    <h4 class="feedback__response-title">Response</h4>
-                    <p class="card__subtitle">Response date: <time datetime="<?= fbEscape($response['response_date']) ?>"><?= fbEscape(fbDate($response['response_date'])) ?></time></p>
+                    <h4 class="feedback__response-title"><?= te('feedback.response_title') ?></h4>
+                    <p class="card__subtitle"><?= te('feedback.response_date') ?> <time datetime="<?= fbEscape($response['response_date']) ?>"><?= fbEscape(fbDate($response['response_date'])) ?></time></p>
                     <p class="feedback__message"><?= fbEscape($response['response_msg']) ?></p>
-                    <?php else: ?><p class="feedback__pending">No response is available for this demonstration entry yet.</p><?php endif; ?>
+                    <?php else: ?><p class="feedback__pending"><?= te('feedback.no_response') ?></p><?php endif; ?>
                 </div>
             </article></li>
             <?php endforeach; ?>
         </ol>
         <?php else: ?>
         <div class="empty-state">
-            <h3 class="empty-state__title"><?= $ownFeedback ? 'No feedback matches this filter' : 'No feedback history yet' ?></h3>
-            <p class="empty-state__text"><?= $ownFeedback ? 'Choose another response filter to see demonstration entries.' : 'There are no entries for this demonstration identity. Checking a draft does not create a history entry.' ?></p>
-            <?php if ($responseView !== ''): ?><a class="btn btn--outline" href="<?= fbEscape($feedbackUrl) ?>#feedback-history-title">Show all feedback</a><?php endif; ?>
+            <h3 class="empty-state__title"><?= $ownFeedback ? te('feedback.empty_filtered_title') : te('feedback.empty_title') ?></h3>
+            <p class="empty-state__text"><?= $ownFeedback ? te('feedback.empty_filtered_text') : te('feedback.empty_text') ?></p>
+            <?php if ($responseView !== ''): ?><a class="btn btn--outline" href="<?= fbEscape($feedbackUrl) ?>#feedback-history-title"><?= te('feedback.show_all') ?></a><?php endif; ?>
         </div>
         <?php endif; ?>
     </section>

@@ -1,10 +1,11 @@
 <?php
 /** Frontend prototype ONLY. URL role selection never authenticates or authorizes. */
+require_once __DIR__ . '/i18n.php';
 $chnPrototypeRoles = [
-    'patient' => 'Patient',
-    'doctor' => 'Doctor',
-    'healthcare_staff' => 'Healthcare Staff',
-    'admin' => 'Admin',
+    'patient' => t('role.patient'),
+    'doctor' => t('role.doctor'),
+    'healthcare_staff' => t('role.healthcare_staff'),
+    'admin' => t('role.admin'),
 ];
 $requestedRole = isset($_GET['role']) && is_string($_GET['role']) ? trim($_GET['role']) : '';
 if ($requestedRole === 'staff') {

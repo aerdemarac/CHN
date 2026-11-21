@@ -9,13 +9,15 @@
     const result = document.getElementById('feedback-result');
     const check = document.getElementById('feedback-check');
     let attempted = false;
+    const messages = JSON.parse(form.dataset.messages || '{}');
+    const msg = (key, params = {}) => (messages[key] || key).replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
 
     function validate(showError) {
         // Match native textarea maxlength (UTF-16 units), conservatively within VARCHAR(255).
         const length = message.value.length;
-        const problem = !message.value.trim() ? 'Please enter your feedback.'
-            : length > 255 ? 'Feedback must be 255 characters or fewer.' : '';
-        counter.textContent = `${length} / 255 characters`;
+        const problem = !message.value.trim() ? msg('required')
+            : length > 255 ? msg('tooLong') : '';
+        counter.textContent = msg('counter', { count: length });
         counter.classList.toggle('is-invalid', length > 255);
         error.textContent = showError ? problem : '';
         message.setAttribute('aria-invalid', String(showError && Boolean(problem)));
@@ -34,7 +36,7 @@
             message.focus();
             return;
         }
-        result.textContent = 'Draft checked: your message meets the length requirement. Nothing has been sent or saved. Submission is not connected yet.';
+        result.textContent = msg('checked');
     });
     form.addEventListener('reset', () => {
         attempted = false;

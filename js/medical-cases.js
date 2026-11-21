@@ -4,6 +4,8 @@
 (() => {
     'use strict';
     const notice = document.getElementById('case-demo-result');
+    const messages = JSON.parse((notice && notice.dataset.messages) || '{}');
+    const msg = (key, params = {}) => (messages[key] || key).replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
     const showNotice = (message) => {
         notice.textContent = message;
         notice.hidden = false;
@@ -13,11 +15,11 @@
     if (department && doctor) {
         const options = Array.from(doctor.options).slice(1);
         const refresh = () => {
-            doctor.replaceChildren(new Option('Select doctor', ''));
+            doctor.replaceChildren(new Option(msg('selectDoctor'), ''));
             options.filter(option => option.dataset.department === department.value).forEach(option => doctor.add(option));
             document.getElementById('doctor-availability').textContent = doctor.options.length > 1
-                ? 'Select a preferred doctor (required).'
-                : 'No available doctors in this department. Choose another department.';
+                ? msg('doctorRequired')
+                : msg('noDoctors');
         };
         department.addEventListener('change', refresh);
         refresh();
@@ -33,10 +35,10 @@
                 const title = values.get('case_title').trim();
                 const description = values.get('case_description').trim();
                 if (!title || !description || new TextEncoder().encode(description).length > 65535) {
-                    showNotice('Enter a short title and a detailed description (up to 65,535 UTF-8 bytes).');
+                    showNotice(msg('formInvalid'));
                     return;
                 }
-                showNotice('Demo: case form checked. A new case would start open with green triage. Nothing was sent or saved.');
+                showNotice(msg('formChecked'));
                 return;
             }
             const caseId = values.get('case_id');
@@ -46,7 +48,7 @@
             if (action === 'update_status' || action === 'update_doctor_status') {
                 const state = values.get('case_state');
                 if (!['open', 'closed'].includes(state)) return;
-                label.textContent = state === 'open' ? 'Active (open)' : 'Closed';
+                label.textContent = msg(state);
                 const badge = row?.querySelector('[data-case-state]');
                 if (badge) {
                     badge.textContent = label.textContent;
@@ -60,7 +62,7 @@
             } else if (action === 'update_triage') {
                 const color = values.get('tier_color');
                 if (!['green', 'yellow', 'orange'].includes(color)) return;
-                label.textContent = color[0].toUpperCase() + color.slice(1);
+                label.textContent = msg(color);
                 const badge = row?.querySelector('[data-case-triage]');
                 if (badge) {
                     badge.textContent = label.textContent;
@@ -68,7 +70,7 @@
                 }
             } else return;
             editor.open = false;
-            showNotice('Demo updated on this page only. Nothing was sent or saved; reloading restores the fixtures.');
+            showNotice(msg('updated'));
         });
     });
 })();

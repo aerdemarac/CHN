@@ -8,6 +8,7 @@
  * IMPORTANT: Hiding links is NOT authorization. The backend must enforce roles.
  */
 $chnProjectRoot = dirname(__DIR__);
+require_once __DIR__ . '/i18n.php';
 $chnDocumentRoot = isset($_SERVER['DOCUMENT_ROOT'])
     ? realpath($_SERVER['DOCUMENT_ROOT']) : false;
 $chnCanonicalRoot = realpath($chnProjectRoot);
@@ -38,25 +39,27 @@ if (!empty($chnSidebarShowTestLink)) {
         ['label' => 'UI Preview', 'file' => $chnPreviewFile, 'icon' => 'preview']);
 }
 ?>
-<a class="chn-skip-link" href="#main-content">Skip to main content</a>
+<a class="chn-skip-link" href="#main-content"><?= te('sidebar.skip') ?></a>
 
 <button type="button" class="sidebar__toggle" id="sidebar-menu-toggle"
         aria-controls="chn-sidebar" aria-expanded="false"
-        aria-label="Open navigation menu">
+        aria-label="<?= te('sidebar.open') ?>"
+        data-label-open="<?= te('sidebar.open') ?>" data-label-close="<?= te('sidebar.close') ?>"
+        data-text-open="<?= te('sidebar.menu') ?>" data-text-close="<?= te('sidebar.close_short') ?>">
     <span class="sidebar__toggle-icon sidebar__toggle-icon--menu" aria-hidden="true"></span>
-    <span class="sidebar__toggle-label">Menu</span>
+    <span class="sidebar__toggle-label"><?= te('sidebar.menu') ?></span>
 </button>
 
 <div class="sidebar__backdrop" id="chn-sidebar-backdrop" aria-hidden="true"></div>
 
-<aside class="sidebar" id="chn-sidebar" aria-label="Main navigation">
+<aside class="sidebar" id="chn-sidebar" aria-label="<?= te('sidebar.main_nav') ?>">
     <div class="sidebar__brand">
         <img src="<?= htmlspecialchars($chnBaseUrl . 'assets/logos/chn-logo.png', ENT_QUOTES, 'UTF-8') ?>"
              alt="CHN – Cyprus Health-Care Network" class="sidebar__logo" width="186" height="55">
     </div>
 
-    <p class="sidebar__section-title">Navigation</p>
-    <nav class="sidebar__nav" aria-label="Primary navigation">
+    <p class="sidebar__section-title"><?= te('sidebar.section') ?></p>
+    <nav class="sidebar__nav" aria-label="<?= te('sidebar.primary_nav') ?>">
         <?php foreach ($chnSidebarItems as $chnItem): ?>
             <?php
                 $chnFile = $chnItem['file'];
@@ -64,7 +67,8 @@ if (!empty($chnSidebarShowTestLink)) {
                     && is_file($chnProjectRoot . '/' . $chnItem['demo'])) {
                     $chnFile = $chnItem['demo'];
                 }
-                $chnLabel = htmlspecialchars($chnItem['label'], ENT_QUOTES, 'UTF-8');
+                $chnLabelText = isset($chnItem['key']) ? t('nav.' . $chnItem['key']) : $chnItem['label'];
+                $chnLabel = htmlspecialchars($chnLabelText, ENT_QUOTES, 'UTF-8');
                 $chnIcon = htmlspecialchars($chnItem['icon'], ENT_QUOTES, 'UTF-8');
                 $chnExists = is_file($chnProjectRoot . '/' . $chnFile);
                 $chnIsCurrent = $chnCurrentPage === basename($chnFile);
@@ -81,15 +85,15 @@ if (!empty($chnSidebarShowTestLink)) {
                 </a>
             <?php else: ?>
                 <span class="sidebar__link sidebar__link--disabled"
-                      aria-label="<?= $chnLabel ?> — Under development">
+                      aria-label="<?= te('common.under_development', ['label' => $chnLabelText]) ?>">
                     <span class="sidebar__icon sidebar__icon--<?= $chnIcon ?>" aria-hidden="true"></span>
                     <span class="sidebar__link-text"><?= $chnLabel ?></span>
-                    <span class="sidebar__status" aria-hidden="true">Soon</span>
+                    <span class="sidebar__status" aria-hidden="true"><?= te('common.soon') ?></span>
                 </span>
             <?php endif; ?>
         <?php endforeach; ?>
     </nav>
-    <div class="sidebar__footer">CHN · Academic prototype</div>
+    <div class="sidebar__footer"><?= te('sidebar.footer') ?></div>
 </aside>
 
 <!-- Molehi-AI Chatbot (Gemini + LocalStorage) Component -->

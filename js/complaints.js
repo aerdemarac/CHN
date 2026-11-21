@@ -4,6 +4,22 @@
     var notice = document.getElementById('complaints-notice');
     var forms = Array.prototype.slice.call(document.querySelectorAll('[data-complaints-form]'));
     var limit = 255;
+    var messages = {};
+
+    try {
+        messages = JSON.parse((notice && notice.dataset.messages) || '{}');
+    } catch (e) {
+        messages = {};
+    }
+
+    function msg(key, params) {
+        var text = typeof messages[key] === 'string' ? messages[key] : key;
+
+        params = params || {};
+        return text.replace(/\{(\w+)\}/g, function (m, k) {
+            return k in params ? String(params[k]) : m;
+        });
+    }
 
     function showNotice(message) {
         if (!notice) {
@@ -43,9 +59,9 @@
             var value = textarea.value.trim();
 
             if (!value) {
-                return 'Please write a response.';
+                return msg('required');
             }
-            return value.length > limit ? 'The response can be at most ' + limit + ' characters.' : '';
+            return value.length > limit ? msg('tooLong', { max: limit }) : '';
         }
 
         textarea.addEventListener('input', function () {
@@ -72,7 +88,7 @@
 
             response.className = 'complaints-item__response';
             title.className = 'complaints-item__response-title';
-            title.textContent = 'Response · Today';
+            title.textContent = msg('responseToday');
             text.className = 'complaints-item__message';
             text.textContent = textarea.value.trim();
             response.appendChild(title);
@@ -80,12 +96,14 @@
             form.parentNode.replaceChild(response, form);
 
             badge.className = 'badge badge--success';
-            badge.textContent = 'Answered';
+            badge.textContent = msg('answered');
+            var wait = item.querySelector('[data-complaints-wait]');
+            if (wait) wait.textContent = wait.getAttribute('data-complaints-wait');
             item.setAttribute('data-complaints-status', 'answered');
             changeCount('open', -1);
             changeCount('answered', 1);
 
-            showNotice('Demo only: the response to ' + sender + ' is shown on this page but was not saved.');
+            showNotice(msg('saved', { name: sender }));
         });
 
         counter.textContent = String(textarea.value.length);

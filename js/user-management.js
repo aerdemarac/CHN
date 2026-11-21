@@ -8,6 +8,24 @@
     var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     var phonePattern = /^\+?[0-9\s()-]+$/;
     var documentPattern = /^[A-Za-z0-9\s-]+$/;
+    var messages = readMessages();
+
+    function readMessages() {
+        try {
+            return JSON.parse((notice && notice.dataset.messages) || '{}');
+        } catch (error) {
+            return {};
+        }
+    }
+
+    function msg(key, params) {
+        var text = messages[key] || key;
+
+        params = params || {};
+        return text.replace(/\{(\w+)\}/g, function (match, name) {
+            return name in params ? String(params[name]) : match;
+        });
+    }
 
     function showNotice(message) {
         if (!notice) {
@@ -102,84 +120,84 @@
             }
         }
 
-        function nameError(value, label) {
+        function nameError(value, field) {
             if (!value) {
-                return 'Please enter the ' + label + '.';
+                return msg(field + '_required');
             }
-            return namePattern.test(value) ? '' : 'Please enter a valid ' + label + '.';
+            return namePattern.test(value) ? '' : msg(field + '_invalid');
         }
 
         function nationalIdError(value) {
             var clean = value.replace(/[\s-]/g, '');
 
             if (!value) {
-                return 'Please enter a national ID or passport number.';
+                return msg('national_id_required');
             }
             if (nationality.value === 'TR') {
-                return isValidTcKimlikNo(value.replace(/\s/g, '')) ? '' : 'Please enter a valid T.C. Kimlik No.';
+                return isValidTcKimlikNo(value.replace(/\s/g, '')) ? '' : msg('tc_invalid');
             }
             return documentPattern.test(value) && clean.length >= 5 && clean.length <= 50
                 ? ''
-                : 'Please enter a valid national ID or passport number.';
+                : msg('national_id_invalid');
         }
 
         var checks = [
             [role, function (value) {
-                return value ? '' : 'Please select a role.';
+                return value ? '' : msg('role_required');
             }],
             [form.elements.first_name, function (value) {
-                return nameError(value, 'first name');
+                return nameError(value, 'first_name');
             }],
             [form.elements.last_name, function (value) {
-                return nameError(value, 'last name');
+                return nameError(value, 'last_name');
             }],
             [form.elements.email, function (value) {
                 if (!value) {
-                    return 'Please enter an email address.';
+                    return msg('email_required');
                 }
-                return value.length <= 254 && emailPattern.test(value) ? '' : 'Please enter a valid email address.';
+                return value.length <= 254 && emailPattern.test(value) ? '' : msg('email_invalid');
             }],
             [hospital, function (value) {
-                return value ? '' : 'Please select a hospital.';
+                return value ? '' : msg('hospital_required');
             }],
             [department, function (value) {
-                return value ? '' : 'Please select a department.';
+                return value ? '' : msg('department_required');
             }],
             [form.elements.phone, function (value) {
                 var digits = value.replace(/\D/g, '');
                 var length = digits.length + (value.charAt(0) === '+' ? 1 : 0);
 
                 if (!value) {
-                    return 'Please enter a phone number.';
+                    return msg('phone_required');
                 }
-                return phonePattern.test(value) && digits.length >= 7 && length <= 16 ? '' : 'Please enter a valid phone number.';
+                return phonePattern.test(value) && digits.length >= 7 && length <= 16 ? '' : msg('phone_invalid');
             }],
             [form.elements.birth_date, function (value, control) {
                 if (control.validity.badInput) {
-                    return 'Please enter a valid date of birth.';
+                    return msg('birth_date_invalid');
                 }
                 if (!value) {
-                    return 'Please enter the date of birth.';
+                    return msg('birth_date_required');
                 }
-                return control.validity.valid ? '' : 'Please enter a valid date of birth.';
+                return control.validity.valid ? '' : msg('birth_date_invalid');
             }],
             [nationality, function (value) {
-                return value ? '' : 'Please select a nationality.';
+                return value ? '' : msg('nationality_required');
             }],
             [nationalId, nationalIdError],
             [password, function () {
                 var value = password.value;
 
                 if (!value) {
-                    return 'Please enter a password.';
+                    return msg('password_required');
                 }
-                return value.length >= 8 && /\p{L}/u.test(value) && /\d/.test(value) ? '' : 'Password does not meet the requirements.';
+                return value.length >= 8 && /\p{L}/u.test(value) && /\d/.test(value) ? '' : msg('password_weak');
             }],
             [passwordConfirm, function () {
                 if (!passwordConfirm.value) {
-                    return 'Please confirm the password.';
+                    return msg('password_confirm_required');
                 }
-                return passwordConfirm.value === password.value ? '' : 'Passwords do not match.';
+                return passwordConfirm.value === password.value ? '' : msg('password_mismatch');
             }]
         ];
 
@@ -233,7 +251,7 @@
 
                 input.type = show ? 'text' : 'password';
                 toggle.setAttribute('aria-pressed', show ? 'true' : 'false');
-                toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+                toggle.setAttribute('aria-label', show ? msg('hide_password') : msg('show_password'));
                 icon.classList.toggle('icon--eye', !show);
                 icon.classList.toggle('icon--eye-slash', show);
             });
@@ -253,8 +271,7 @@
             password.value = '';
             passwordConfirm.value = '';
             formCard.hidden = true;
-            showNotice('Demo only: an account for ' + name + ' (' + roleLabel + ') with the email ' + form.elements.email.value.trim()
-                + ' would be created. Nothing was saved.');
+            showNotice(msg('create_notice', { name: name, role: roleLabel, email: form.elements.email.value.trim() }));
         });
 
         updateWorkplace();
@@ -280,7 +297,7 @@
                 var name = deleteForm.dataset.usersName;
 
                 event.preventDefault();
-                if (!window.confirm('Delete the account of ' + name + '? This cannot be undone.')) {
+                if (!window.confirm(msg('delete_confirm', { name: name }))) {
                     return;
                 }
 
@@ -294,7 +311,7 @@
                     empty.hidden = false;
                 }
 
-                showNotice('Demo only: ' + name + ' was removed from this page. Nothing was deleted.');
+                showNotice(msg('delete_notice', { name: name }));
             });
         });
     }

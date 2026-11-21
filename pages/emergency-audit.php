@@ -1,6 +1,7 @@
 <?php
 // Unified Dynamic Emergency Management (Staff Alerts & Admin Logs)
 declare(strict_types=1);
+require_once dirname(__DIR__) . '/include/i18n.php';
 
 // Determine role dynamically from query params, session, pre-existing variable, or default
 $roleParam = $_GET['role'] ?? ($_GET['view'] ?? ($_GET['tab'] ?? ($emergencyView ?? ($chnUserRole ?? null))));
@@ -10,8 +11,8 @@ $normalizedRole = strtolower(trim((string) $roleParam));
 $isLogs = in_array($normalizedRole, ['admin', 'logs'], true);
 
 $chnUserRole = $isLogs ? 'admin' : 'healthcare_staff';
-$chnUserName = $isLogs ? 'Administrator' : 'Healthcare Staff';
-$chnPageTitle = $isLogs ? 'Emergency Logs' : 'Emergency Alerts';
+$chnUserName = $isLogs ? t('emergency.admin_user') : t('emergency.staff_user');
+$chnPageTitle = $isLogs ? t('emergency.logs_title') : t('emergency.alerts_title');
 
 $records = [
     ['emergency_id' => 1004, 'user_id' => null, 'ip_address' => '192.0.2.14', 'emergency_date' => '2026-10-14', 'emergency_time' => '14:20:00', 'emergency_location' => 'Oak Avenue, North District', 'status' => 'pending', 'handled_by_staff_id' => null, 'handled_at' => null, 'created_at' => '2026-10-14 14:20:00'],
@@ -21,10 +22,10 @@ $records = [
 ];
 
 $labels = [
-    'pending' => 'Pending',
-    'in_progress' => 'In Progress',
-    'resolved' => 'Resolved',
-    'fraud' => 'Fraud',
+    'pending' => t('emergency.status_pending'),
+    'in_progress' => t('emergency.status_in_progress'),
+    'resolved' => t('emergency.status_resolved'),
+    'fraud' => t('emergency.status_fraud'),
 ];
 
 if (!function_exists('emergencyEscape')) {
@@ -35,12 +36,19 @@ if (!function_exists('emergencyEscape')) {
 
 if (!function_exists('emergencyValue')) {
     function emergencyValue($value): string {
-        return $value === null || $value === '' ? 'Not available' : (string) $value;
+        return $value === null || $value === '' ? t('emergency.not_available') : (string) $value;
+    }
+}
+
+if (!function_exists('emergencyDate')) {
+    function emergencyDate(?string $value, string $format, string $style): string {
+        $date = $value === null || $value === '' ? false : DateTimeImmutable::createFromFormat($format, $value);
+        return $date ? chnDate($date, $style) : emergencyValue($value);
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -63,28 +71,28 @@ if (!function_exists('emergencyValue')) {
             <h1 class="page-header__title"><?= emergencyEscape($chnPageTitle) ?></h1>
             <p class="page-header__subtitle">
                 <?= $isLogs
-                    ? 'Review the complete history of emergency reports, IP addresses and abuse prevention.'
-                    : 'Review incoming emergency requests and manage their real-time response status.' ?>
+                    ? te('emergency.logs_subtitle')
+                    : te('emergency.alerts_subtitle') ?>
             </p>
         </div>
     </header>
 
-    <section class="emergency-demo__summary" aria-label="Emergency overview">
+    <section class="emergency-demo__summary" aria-label="<?= te('emergency.overview_label') ?>">
         <div class="card">
-            <p class="emergency-demo__metric-label">Total <?= $isLogs ? 'logs' : 'alerts' ?></p>
+            <p class="emergency-demo__metric-label"><?= $isLogs ? te('emergency.total_logs') : te('emergency.total_alerts') ?></p>
             <p class="emergency-demo__metric"><?= count($records) ?></p>
-            <p class="emergency-demo__muted">All recorded reports</p>
+            <p class="emergency-demo__muted"><?= te('emergency.all_reports') ?></p>
         </div>
         <div class="card">
-            <p class="emergency-demo__metric-label">Pending alerts</p>
+            <p class="emergency-demo__metric-label"><?= te('emergency.pending_alerts') ?></p>
             <p class="emergency-demo__metric"><?= count(array_filter($records, static fn($record) => $record['status'] === 'pending')) ?></p>
-            <p class="emergency-demo__muted">Awaiting handling</p>
+            <p class="emergency-demo__muted"><?= te('emergency.awaiting') ?></p>
         </div>
         <?php if ($isLogs): ?>
         <div class="card">
-            <p class="emergency-demo__metric-label">Marked fraud</p>
+            <p class="emergency-demo__metric-label"><?= te('emergency.marked_fraud') ?></p>
             <p class="emergency-demo__metric"><?= count(array_filter($records, static fn($record) => $record['status'] === 'fraud')) ?></p>
-            <p class="emergency-demo__muted">Requires careful review</p>
+            <p class="emergency-demo__muted"><?= te('emergency.careful_review') ?></p>
         </div>
         <?php endif; ?>
     </section>
@@ -92,20 +100,20 @@ if (!function_exists('emergencyValue')) {
     <section class="card emergency-demo__listing" aria-labelledby="emergency-list-title">
         <header class="card__header">
             <div>
-                <h2 class="card__title" id="emergency-list-title"><?= $isLogs ? 'Report history' : 'Alert overview' ?></h2>
-                <p class="card__subtitle">Search records or filter by status.</p>
+                <h2 class="card__title" id="emergency-list-title"><?= $isLogs ? te('emergency.report_history') : te('emergency.alert_overview') ?></h2>
+                <p class="card__subtitle"><?= te('emergency.list_subtitle') ?></p>
             </div>
         </header>
 
-        <div class="emergency-demo__filters" role="search" aria-label="Filter emergency records">
+        <div class="emergency-demo__filters" role="search" aria-label="<?= te('emergency.filter_label') ?>">
             <div>
-                <label class="form-label" for="emergency-search">Search</label>
-                <input class="form-control" type="search" id="emergency-search" placeholder="Search records">
+                <label class="form-label" for="emergency-search"><?= te('emergency.search') ?></label>
+                <input class="form-control" type="search" id="emergency-search" placeholder="<?= te('emergency.search_placeholder') ?>">
             </div>
             <div>
-                <label class="form-label" for="emergency-status">Status</label>
+                <label class="form-label" for="emergency-status"><?= te('emergency.status') ?></label>
                 <select class="form-control" id="emergency-status">
-                    <option value="">All statuses</option>
+                    <option value=""><?= te('emergency.all_statuses') ?></option>
                     <?php foreach ($labels as $value => $label): ?>
                         <option value="<?= emergencyEscape($value) ?>"><?= emergencyEscape($label) ?></option>
                     <?php endforeach; ?>
@@ -113,62 +121,62 @@ if (!function_exists('emergencyValue')) {
             </div>
         </div>
 
-        <div class="table-responsive" tabindex="0" role="region" aria-label="Emergency records, scroll horizontally for more columns">
-            <table class="table emergency-demo__table" id="emergency-table">
+        <div class="table-responsive" tabindex="0" role="region" aria-label="<?= te('emergency.table_label') ?>">
+            <table class="table emergency-demo__table" id="emergency-table" data-messages="<?= chnJsMessages(['cancel' => 'emergency.cancel', 'close' => 'emergency.close', 'confirmBan' => 'emergency.confirm_ban', 'flagTitle' => 'emergency.flag_fraud', 'confirmFlag' => 'emergency.confirm_flag', 'banNoUser' => 'emergency.ban_no_user', 'flagNoId' => 'emergency.flag_no_id', 'banQuestion' => 'emergency.ban_question', 'flagQuestion' => 'emergency.flag_question', 'notConnected' => 'emergency.not_connected', 'viewDetails' => 'emergency.view_details', 'hideDetails' => 'emergency.hide_details']) ?>">
                 <thead>
                     <tr>
-                        <th scope="col">Emergency ID</th>
-                        <th scope="col">User</th>
-                        <?php if ($isLogs): ?><th scope="col">IP address</th><?php endif; ?>
-                        <th scope="col">Reported location</th>
-                        <th scope="col">Created at</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Handling staff</th>
-                        <th scope="col">Details</th>
+                        <th scope="col"><?= te('emergency.col_id') ?></th>
+                        <th scope="col"><?= te('emergency.col_user') ?></th>
+                        <?php if ($isLogs): ?><th scope="col"><?= te('emergency.col_ip') ?></th><?php endif; ?>
+                        <th scope="col"><?= te('emergency.col_location') ?></th>
+                        <th scope="col"><?= te('emergency.col_created') ?></th>
+                        <th scope="col"><?= te('emergency.status') ?></th>
+                        <th scope="col"><?= te('emergency.col_staff') ?></th>
+                        <th scope="col"><?= te('emergency.col_details') ?></th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php foreach ($records as $record): ?>
                     <tr data-status="<?= emergencyEscape($record['status']) ?>">
                         <td><strong>#<?= emergencyEscape($record['emergency_id']) ?></strong></td>
-                        <td><?= $record['user_id'] === null ? 'Anonymous' : 'User #' . emergencyEscape($record['user_id']) ?></td>
+                        <td><?= $record['user_id'] === null ? te('emergency.anonymous') : te('emergency.user_ref', ['id' => $record['user_id']]) ?></td>
                         <?php if ($isLogs): ?><td><?= emergencyEscape(emergencyValue($record['ip_address'])) ?></td><?php endif; ?>
                         <td><?= emergencyEscape(emergencyValue($record['emergency_location'])) ?></td>
-                        <td><?= emergencyEscape(emergencyValue($record['created_at'])) ?></td>
+                        <td><?= emergencyEscape(emergencyDate($record['created_at'], 'Y-m-d H:i:s', 'medium_time')) ?></td>
                         <td><span class="emergency-demo__status emergency-demo__status--<?= emergencyEscape($record['status']) ?>"><?= emergencyEscape($labels[$record['status']]) ?></span></td>
-                        <td><?= $record['handled_by_staff_id'] === null ? 'Unassigned' : 'Staff #' . emergencyEscape($record['handled_by_staff_id']) ?></td>
-                        <td><button type="button" class="btn btn--outline emergency-demo__details-button" aria-expanded="false" aria-controls="emergency-detail-<?= emergencyEscape($record['emergency_id']) ?>">View details</button></td>
+                        <td><?= $record['handled_by_staff_id'] === null ? te('emergency.unassigned') : te('emergency.staff_ref', ['id' => $record['handled_by_staff_id']]) ?></td>
+                        <td><button type="button" class="btn btn--outline emergency-demo__details-button" aria-expanded="false" aria-controls="emergency-detail-<?= emergencyEscape($record['emergency_id']) ?>"><?= te('emergency.view_details') ?></button></td>
                     </tr>
                     <tr class="emergency-demo__detail-row" id="emergency-detail-<?= emergencyEscape($record['emergency_id']) ?>" hidden>
                         <td colspan="<?= $isLogs ? '8' : '7' ?>">
                             <div class="emergency-demo__detail">
-                                <h3>Emergency #<?= emergencyEscape($record['emergency_id']) ?> details</h3>
+                                <h3><?= te('emergency.detail_title', ['id' => $record['emergency_id']]) ?></h3>
                                 <dl class="emergency-demo__detail-grid">
-                                    <div><dt>Reported date</dt><dd><?= emergencyEscape(emergencyValue($record['emergency_date'])) ?></dd></div>
-                                    <div><dt>Reported time</dt><dd><?= emergencyEscape(emergencyValue($record['emergency_time'])) ?></dd></div>
-                                    <div><dt>Created at</dt><dd><?= emergencyEscape(emergencyValue($record['created_at'])) ?></dd></div>
-                                    <div><dt>Handled at</dt><dd><?= emergencyEscape(emergencyValue($record['handled_at'])) ?></dd></div>
-                                    <div><dt>Reported location</dt><dd><?= emergencyEscape(emergencyValue($record['emergency_location'])) ?></dd></div>
-                                    <div><dt>Handling staff</dt><dd><?= $record['handled_by_staff_id'] === null ? 'Unassigned' : 'Staff #' . emergencyEscape($record['handled_by_staff_id']) ?></dd></div>
+                                    <div><dt><?= te('emergency.reported_date') ?></dt><dd><?= emergencyEscape(emergencyDate($record['emergency_date'], '!Y-m-d', 'medium')) ?></dd></div>
+                                    <div><dt><?= te('emergency.reported_time') ?></dt><dd><?= emergencyEscape(emergencyValue($record['emergency_time'] === null ? null : substr((string) $record['emergency_time'], 0, 5))) ?></dd></div>
+                                    <div><dt><?= te('emergency.col_created') ?></dt><dd><?= emergencyEscape(emergencyDate($record['created_at'], 'Y-m-d H:i:s', 'medium_time')) ?></dd></div>
+                                    <div><dt><?= te('emergency.handled_at') ?></dt><dd><?= emergencyEscape(emergencyDate($record['handled_at'], 'Y-m-d H:i:s', 'medium_time')) ?></dd></div>
+                                    <div><dt><?= te('emergency.col_location') ?></dt><dd><?= emergencyEscape(emergencyValue($record['emergency_location'])) ?></dd></div>
+                                    <div><dt><?= te('emergency.col_staff') ?></dt><dd><?= $record['handled_by_staff_id'] === null ? te('emergency.unassigned') : te('emergency.staff_ref', ['id' => $record['handled_by_staff_id']]) ?></dd></div>
                                     <?php if ($isLogs): ?>
-                                    <div><dt>User</dt><dd><?= $record['user_id'] === null ? 'Anonymous' : 'User #' . emergencyEscape($record['user_id']) ?></dd></div>
-                                    <div><dt>IP address</dt><dd><?= emergencyEscape(emergencyValue($record['ip_address'])) ?></dd></div>
+                                    <div><dt><?= te('emergency.col_user') ?></dt><dd><?= $record['user_id'] === null ? te('emergency.anonymous') : te('emergency.user_ref', ['id' => $record['user_id']]) ?></dd></div>
+                                    <div><dt><?= te('emergency.col_ip') ?></dt><dd><?= emergencyEscape(emergencyValue($record['ip_address'])) ?></dd></div>
                                     <?php endif; ?>
                                 </dl>
                                 <?php if ($isLogs): ?>
-                                <p><?= $record['status'] === 'fraud' ? '<strong>Fraud indicator:</strong> This record is marked fraud. A status alone does not establish abuse.' : 'No fraud status is recorded.' ?></p>
+                                <p><?= $record['status'] === 'fraud' ? '<strong>' . te('emergency.fraud_indicator_title') . '</strong> ' . te('emergency.fraud_indicator_text') : te('emergency.no_fraud') ?></p>
                                 <?php endif; ?>
                                 <div class="emergency-demo__actions">
                                     <?php if (!$isLogs && $record['status'] === 'pending'): ?>
-                                        <button class="btn btn--primary" type="button" disabled>Start handling</button>
+                                        <button class="btn btn--primary" type="button" disabled><?= te('emergency.start_handling') ?></button>
                                     <?php elseif (!$isLogs && $record['status'] === 'in_progress'): ?>
-                                        <button class="btn btn--primary" type="button" disabled>Mark resolved</button>
+                                        <button class="btn btn--primary" type="button" disabled><?= te('emergency.mark_resolved') ?></button>
                                     <?php endif; ?>
                                     <?php if ($isLogs || in_array($record['status'], ['pending', 'in_progress'], true)): ?>
-                                        <button class="btn btn--outline emergency-demo__flag" type="button" data-emergency-id="<?= emergencyEscape($record['emergency_id']) ?>">Flag as fraud</button>
+                                        <button class="btn btn--outline emergency-demo__flag" type="button" data-emergency-id="<?= emergencyEscape($record['emergency_id']) ?>"><?= te('emergency.flag_fraud') ?></button>
                                     <?php endif; ?>
                                     <?php if ($isLogs): ?>
-                                        <button class="btn btn--danger emergency-demo__ban" type="button" data-user-id="<?= emergencyEscape($record['user_id'] ?? '') ?>">Ban</button>
+                                        <button class="btn btn--danger emergency-demo__ban" type="button" data-user-id="<?= emergencyEscape($record['user_id'] ?? '') ?>"><?= te('emergency.ban') ?></button>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -180,8 +188,8 @@ if (!function_exists('emergencyValue')) {
         </div>
 
         <div class="empty-state" id="emergency-empty" role="status" hidden>
-            <p class="empty-state__title">No records found</p>
-            <p class="empty-state__text">Try another search or status filter.</p>
+            <p class="empty-state__title"><?= te('emergency.no_records') ?></p>
+            <p class="empty-state__text"><?= te('emergency.no_records_text') ?></p>
         </div>
     </section>
 </div>
@@ -192,8 +200,8 @@ if (!function_exists('emergencyValue')) {
     <p id="emergency-action-description"></p>
     <p id="emergency-action-result" role="status" aria-live="polite" hidden></p>
     <div class="emergency-demo__actions">
-        <button type="button" class="btn btn--outline" id="emergency-action-cancel">Cancel</button>
-        <button type="button" class="btn btn--primary" id="emergency-action-confirm">Confirm</button>
+        <button type="button" class="btn btn--outline" id="emergency-action-cancel"><?= te('emergency.cancel') ?></button>
+        <button type="button" class="btn btn--primary" id="emergency-action-confirm"><?= te('emergency.confirm') ?></button>
     </div>
 </dialog>
 </body>

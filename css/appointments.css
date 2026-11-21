@@ -528,6 +528,11 @@
         margin-bottom: 16px;
     }
 
+    .appointments-choice .tier-badge {
+        max-width: 100%;
+        white-space: normal;
+    }
+
     .appointments .card + .card {
         margin-top: 16px;
     }

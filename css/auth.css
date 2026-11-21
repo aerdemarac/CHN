@@ -74,10 +74,52 @@ body {
     background: var(--color-bg) url("../assets/images/login-bg.jpg") left top / cover no-repeat;
 }
 
-.auth__badge {
+.auth__corner {
     position: absolute;
     inset-block-start: 24px;
     inset-inline-start: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.auth__lang {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--color-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.auth__lang-link {
+    padding: 4px 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.auth__lang-link:hover {
+    color: var(--color-secondary);
+    background: var(--color-bg);
+}
+
+.auth__lang-link[aria-current="true"] {
+    color: var(--color-secondary);
+    background: rgba(22, 125, 141, 0.1);
+    font-weight: 600;
+}
+
+.auth__lang-link:focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+}
+
+.auth__badge {
     padding: 8px 16px;
     background: var(--color-surface);
     border-radius: var(--radius);
@@ -407,6 +449,11 @@ select.auth-form__input option {
         gap: 16px;
         padding: 24px 16px;
         background-position: 25% top;
+    }
+
+    .auth__corner {
+        position: static;
+        align-items: center;
     }
 
     .auth__badge {

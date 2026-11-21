@@ -1,9 +1,11 @@
 <?php
+require_once __DIR__ . '/../include/i18n.php';
+
 $complaintsRoles = [
-    'patient'          => 'Patient',
-    'doctor'           => 'Doctor',
-    'healthcare_staff' => 'Healthcare Staff',
-    'admin'            => 'Admin',
+    'patient'          => t('role.patient'),
+    'doctor'           => t('role.doctor'),
+    'healthcare_staff' => t('role.healthcare_staff'),
+    'admin'            => t('role.admin'),
 ];
 
 $complaintsRole = isset($_GET['role']) && is_string($_GET['role']) && isset($complaintsRoles[$_GET['role']])
@@ -13,16 +15,20 @@ $complaintsRole = isset($_GET['role']) && is_string($_GET['role']) && isset($com
 $complaintsToday = new DateTimeImmutable('today');
 
 $complaintsStatuses = [
-    'open'     => ['label' => 'Open',     'badge' => 'warning'],
-    'answered' => ['label' => 'Answered', 'badge' => 'success'],
+    'open'     => ['label' => t('complaints.status_open'),     'badge' => 'warning'],
+    'answered' => ['label' => t('complaints.status_answered'), 'badge' => 'success'],
 ];
 
-$complaintsTabs = ['open' => 'Open', 'answered' => 'Answered', 'all' => 'All'];
+$complaintsTabs = [
+    'open'     => t('complaints.tab_open'),
+    'answered' => t('complaints.tab_answered'),
+    'all'      => t('complaints.tab_all'),
+];
 
 $complaintsEmpty = [
-    'open'     => ['title' => 'No open feedback',     'text' => 'Everything has been answered.'],
-    'answered' => ['title' => 'No answered feedback', 'text' => 'Answered feedback will appear here.'],
-    'all'      => ['title' => 'No feedback yet',      'text' => 'Feedback sent by users will appear here.'],
+    'open'     => ['title' => t('complaints.empty_open_title'),     'text' => t('complaints.empty_open_text')],
+    'answered' => ['title' => t('complaints.empty_answered_title'), 'text' => t('complaints.empty_answered_text')],
+    'all'      => ['title' => t('complaints.empty_all_title'),      'text' => t('complaints.empty_all_text')],
 ];
 
 function complaintsEscape(string $value): string
@@ -45,18 +51,18 @@ function complaintsUrl(array $state, array $changes = []): string
     return '?' . http_build_query($params);
 }
 
-function complaintsRelativeDay(string $date, DateTimeImmutable $today): string
+function complaintsRelativeDay(string $date, DateTimeImmutable $today, bool $waiting): string
 {
     $days = (int) (new DateTimeImmutable($date))->diff($today)->format('%r%a');
 
     if ($days <= 0) {
-        return 'Today';
+        return t($waiting ? 'complaints.waiting_today' : 'complaints.day_today');
     }
     if ($days === 1) {
-        return 'Yesterday';
+        return t($waiting ? 'complaints.waiting_yesterday' : 'complaints.day_yesterday');
     }
 
-    return $days . ' days ago';
+    return tn($waiting ? 'complaints.waiting_days' : 'complaints.days_ago', $days);
 }
 
 $complaintsNames = [
@@ -151,15 +157,15 @@ uasort($complaintsRows, function (array $a, array $b): int {
         : $b['feedback_date'] <=> $a['feedback_date'];
 });
 
-$chnPageTitle = 'Complaint Management';
+$chnPageTitle = t('complaints.page_title');
 $chnUserName = $complaintsNames[$complaintsRole];
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CHN | Complaint Management</title>
+    <title>CHN | <?= te('complaints.page_title') ?></title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/complaints.css">
     <script src="../js/sidebar.js" defer></script>
@@ -177,9 +183,9 @@ require __DIR__ . '/../include/top-bar.php';
 
 <main class="content" id="main-content" tabindex="-1">
     <div class="content__inner complaints">
-        <aside class="alert alert--info complaints-demo" aria-label="Demo notice">
-            <p class="complaints-demo__text"><strong>Demo data.</strong> All names and records are fictional. Preview a role:</p>
-            <nav aria-label="Preview role">
+        <aside class="alert alert--info complaints-demo" aria-label="<?= te('complaints.demo_notice') ?>">
+            <p class="complaints-demo__text"><strong><?= te('common.demo_title') ?></strong> <?= te('common.demo_text') ?></p>
+            <nav aria-label="<?= te('complaints.preview_role') ?>">
                 <ul class="complaints-demo__roles">
                     <?php foreach ($complaintsRoles as $complaintsRoleKey => $complaintsRoleLabel): ?>
                         <li>
@@ -196,9 +202,9 @@ require __DIR__ . '/../include/top-bar.php';
 
         <div class="page-header">
             <div>
-                <h1 class="page-header__title">Complaint management</h1>
+                <h1 class="page-header__title"><?= te('complaints.title') ?></h1>
                 <p class="page-header__subtitle">
-                    <?= $complaintsRole === 'admin' ? 'Read the feedback and complaints sent by users and respond to them.' : 'Feedback review for admins.' ?>
+                    <?= te($complaintsRole === 'admin' ? 'complaints.subtitle_admin' : 'complaints.subtitle_other') ?>
                 </p>
             </div>
         </div>
@@ -206,26 +212,35 @@ require __DIR__ . '/../include/top-bar.php';
         <?php if ($complaintsRole !== 'admin'): ?>
             <section class="card" aria-labelledby="complaints-denied-title">
                 <div class="empty-state">
-                    <h2 class="empty-state__title" id="complaints-denied-title">Only available for admins</h2>
-                    <p class="empty-state__text">Admins review and answer feedback here. You can send your own feedback on the Feedback &amp; Support page.</p>
-                    <a class="btn btn--outline" href="<?= complaintsEscape('dashboard-test.php' . complaintsUrl(['role' => $complaintsRole])) ?>">Back to dashboard</a>
+                    <h2 class="empty-state__title" id="complaints-denied-title"><?= te('common.admins_only') ?></h2>
+                    <p class="empty-state__text"><?= te('complaints.denied_text') ?></p>
+                    <a class="btn btn--outline" href="<?= complaintsEscape('dashboard-test.php' . complaintsUrl(['role' => $complaintsRole])) ?>"><?= te('complaints.back_dashboard') ?></a>
                 </div>
             </section>
         <?php else: ?>
-            <p class="alert alert--info complaints-notice" id="complaints-notice" role="status" tabindex="-1" hidden></p>
+            <p class="alert alert--info complaints-notice" id="complaints-notice" role="status" tabindex="-1" hidden
+               data-messages="<?= chnJsMessages([
+                   'required'      => 'complaints.error_required',
+                   'tooLong'       => 'complaints.error_too_long',
+                   'responseToday' => 'complaints.response_today',
+                   'answered'      => 'complaints.status_answered',
+                   'saved'         => 'complaints.demo_saved',
+               ]) ?>"></p>
 
             <section class="card complaints-list" id="complaints-list" aria-labelledby="complaints-list-title">
                 <header class="card__header">
                     <div>
-                        <h2 class="card__title" id="complaints-list-title">Feedback and complaints</h2>
+                        <h2 class="card__title" id="complaints-list-title"><?= te('complaints.list_title') ?></h2>
                         <p class="card__subtitle">
-                            <?= count($complaintsRows) ?> shown<?= $complaintsQuery !== '' ? ' for “' . complaintsEscape($complaintsQuery) . '”' : '' ?>.
-                            <?= $complaintsStatus === 'answered' ? 'Newest first.' : 'Longest waiting first.' ?>
+                            <?= complaintsEscape($complaintsQuery !== ''
+                                ? tn('complaints.shown_query', count($complaintsRows), ['query' => $complaintsQuery])
+                                : tn('complaints.shown', count($complaintsRows))) ?>
+                            <?= te($complaintsStatus === 'answered' ? 'complaints.sort_newest' : 'complaints.sort_waiting') ?>
                         </p>
                     </div>
                 </header>
 
-                <nav aria-label="Filter by status">
+                <nav aria-label="<?= te('complaints.filter_status') ?>">
                     <ul class="complaints-tabs">
                         <?php foreach ($complaintsTabs as $complaintsTabKey => $complaintsTabLabel): ?>
                             <li>
@@ -243,19 +258,19 @@ require __DIR__ . '/../include/top-bar.php';
                 <form class="complaints-search" method="get" action="<?= complaintsEscape('complaints-test.php#complaints-list') ?>" role="search">
                     <input type="hidden" name="role" value="<?= complaintsEscape($complaintsRole) ?>">
                     <input type="hidden" name="status" value="<?= complaintsEscape($complaintsStatus) ?>">
-                    <label class="form-label" for="complaints-q">Sender or message</label>
+                    <label class="form-label" for="complaints-q"><?= te('complaints.search_label') ?></label>
                     <div class="complaints-search__control">
                         <input class="form-control" type="search" id="complaints-q" name="q" maxlength="100"
                                autocomplete="off" value="<?= complaintsEscape($complaintsQuery) ?>">
-                        <button type="submit" class="btn btn--primary">Search</button>
-                        <a class="btn btn--outline" href="<?= complaintsEscape(complaintsUrl($complaintsState, ['q' => null]) . '#complaints-list') ?>">Clear</a>
+                        <button type="submit" class="btn btn--primary"><?= te('complaints.search') ?></button>
+                        <a class="btn btn--outline" href="<?= complaintsEscape(complaintsUrl($complaintsState, ['q' => null]) . '#complaints-list') ?>"><?= te('complaints.clear') ?></a>
                     </div>
                 </form>
 
                 <?php if ($complaintsRows === []): ?>
                     <div class="empty-state">
-                        <p class="empty-state__title"><?= complaintsEscape($complaintsQuery !== '' ? 'No feedback found' : $complaintsEmpty[$complaintsStatus]['title']) ?></p>
-                        <p class="empty-state__text"><?= complaintsEscape($complaintsQuery !== '' ? 'Try another sender or word.' : $complaintsEmpty[$complaintsStatus]['text']) ?></p>
+                        <p class="empty-state__title"><?= complaintsEscape($complaintsQuery !== '' ? t('complaints.no_results_title') : $complaintsEmpty[$complaintsStatus]['title']) ?></p>
+                        <p class="empty-state__text"><?= complaintsEscape($complaintsQuery !== '' ? t('complaints.no_results_text') : $complaintsEmpty[$complaintsStatus]['text']) ?></p>
                     </div>
                 <?php else: ?>
                     <ol class="complaints-items">
@@ -277,8 +292,8 @@ require __DIR__ . '/../include/top-bar.php';
                                     </header>
                                     <p class="complaints-item__meta">
                                         <span><?= complaintsEscape($complaintsItem['email']) ?></span>
-                                        <time datetime="<?= complaintsEscape($complaintsSent->format('Y-m-d')) ?>"><?= complaintsEscape($complaintsSent->format('j M Y')) ?></time>
-                                        <span><?= complaintsEscape($complaintsItem['status'] === 'open' ? 'Waiting since ' . lcfirst(complaintsRelativeDay($complaintsItem['feedback_date'], $complaintsToday)) : complaintsRelativeDay($complaintsItem['feedback_date'], $complaintsToday)) ?></span>
+                                        <time datetime="<?= complaintsEscape($complaintsSent->format('Y-m-d')) ?>"><?= complaintsEscape(chnDate($complaintsSent, 'medium')) ?></time>
+                                        <span data-complaints-wait="<?= complaintsEscape(complaintsRelativeDay($complaintsItem['feedback_date'], $complaintsToday, false)) ?>"><?= complaintsEscape(complaintsRelativeDay($complaintsItem['feedback_date'], $complaintsToday, $complaintsItem['status'] === 'open')) ?></span>
                                     </p>
 
                                     <p class="complaints-item__message"><?= complaintsEscape($complaintsItem['feedback_msg']) ?></p>
@@ -287,8 +302,8 @@ require __DIR__ . '/../include/top-bar.php';
                                         <?php $complaintsAnswered = new DateTimeImmutable($complaintsItem['response']['response_date']); ?>
                                         <div class="complaints-item__response">
                                             <p class="complaints-item__response-title">
-                                                Response ·
-                                                <time datetime="<?= complaintsEscape($complaintsAnswered->format('Y-m-d')) ?>"><?= complaintsEscape($complaintsAnswered->format('j M Y')) ?></time>
+                                                <?= te('complaints.response') ?> ·
+                                                <time datetime="<?= complaintsEscape($complaintsAnswered->format('Y-m-d')) ?>"><?= complaintsEscape(chnDate($complaintsAnswered, 'medium')) ?></time>
                                             </p>
                                             <p class="complaints-item__message"><?= complaintsEscape($complaintsItem['response']['response_msg']) ?></p>
                                         </div>
@@ -298,24 +313,25 @@ require __DIR__ . '/../include/top-bar.php';
                                             <input type="hidden" name="action" value="respond">
                                             <input type="hidden" name="feedback_id" value="<?= (int) $complaintsId ?>">
                                             <div class="form-group">
-                                                <label class="form-label" for="complaints-response-<?= (int) $complaintsId ?>">Your response</label>
+                                                <label class="form-label" for="complaints-response-<?= (int) $complaintsId ?>"><?= te('complaints.your_response') ?></label>
                                                 <textarea class="form-control" id="complaints-response-<?= (int) $complaintsId ?>" name="response_msg"
                                                           rows="3" maxlength="255" required
                                                           aria-describedby="complaints-response-<?= (int) $complaintsId ?>-hint complaints-response-<?= (int) $complaintsId ?>-error"></textarea>
                                                 <p class="form-hint" id="complaints-response-<?= (int) $complaintsId ?>-hint">
-                                                    <span data-complaints-counter>0</span> / 255 characters. Each feedback gets one response. The user sees it on their Feedback page.
+                                                    <?= str_replace('{current}', '<span data-complaints-counter>0</span>', complaintsEscape(tn('complaints.counter', 255))) ?>
+                                                    <?= te('complaints.response_hint') ?>
                                                 </p>
                                                 <p class="form-error" id="complaints-response-<?= (int) $complaintsId ?>-error" role="alert" hidden></p>
                                             </div>
                                             <div class="complaints-form__actions">
-                                                <button type="submit" class="btn btn--primary">Send response</button>
-                                                <a class="btn btn--outline" href="<?= complaintsEscape(complaintsUrl($complaintsState) . '#complaint-' . $complaintsId) ?>">Cancel</a>
+                                                <button type="submit" class="btn btn--primary"><?= te('complaints.send_response') ?></button>
+                                                <a class="btn btn--outline" href="<?= complaintsEscape(complaintsUrl($complaintsState) . '#complaint-' . $complaintsId) ?>"><?= te('complaints.cancel') ?></a>
                                             </div>
                                         </form>
                                     <?php else: ?>
                                         <a class="btn btn--outline btn--sm"
                                            href="<?= complaintsEscape(complaintsUrl($complaintsState, ['respond' => $complaintsId]) . '#complaint-' . $complaintsId) ?>"
-                                           aria-label="Respond to <?= complaintsEscape($complaintsItem['sender']) ?>">Respond</a>
+                                           aria-label="<?= te('complaints.respond_to', ['name' => $complaintsItem['sender']]) ?>"><?= te('complaints.respond') ?></a>
                                     <?php endif; ?>
                                 </article>
                             </li>

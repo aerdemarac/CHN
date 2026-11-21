@@ -15,6 +15,8 @@ if (!isset($chnProjectRoot)) {
     $chnProjectRoot = dirname(__DIR__);
 }
 
+require_once __DIR__ . '/i18n.php';
+
 if (!isset($chnBaseUrl)) {
     $chnDocumentRoot = isset($_SERVER['DOCUMENT_ROOT'])
         ? realpath($_SERVER['DOCUMENT_ROOT']) : false;
@@ -71,13 +73,23 @@ $chnResolvedRole = (isset($chnUserRole) && trim((string) $chnUserRole) !== '')
         : 'Patient');
 
 $chnAccountLinkRole = str_replace([' ', '-'], '_', strtolower(trim((string) $chnResolvedRole)));
+foreach (['patient', 'doctor', 'healthcare_staff', 'admin'] as $chnRoleKey) {
+    if ($chnAccountLinkRole === $chnRoleKey || (string) $chnResolvedRole === t('role.' . $chnRoleKey)) {
+        $chnAccountLinkRole = $chnRoleKey;
+        $chnResolvedRole = t('role.' . $chnRoleKey);
+        break;
+    }
+}
 
 $chnNameParts = preg_split('/\s+/u', trim((string) $chnResolvedName), -1, PREG_SPLIT_NO_EMPTY) ?: [];
 $chnInitials = '';
-foreach (array_slice($chnNameParts, 0, 2) as $chnPart) {
-    $chnInitials .= function_exists('mb_substr')
-        ? mb_strtoupper(mb_substr($chnPart, 0, 1, 'UTF-8'), 'UTF-8')
-        : strtoupper(substr($chnPart, 0, 1));
+foreach ($chnNameParts as $chnPart) {
+    if (mb_strlen($chnInitials, 'UTF-8') >= 2) {
+        break;
+    }
+    if (preg_match('/\p{L}/u', $chnPart, $chnLetter)) {
+        $chnInitials .= mb_strtoupper($chnLetter[0], 'UTF-8');
+    }
 }
 if ($chnInitials === '') {
     $chnInitials = 'CH';
@@ -99,25 +111,8 @@ $chnUnreadNotifications = count(array_filter(
     static fn(array $notice): bool => empty($notice['read'])
 ));
 
-$chnLanguages = [
-    'tr' => ['code' => 'TR', 'label' => 'Türkçe'],
-    'en' => ['code' => 'EN', 'label' => 'English'],
-    'el' => ['code' => 'EL', 'label' => 'Ελληνικά'],
-    'ru' => ['code' => 'RU', 'label' => 'Русский'],
-    'yo' => ['code' => 'YO', 'label' => 'Yorùbá'],
-    'de' => ['code' => 'DE', 'label' => 'Deutsch'],
-    'fr' => ['code' => 'FR', 'label' => 'Français'],
-    'es' => ['code' => 'ES', 'label' => 'Español'],
-];
-
-$chnActiveLang = 'en';
-if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
-    $chnActiveLang = $chnLang;
-} elseif (isset($_GET['lang']) && is_string($_GET['lang']) && isset($chnLanguages[$_GET['lang']])) {
-    $chnActiveLang = $_GET['lang'];
-} elseif ($chnSessionActive && isset($_SESSION['lang']) && is_string($_SESSION['lang']) && isset($chnLanguages[$_SESSION['lang']])) {
-    $chnActiveLang = $_SESSION['lang'];
-}
+$chnLanguages = CHN_LANGUAGES;
+$chnActiveLang = chnLang();
 ?>
 <style id="chn-topbar-mobile-single-row-v7">
 /* Only mobile: desktop Cyprus Healthcare Network heading remains visible.
@@ -156,12 +151,12 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
     }
 }
 </style>
-<header class="topbar" aria-label="Top header">
+<header class="topbar" aria-label="<?= te('topbar.label') ?>">
     <div class="topbar__brand">Cyprus Healthcare Network</div>
     <div class="topbar__actions">
-        <a class="btn btn--danger btn--sm topbar__emergency" href="tel:112" aria-label="Call Emergency 112">
+        <a class="btn btn--danger btn--sm topbar__emergency" href="<?= htmlspecialchars($chnBaseUrl . 'pages/emergency-call.php?' . http_build_query(['lang' => $chnActiveLang]), ENT_QUOTES, 'UTF-8') ?>" aria-label="<?= te('topbar.emergency_call') ?>">
             <span class="icon icon--phone" aria-hidden="true"></span>
-            <span class="topbar__emergency-label">Emergency</span>
+            <span class="topbar__emergency-label"><?= te('common.emergency') ?></span>
             <span class="topbar__emergency-number">112</span>
         </a>
 
@@ -169,7 +164,7 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
             <button type="button" class="btn btn--outline btn--sm topbar__notification-toggle"
                     id="chn-notification-toggle" data-dropdown-toggle
                     aria-expanded="false"
-                    aria-controls="chn-notification-menu" aria-label="Notifications<?= $chnUnreadNotifications ? ' (' . $chnUnreadNotifications . ' unread)' : '' ?>">
+                    aria-controls="chn-notification-menu" aria-label="<?= htmlspecialchars($chnUnreadNotifications ? tn('topbar.notifications_unread', $chnUnreadNotifications) : t('topbar.notifications'), ENT_QUOTES, 'UTF-8') ?>">
 
                 <img class="topbar__bell-image"
                      src="<?= htmlspecialchars($chnBaseUrl . 'assets/icons/bell.svg', ENT_QUOTES, 'UTF-8') ?>"
@@ -179,18 +174,18 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
                 <?php endif; ?>
             </button>
             <div class="topbar__menu topbar__menu--notifications" id="chn-notification-menu"
-                 data-dropdown-menu role="region" aria-label="Notifications" hidden>
-                <div class="topbar__notifications-title">Notifications</div>
+                 data-dropdown-menu role="region" aria-label="<?= te('topbar.notifications') ?>" hidden>
+                <div class="topbar__notifications-title"><?= te('topbar.notifications') ?></div>
                 <?php if ($chnNotifications === []): ?>
-                    <p class="topbar__notifications-empty">No notifications yet.</p>
+                    <p class="topbar__notifications-empty"><?= te('topbar.notifications_empty') ?></p>
                 <?php else: ?>
                     <div class="topbar__notification-list">
                         <?php foreach ($chnNotifications as $chnNotification): ?>
                             <div class="topbar__notification-item<?= empty($chnNotification['read']) ? ' topbar__notification-item--unread' : '' ?>">
                                 <div class="topbar__notification-heading">
-                                    <strong><?= htmlspecialchars((string)($chnNotification['title'] ?? 'Notification'), ENT_QUOTES, 'UTF-8') ?></strong>
+                                    <strong><?= htmlspecialchars((string)($chnNotification['title'] ?? t('topbar.notification')), ENT_QUOTES, 'UTF-8') ?></strong>
                                     <?php if (empty($chnNotification['read'])): ?>
-                                        <span class="topbar__notification-dot" aria-label="Unread"></span>
+                                        <span class="topbar__notification-dot" aria-label="<?= te('topbar.unread') ?>"></span>
                                     <?php endif; ?>
                                 </div>
                                 <?php if (!empty($chnNotification['message'])): ?>
@@ -210,22 +205,22 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
             <button type="button" class="btn btn--outline btn--sm topbar__lang-toggle"
                     id="chn-lang-toggle" data-dropdown-toggle
                     aria-haspopup="true" aria-expanded="false"
-                    aria-controls="chn-lang-menu" aria-label="Change language">
+                    aria-controls="chn-lang-menu" aria-label="<?= te('lang.change') ?>">
                 <span data-lang-current><?= htmlspecialchars($chnLanguages[$chnActiveLang]['code'], ENT_QUOTES, 'UTF-8') ?></span>
                 <span class="topbar__caret" aria-hidden="true"></span>
             </button>
             <div class="topbar__menu" id="chn-lang-menu" data-dropdown-menu role="menu" hidden>
                 <?php foreach ($chnLanguages as $chnLangKey => $chnLangItem): ?>
                     <?php $chnIsSelected = $chnLangKey === $chnActiveLang; ?>
-                    <button type="button"
-                            class="topbar__menu-item topbar__lang-option<?= $chnIsSelected ? ' is-active' : '' ?>"
-                            role="menuitemradio"
-                            aria-checked="<?= $chnIsSelected ? 'true' : 'false' ?>"
-                            data-lang="<?= htmlspecialchars($chnLangKey, ENT_QUOTES, 'UTF-8') ?>"
-                            data-lang-code="<?= htmlspecialchars($chnLangItem['code'], ENT_QUOTES, 'UTF-8') ?>">
+                    <a class="topbar__menu-item topbar__lang-option<?= $chnIsSelected ? ' is-active' : '' ?>"
+                       role="menuitemradio"
+                       aria-checked="<?= $chnIsSelected ? 'true' : 'false' ?>"
+                       href="<?= htmlspecialchars(chnLangUrl($chnLangKey), ENT_QUOTES, 'UTF-8') ?>"
+                       hreflang="<?= htmlspecialchars($chnLangKey, ENT_QUOTES, 'UTF-8') ?>"
+                       lang="<?= htmlspecialchars($chnLangKey, ENT_QUOTES, 'UTF-8') ?>">
                         <span class="topbar__lang-option-code"><?= htmlspecialchars($chnLangItem['code'], ENT_QUOTES, 'UTF-8') ?></span>
                         <span><?= htmlspecialchars($chnLangItem['label'], ENT_QUOTES, 'UTF-8') ?></span>
-                    </button>
+                    </a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -235,7 +230,7 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
                     id="chn-user-toggle" data-dropdown-toggle
                     aria-haspopup="true" aria-expanded="false"
                     aria-controls="chn-user-menu"
-                    aria-label="<?= $chnEscapedName ?> — Account menu">
+                    aria-label="<?= te('topbar.account_menu', ['name' => (string) $chnResolvedName]) ?>">
                 <span class="topbar__avatar" aria-hidden="true"><?= $chnEscapedInitials ?></span>
                 <span class="topbar__user-info">
                     <span class="topbar__user-name"><?= $chnEscapedName ?></span>
@@ -249,13 +244,13 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
                        href="<?= htmlspecialchars($chnBaseUrl . implode('/', array_map('rawurlencode', explode('/', $chnAccountSettingsFile)))
                            . (in_array($chnAccountLinkRole, ['patient', 'doctor', 'healthcare_staff', 'admin'], true)
                                ? '?role=' . rawurlencode($chnAccountLinkRole) : ''), ENT_QUOTES, 'UTF-8') ?>">
-                        <span>Account Settings</span>
+                        <span><?= te('topbar.account_settings') ?></span>
                     </a>
                 <?php else: ?>
                     <span class="topbar__menu-item topbar__menu-item--disabled" role="menuitem"
-                          aria-disabled="true" aria-label="Account Settings — Under development">
-                        <span>Account Settings</span>
-                        <span class="topbar__menu-status" aria-hidden="true">Soon</span>
+                          aria-disabled="true" aria-label="<?= te('common.under_development', ['label' => t('topbar.account_settings')]) ?>">
+                        <span><?= te('topbar.account_settings') ?></span>
+                        <span class="topbar__menu-status" aria-hidden="true"><?= te('common.soon') ?></span>
                     </span>
                 <?php endif; ?>
 
@@ -266,13 +261,13 @@ if (isset($chnLang) && is_string($chnLang) && isset($chnLanguages[$chnLang])) {
                        href="<?= htmlspecialchars(isset($chnPrototypeRole)
                            ? chnPrototypeUrl($chnBaseUrl . 'backend/logout.php', $chnPrototypeRole)
                            : $chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>">
-                        <span>Log out</span>
+                        <span><?= te('topbar.log_out') ?></span>
                     </a>
                 <?php else: ?>
                     <button type="button" class="topbar__menu-item topbar__menu-item--danger"
-                            role="menuitem" disabled aria-label="Log out — Under development">
-                        <span>Log out</span>
-                        <span class="topbar__menu-status" aria-hidden="true">Soon</span>
+                            role="menuitem" disabled aria-label="<?= te('common.under_development', ['label' => t('topbar.log_out')]) ?>">
+                        <span><?= te('topbar.log_out') ?></span>
+                        <span class="topbar__menu-status" aria-hidden="true"><?= te('common.soon') ?></span>
                     </button>
                 <?php endif; ?>
             </div>
