@@ -168,6 +168,32 @@ function e($value): string {
 - Ensure log files cannot be accessed publicly.
 - Never log passwords, session IDs, or authentication tokens.
 
+### 6.5 Character Set Validation and Enforcement
+
+The backend must enforce the application's supported character set independently of frontend validation.
+
+**Accepted characters:**
+- English Latin alphabet: `A-Z`, `a-z`
+- Turkish Latin characters: `ç, Ç, ğ, Ğ, ı, İ, ö, Ö, ş, Ş, ü, Ü`
+- Numeric digits: `0-9`
+- Normal whitespace
+- Field-specific permitted punctuation.
+
+**Backend enforcement requirements:**
+- Reject any incoming text containing characters outside the explicitly permitted character set.
+- Never assume that frontend validation has already been performed.
+- Validate all relevant incoming values before executing database INSERT or UPDATE operations.
+- Invalid input must never be persisted in the database.
+- Return an appropriate HTTP 400 response when unsupported characters are detected.
+- Use centralized PHP validation helpers to ensure consistent enforcement.
+- Use Unicode-aware regular expressions (`/u`) or equivalent validation logic.
+- Apply field-specific validation rules where appropriate.
+- Do not silently sanitize invalid input and continue processing the request; reject the request instead.
+
+**Security requirement:**
+
+Backend validation is authoritative. Even if a client bypasses all frontend restrictions and sends a manually constructed HTTP request, the backend must reject unsupported characters before any database modification occurs.
+
 ### 6.6 User Feedback
 
 - Follow the PRG pattern for form submissions.

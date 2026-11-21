@@ -96,6 +96,32 @@ Assume every page already has the following overarching layout wrapper. You DO N
 - **Single Shared Files Only:** Pages that serve multiple user types (such as appointments, medical records, and medical cases) must exist as a single shared page. Never create separate duplicate files like doctor-appointments or patient-appointments.
 - **Action Buttons:** Only actions relevant to the current role must be displayed (patients see options to book or cancel; doctors see clinical actions such as adding diagnoses, writing prescriptions, or starting visits).
 
+### Character Input Restrictions
+
+All user-editable text inputs and text areas must restrict input to the application's supported character set.
+
+**Accepted characters:**
+- English Latin alphabet: `A-Z`, `a-z`
+- Turkish Latin characters: `ç, Ç, ğ, Ğ, ı, İ, ö, Ö, ş, Ş, ü, Ü`
+- Numeric digits: `0-9`
+- Normal whitespace (spaces)
+- Field-specific permitted punctuation (e.g. `. , ! ? @ _ -`)
+
+**Rejected characters:**
+- Non-Latin scripts (Cyrillic, Arabic, Chinese, Japanese, etc.)
+- Emojis and unsupported Unicode symbols
+- Any character outside the explicitly permitted character set.
+
+**Implementation requirements:**
+- Enforce restrictions on both keyboard input and pasted content.
+- Validate input using the `input` event, not only keyboard events.
+- Provide immediate user feedback when unsupported characters are entered.
+- Do not silently remove or replace unsupported characters.
+- Apply the restrictions consistently across all relevant forms and text areas.
+- Use field-specific rules where necessary (e.g. phone numbers and email addresses).
+- Frontend validation must not be considered a replacement for backend validation.
+- this restricton will not effect ai-chatbot side. 
+
 ### Project Layout Structure:
 ```text
 project/
