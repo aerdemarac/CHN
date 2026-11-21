@@ -1,0 +1,8 @@
+# ------------------------------------------------------------------------------
+# GEÇİCİ YAPILANDIRMA (TEMPORARY CONFIGURATION)
+# NOT: index.php asıl oturum ve dashboard router mantığı implemente edilene kadar,
+# root dizine (http://localhost/CHN/) girildiğinde varsayılan XAMPP Apache
+# dosya gezgininin (Index of /CHN) açılması için geçici olarak ayarlanmıştır.
+# ------------------------------------------------------------------------------
+Options +Indexes
+DirectoryIndex none disabled

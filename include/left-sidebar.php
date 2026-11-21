@@ -32,9 +32,9 @@ $chnSidebarItems = chnSidebarItemsForRole((string)($chnUserRole ?? 'guest'));
 
 // Only the local preview page opts into this extra menu item.
 if (!empty($chnSidebarShowTestLink)) {
-    $chnPreviewFile = is_file($chnProjectRoot . '/test-endpoints/top-and-sidebar-test.php')
-        ? 'test-endpoints/top-and-sidebar-test.php'
-        : (is_file($chnProjectRoot . '/sidebar-test.php') ? 'sidebar-test.php' : 'test-endpoints/top-and-sidebar-test.php');
+    $chnPreviewFile = is_file($chnProjectRoot . '/pages/top-and-sidebar-test.php')
+        ? 'pages/top-and-sidebar-test.php'
+        : (is_file($chnProjectRoot . '/sidebar-test.php') ? 'sidebar-test.php' : 'pages/top-and-sidebar-test.php');
     array_unshift($chnSidebarItems,
         ['label' => 'UI Preview', 'file' => $chnPreviewFile, 'icon' => 'preview']);
 }

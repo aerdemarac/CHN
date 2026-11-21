@@ -16,7 +16,7 @@ $chnUserRole = $accountRole; // Presentation only; never authorization.
 require $chnProjectRoot . '/include/left-sidebar.php';
 require $chnProjectRoot . '/include/top-bar.php';
 $accountShell = ob_get_clean();
-$accountUrl = $chnBaseUrl . 'test-endpoints/account-settings.php';
+$accountUrl = $chnBaseUrl . 'pages/account-settings.php';
 $account = ['name' => 'Alex', 'surname' => 'Demo', 'email' => 'alex.demo@example.invalid', 'phone' => '+905551234567', 'birth_date' => '1994-06-15', 'gender' => 'not_specified', 'nationality' => 'CY'];
 // Presentation only. Future updates must enforce this rule using the authenticated role.
 // Backend must enforce this same phone-only allowlist for non-admin sessions.

@@ -2,6 +2,7 @@ config/
 config/*
 .env
 .env.*
+!.env.example
 *.local.php
 
 .DS_Store
