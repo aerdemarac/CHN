@@ -95,8 +95,8 @@
 
     function updateReview() {
         const pending = state === 'locating';
-        addressField.textContent = address ?? 'No saved full address available.';
-        if (!address && !unlock.hidden) addressField.textContent = 'Saved address locked.';
+        addressField.textContent = address ?? 'No last active account address available.';
+        if (!address && !unlock.hidden) addressField.textContent = 'Last active account address locked.';
         advance.disabled = pending || (!gps && !address);
         advance.textContent = !pending && !gps && address
             ? 'Use this address and continue'
@@ -104,7 +104,7 @@
         instructions.textContent = pending
             ? 'You can continue once the location check finishes.'
             : gps ? 'The request preview will use your current GPS location.'
-                : address ? 'Continue only if this saved address is where help is needed.'
+                : address ? 'Continue only if this address is where help is needed.'
                     : 'A location is required to continue. Cancel to try again, or call 112 for immediate help.';
     }
 
@@ -233,7 +233,7 @@
         state = 'warning';
         warningLocation.textContent = gps
             ? 'Location for this preview: Current GPS location.'
-            : 'Location for this preview: Saved full address.';
+            : 'Location for this preview: Last active account address.';
         for (const panel of [unlock, enable]) {
             panel.open = false;
             panel.querySelector('form').reset();
