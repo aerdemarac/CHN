@@ -35,7 +35,7 @@
 }
 
 .emergency__brand-call {
-    display: inline-flex;
+    display: none; /* Hidden on PC / desktop by default */
     align-items: center;
     gap: 8px;
     padding: 6px 14px;
@@ -132,9 +132,9 @@
     display: none !important;
 }
 
-/* 3. Direct 112 Call Banner (High Priority, High Contrast - Stacked & Compact) */
+/* 3. Direct 112 Call Banner (Mobile Only - PC cannot make telephone calls) */
 .emergency__call {
-    display: flex;
+    display: none; /* Hidden on PC / desktop */
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
@@ -747,6 +747,10 @@
     line-height: 1.5;
 }
 
+.emergency__result-reminder .btn--danger {
+    display: none; /* Hidden on PC / desktop */
+}
+
 /* 11. Large Buttons & Actions */
 .emergency__actions {
     display: flex;
@@ -828,12 +832,14 @@
     }
 
     .emergency__brand-call {
+        display: inline-flex;
         width: auto;
         padding: 6px 12px;
         font-size: 0.8125rem;
     }
 
     .emergency__call {
+        display: flex;
         padding: 14px 16px;
         gap: 10px;
         margin-bottom: 16px;
@@ -873,6 +879,11 @@
         min-height: 46px;
         font-size: 1rem;
         padding: 10px 16px;
+    }
+
+    .emergency__result-reminder .btn--danger {
+        display: inline-flex;
+        width: 100%;
     }
 
     .emergency__heading {
