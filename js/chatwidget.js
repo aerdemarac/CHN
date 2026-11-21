@@ -24,7 +24,7 @@
             const scriptUrl = new URL(script.src, window.location.href);
             return new URL('../backend/chat.php', scriptUrl).href;
         }
-        return window.location.pathname.includes('/test-endpoints/')
+        return (window.location.pathname.includes('/test-endpoints/') || window.location.pathname.includes('/pages/'))
             ? '../backend/chat.php'
             : 'backend/chat.php';
     }

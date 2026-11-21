@@ -25,31 +25,29 @@ if (!function_exists('chnSidebarItemsForRole')) {
         // Only pre-existing icon names from css/style.css.
         // Routes are project-root relative; unimplemented routes display Soon.
         $items = [
-            'dashboard' => ['label' => 'Dashboard', 'file' => 'index.php', 'demo' => 'test-endpoints/dashboard-test.php', 'icon' => 'dashboard'],
-            'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'test-endpoints/appointments-test.php', 'icon' => 'appointments'],
-            'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'test-endpoints/patients-test.php', 'icon' => 'records'],
-            'cases' => ['label' => 'Medical Cases', 'file' => 'test-endpoints/medical-cases.php', 'icon' => 'cases'],
-            'records' => ['label' => 'Medical Records', 'file' => 'medical-records.php', 'icon' => 'records'],
-            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'test-endpoints/emergency-demo.php', 'icon' => 'cases'],
-            'feedback' => ['label' => 'Feedback & Support', 'file' => 'test-endpoints/feedback.php', 'icon' => 'feedback'],
-            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'test-endpoints/user-management-test.php', 'icon' => 'records'],
-            'complaints' => ['label' => 'Complaint Management', 'file' => 'test-endpoints/complaints-test.php', 'icon' => 'feedback'],
-            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'test-endpoints/emergency-demo.php', 'icon' => 'cases'],
-            'settings' => ['label' => 'Settings', 'file' => 'settings.php', 'icon' => 'preview'],
+            'dashboard' => ['label' => 'Dashboard', 'file' => 'pages/dashboard-test.php', 'icon' => 'dashboard'],
+            'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'pages/appointments-test.php', 'icon' => 'appointments'],
+            'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'pages/patients-test.php', 'icon' => 'records'],
+            'cases' => ['label' => 'Medical Cases', 'file' => 'pages/medical-cases.php', 'icon' => 'cases'],
+            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-demo.php', 'icon' => 'cases'],
+            'feedback' => ['label' => 'Feedback & Support', 'file' => 'pages/feedback.php', 'icon' => 'feedback'],
+            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'pages/user-management-test.php', 'icon' => 'records'],
+            'complaints' => ['label' => 'Complaint Management', 'file' => 'pages/complaints-test.php', 'icon' => 'feedback'],
+            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-demo.php', 'icon' => 'cases'],
         ];
 
         $byRole = [
             'patient' => [
-                'dashboard', 'appointments', 'cases', 'records', 'feedback',
+                'dashboard', 'appointments', 'cases', 'feedback',
             ],
             'doctor' => [
-                'dashboard', 'appointments', 'patients', 'cases', 'records', 'feedback',
+                'dashboard', 'appointments', 'patients', 'cases', 'feedback',
             ],
             'healthcare_staff' => [
-                'dashboard', 'alerts', 'appointments', 'patients', 'cases', 'records', 'feedback',
+                'dashboard', 'alerts', 'appointments', 'patients', 'cases', 'feedback',
             ],
             'admin' => [
-                'dashboard', 'users', 'complaints', 'emergency_logs', 'settings',
+                'dashboard', 'users', 'complaints', 'emergency_logs',
             ],
         ];
 
