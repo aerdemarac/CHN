@@ -53,10 +53,6 @@ if ($isAuthenticated) {
     <header class="emergency__brand">
         <div class="emergency__brand-inner">
             <img src="../assets/logos/chn-logo.png" width="136" height="40" alt="CHN – Cyprus Health-Care Network">
-            <a class="emergency__brand-call" href="tel:112" aria-label="<?= te('emergency_call.direct_call_aria') ?>">
-                <img src="../assets/icons/phone.svg" alt="" width="16" height="16">
-                <span><?= te('emergency_call.direct_dial') ?> <strong>112</strong></span>
-            </a>
             <?php require dirname(__DIR__) . '/include/auth-language.php'; ?>
         </div>
     </header>
