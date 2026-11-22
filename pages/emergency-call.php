@@ -57,6 +57,7 @@ if ($isAuthenticated) {
                 <img src="../assets/icons/phone.svg" alt="" width="16" height="16">
                 <span><?= te('emergency_call.direct_dial') ?> <strong>112</strong></span>
             </a>
+            <?php require dirname(__DIR__) . '/include/auth-language.php'; ?>
         </div>
     </header>
 <?php endif; ?>
