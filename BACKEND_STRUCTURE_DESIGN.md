@@ -52,6 +52,7 @@ When working on this project:
 - Session IDs must be regenerated using `session_regenerate_id(true)` after successful login.
 - Enable `session.use_strict_mode = 1`.
 - Logout and session expiration must properly clear and destroy the session.
+- Language preference is stored in a persistent `chn_lang` cookie to retain user choice across sessions and for unauthenticated guests, and synchronized to `$_SESSION['lang']` during active sessions.
 - Remember Me functionality is disabled.
 
 ### 3.2 Role-Based Authorization
