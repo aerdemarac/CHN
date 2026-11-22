@@ -63,3 +63,24 @@
 .medical-cases__edit-label { font-size: 0.875rem; }
 :is(.medical-cases__triage-editor, .medical-cases__status-editor) form { margin-top: 12px; }
 :is(.medical-cases__triage-editor, .medical-cases__status-editor) button { margin-top: 8px; }
+
+.medical-cases__diagnosis-header, .medical-cases__diagnosis-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+.medical-cases__diagnosis-header { justify-content: space-between; margin-bottom: 12px; }
+.medical-cases__diagnosis-header .medical-cases__heading { margin: 0; }
+.medical-cases__diagnoses [hidden] { display: none; }
+.medical-cases__diagnosis-form {
+    padding: clamp(12px, 3vw, 24px);
+    margin-bottom: 16px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+.medical-cases__diagnosis-field { margin-bottom: 16px; }
+.medical-cases__diagnosis-form .form-label { display: block; }
+.medical-cases__diagnosis-result { margin: 0; }
+.medical-cases__diagnosis-result:not(:empty) { margin-bottom: 12px; }

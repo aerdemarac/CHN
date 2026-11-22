@@ -17,3 +17,11 @@ The future server must validate all fields and relationships independently: requ
 The canonical schema currently has no case_title and requires doctor attribution on closure. The backend team must review additive title storage and accurate patient closure attribution before integration; no migrations or database changes are executed by this demo. Do not fabricate a doctor closure actor for patient actions.
 
 List/detail DTOs should keep joined display names and diagnoses related by case_id, with diagnosis entries newest first. Apply authorization before returning any data; never fetch a broad dataset and rely on URL role/client filtering. Staff displays routing metadata only; admin clinical permissions remain undefined.
+
+## Add Diagnosis preview
+
+Open `pages/medical-cases.php?role=doctor` and select an assigned case from the case list. Diagnosis History offers Add Diagnosis for a case that was open when selected and remains open in the preview. Changing its status to closed hides the action and discards any draft. Cases loaded as closed stay read-only for diagnosis entry, even after a preview-only status change. The team must approve production rules for closed and reopened cases before connecting the form to a backend.
+
+The form carries `case_id`, required `diagnosis_text` (up to 65,535 UTF-8 bytes for MySQL TEXT), and optional `icd_code` (up to 20 characters; blank maps to NULL on integration). Preview entries are added to the current page in newest-first order. They have no generated record ID or authoritative timestamp. The Russian interface follows the same input policy as English and Turkish, so Cyrillic clinical input is currently rejected.
+
+On integration, derive `doctor_id` from the authenticated PHP session. Verify doctor role, assignment, case state, CSRF protection and field validity on the server, and prevent replayed writes. The backend generates `diagnosis_id` and `diagnosed_at`. Replace the temporary entry with the authorized server response.

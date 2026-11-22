@@ -57,6 +57,7 @@ $selected = null;
 foreach ($filtered as $case) {
     if ((string) $case['case_id'] === mcParam('case')) $selected = $case;
 }
+$canAddDiagnosis = $chnPrototypeRole === 'doctor' && $selected && $selected['case_state'] === 'open';
 $selectedDiagnoses = $selected && $clinicalView ? array_values(array_filter($diagnoses, static fn(array $diagnosis): bool => (string) $diagnosis['case_id'] === (string) $selected['case_id'])) : [];
 usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagnosed_at'], $a['diagnosed_at']));
 ?>
@@ -182,10 +183,51 @@ usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagn
         </dl>
         <?php if ($clinicalView): ?>
         <h3 class="medical-cases__heading"><?= te('cases.case_title') ?></h3><p><?= mcEscape($selected['case_title'] ?? t('cases.no_title')) ?></p><h3 class="medical-cases__heading"><?= te('cases.case_description') ?></h3><p class="medical-cases__description"><?= mcEscape($selected['case_description'] ?? t('cases.no_description')) ?></p>
-        <div class="medical-cases__diagnoses"><h3 class="medical-cases__heading"><?= te('cases.diagnosis_history') ?></h3>
-        <?php if ($selectedDiagnoses): ?><ol class="medical-cases__history">
-            <?php foreach ($selectedDiagnoses as $diagnosis): ?><li><p><?= mcEscape($diagnosis['diagnosis_text']) ?></p><p class="card__subtitle"><?= mcEscape(mcDate($diagnosis['diagnosed_at'])) ?> · <?= mcEscape($diagnosis['doctor_name'] ?? t('cases.doctor_unavailable')) ?></p><?php if (!empty($diagnosis['icd_code'])): ?><p><?= te('cases.icd_code', ['code' => $diagnosis['icd_code']]) ?></p><?php endif; ?></li><?php endforeach; ?>
-        </ol><?php else: ?><p class="medical-cases__empty"><?= te('cases.no_diagnoses') ?></p><?php endif; ?></div>
+        <section class="medical-cases__diagnoses" aria-labelledby="diagnosis-history-title">
+            <div class="medical-cases__diagnosis-header">
+                <h3 class="medical-cases__heading" id="diagnosis-history-title"><?= te('cases.diagnosis_history') ?></h3>
+                <?php if ($canAddDiagnosis): ?>
+                <button class="btn btn--primary" type="button" id="open-diagnosis" aria-controls="add-diagnosis" aria-expanded="false" hidden><?= te('cases.add_diagnosis') ?></button>
+                <?php endif; ?>
+            </div>
+            <?php if ($canAddDiagnosis): ?>
+            <form class="medical-cases__diagnosis-form" id="add-diagnosis" method="post" hidden novalidate
+                aria-labelledby="add-diagnosis-title"
+                data-messages="<?= chnJsMessages([
+                    'required' => 'cases.diagnosis_required', 'characters' => 'cases.diagnosis_characters',
+                    'descriptionLength' => 'cases.diagnosis_description_length', 'icdLength' => 'cases.diagnosis_icd_length',
+                    'preview' => 'cases.diagnosis_preview_entry', 'added' => 'cases.diagnosis_added', 'icd' => 'cases.icd_code',
+                ]) ?>">
+                <h4 class="medical-cases__heading" id="add-diagnosis-title"><?= te('cases.add_diagnosis') ?></h4>
+                <input type="hidden" name="case_id" value="<?= (int) $selected['case_id'] ?>">
+                <dl class="medical-cases__metadata">
+                    <div><dt><?= te('cases.col_case_id') ?></dt><dd><?= mcEscape($casePrefix . $selected['case_id']) ?></dd></div>
+                    <div><dt><?= te('cases.col_patient') ?></dt><dd><?= mcEscape($selected['patient_name']) ?></dd></div>
+                    <div><dt><?= te('cases.responsible_doctor') ?></dt><dd id="diagnosis-doctor"><?= mcEscape($selected['doctor_name']) ?></dd></div>
+                </dl>
+                <div class="medical-cases__diagnosis-field">
+                    <label class="form-label" for="diagnosis-text"><?= te('cases.diagnosis_description') ?></label>
+                    <textarea class="form-control" id="diagnosis-text" name="diagnosis_text" rows="4" required aria-describedby="diagnosis-text-error"></textarea>
+                    <p class="form-error" id="diagnosis-text-error" aria-live="polite"></p>
+                </div>
+                <div class="medical-cases__diagnosis-field">
+                    <label class="form-label" for="diagnosis-icd"><?= te('cases.diagnosis_icd_optional') ?></label>
+                    <input class="form-control" id="diagnosis-icd" name="icd_code" aria-describedby="diagnosis-icd-hint diagnosis-icd-error">
+                    <p class="form-hint" id="diagnosis-icd-hint"><?= te('cases.diagnosis_icd_length') ?></p>
+                    <p class="form-error" id="diagnosis-icd-error" aria-live="polite"></p>
+                </div>
+                <div class="medical-cases__diagnosis-actions">
+                    <button class="btn btn--primary" type="submit" disabled><?= te('cases.diagnosis_add_preview') ?></button>
+                    <button class="btn btn--outline" type="button" id="cancel-diagnosis"><?= te('cases.diagnosis_cancel') ?></button>
+                </div>
+            </form>
+            <p class="medical-cases__diagnosis-result" id="diagnosis-result" role="status"></p>
+            <?php endif; ?>
+            <ol class="medical-cases__history" id="diagnosis-history" <?= $selectedDiagnoses ? '' : 'hidden' ?>>
+                <?php foreach ($selectedDiagnoses as $diagnosis): ?><li><p><?= mcEscape($diagnosis['diagnosis_text']) ?></p><p class="card__subtitle"><?= mcEscape(mcDate($diagnosis['diagnosed_at'])) ?> · <?= mcEscape($diagnosis['doctor_name'] ?? t('cases.doctor_unavailable')) ?></p><?php if (!empty($diagnosis['icd_code'])): ?><p><?= te('cases.icd_code', ['code' => $diagnosis['icd_code']]) ?></p><?php endif; ?></li><?php endforeach; ?>
+            </ol>
+            <p class="medical-cases__empty" id="diagnosis-empty" <?= $selectedDiagnoses ? 'hidden' : '' ?>><?= te('cases.no_diagnoses') ?></p>
+        </section>
         <?php else: ?><p class="medical-cases__empty"><?= te('cases.staff_limited') ?></p><?php endif; ?>
         <?php else: ?><p class="medical-cases__empty"><?= mcParam('case') !== '' ? te('cases.case_not_found') : ($clinicalView ? te('cases.select_clinical') : te('cases.select_staff')) ?></p><?php endif; ?>
     </section>
