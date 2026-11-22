@@ -21,17 +21,21 @@ When working on this project:
 - Keep implementations understandable for all four team members.
 - Update this document when an architectural decision is explicitly changed.
 
-## 2. Architecture & Routing
+## 2. Architecture & Communication Protocol
 
-- **Architecture:** Classic PHP Form Submission using the Post/Redirect/Get (PRG) pattern.
-- **Backend Directory:** All form handlers must reside under `backend/` (e.g., `backend/login.php`, `backend/create_appointment.php`).
+- **Architecture:** Unified Fetch API + JSON communication across both Web and Electron applications.
+- **Backend Directory:** All API endpoints must reside under `backend/` (e.g., `backend/login.php`, `backend/create_appointment.php`).
 - **HTTP Methods:**
   - GET requests must not modify application data.
   - All state-changing operations must use POST.
-- **Redirection:** After processing a POST request, redirect users to the appropriate page using `header('Location: ...')` followed by `exit`.
+- **JSON Communication:**
+  - Frontend communicates with backend endpoints exclusively via `fetch()` with JSON payloads.
+  - Backend handlers parse JSON input via `php://input` and always respond with `Content-Type: application/json; charset=utf-8`.
+  - Backend handlers never render HTML or issue `header('Location: ...')` redirects; they strictly return JSON.
 - **Separation of Responsibilities:**
-  - Frontend pages display HTML and handle user interaction.
-  - Backend handlers process requests, validate input, interact with the database, and perform redirects.
+  - Frontend pages display HTML, manage user interactions, and handle DOM updates via Fetch responses.
+  - Backend handlers process requests, validate input, interact with the database, and return JSON responses.
+  - Page redirection (e.g. after login) is performed client-side using redirect URLs returned in the JSON response.
   - Shared PHP functions should be reused where appropriate.
 
 ## 3. Authentication & Authorization
@@ -43,6 +47,7 @@ When working on this project:
   - `HttpOnly = true`
   - `SameSite = Lax`
   - `Secure = true` when operating over HTTPS.
+- Client `fetch()` requests must include credentials (`credentials: 'same-origin'`) so session cookies are automatically transmitted.
 - Sessions expire after 30 minutes of inactivity, tracked through `$_SESSION['last_activity']`.
 - Session IDs must be regenerated using `session_regenerate_id(true)` after successful login.
 - Enable `session.use_strict_mode = 1`.
@@ -52,8 +57,8 @@ When working on this project:
 ### 3.2 Role-Based Authorization
 
 - Use a centralized `requireRole([...])` function.
-- Unauthenticated users accessing protected pages or handlers must be redirected to `login.php`.
-- Authenticated users without the required role must be redirected to their own dashboard with `?error=unauthorized`.
+- For HTML page requests: Unauthenticated users are redirected to `login.php`; unauthorized users are redirected to their dashboard.
+- For API endpoints: Unauthenticated requests return HTTP 401 Unauthorized; unauthorized roles return HTTP 403 Forbidden with a JSON error response.
 - Authorization must be checked on the backend, not just through frontend visibility.
 
 ### 3.3 Data Ownership
@@ -104,7 +109,7 @@ WHERE id = :id AND patient_id = :session_user_id
 UNIQUE (doctor_id, appointment_date, appointment_time)
 ```
 
-- Handle duplicate booking attempts gracefully, including simultaneous requests.
+- Handle duplicate booking attempts gracefully, returning an appropriate JSON error response.
 - Appointments cannot be scheduled in the past.
 - Patients may cancel appointments only when at least 2 hours remain before the appointment.
 - Verify the user's role and appointment ownership before viewing, modifying, or cancelling appointments.
@@ -113,7 +118,7 @@ UNIQUE (doctor_id, appointment_date, appointment_time)
 
 ### 5.2 Registration & User Management
 
-- Public registration through `register.php` creates `patient` accounts only.
+- Public registration through `backend/register.php` creates `patient` accounts only.
 - Users must not be able to assign themselves privileged roles.
 - All other roles (`doctor`, `healthcare_staff`, `admin`) are created and managed exclusively through the Admin panel.
 - Role assignments must always be validated server-side.
@@ -141,12 +146,11 @@ UNIQUE (doctor_id, appointment_date, appointment_time)
 - Perform lockout updates safely to prevent simultaneous requests from bypassing the limit.
 - Use generic login error messages that do not reveal whether an account exists.
 
-
-### 6.4 XSS Prevention
+### 6.3 XSS Prevention
 
 - Store validated user input as raw data in the database.
 - Escape output whenever untrusted data is displayed in HTML.
-- Use a shared `e()` helper:
+- Use a shared `e()` or `te()` helper:
 
 ```php
 function e($value): string {
@@ -158,9 +162,9 @@ function e($value): string {
 }
 ```
 
-- Use context-appropriate handling when inserting data into JavaScript, CSS, or URLs.
+- When inserting data into the DOM via JavaScript, use `textContent` or proper attributes instead of `innerHTML`.
 
-### 6.5 Error Handling
+### 6.4 Error Handling
 
 - Disable `display_errors` in production.
 - Log PHP and database errors to `logs/error.log`.
@@ -184,7 +188,7 @@ The backend must enforce the application's supported character set independently
 - Never assume that frontend validation has already been performed.
 - Validate all relevant incoming values before executing database INSERT or UPDATE operations.
 - Invalid input must never be persisted in the database.
-- Return an appropriate HTTP 400 response when unsupported characters are detected.
+- Return an appropriate HTTP 400 response with a JSON error when unsupported characters are detected.
 - Use centralized PHP validation helpers to ensure consistent enforcement.
 - Use Unicode-aware regular expressions (`/u`) or equivalent validation logic.
 - Apply field-specific validation rules where appropriate.
@@ -194,24 +198,14 @@ The backend must enforce the application's supported character set independently
 
 Backend validation is authoritative. Even if a client bypasses all frontend restrictions and sends a manually constructed HTTP request, the backend must reject unsupported characters before any database modification occurs.
 
-### 6.6 User Feedback
+### 6.6 User Feedback & Response Format
 
-- Follow the PRG pattern for form submissions.
-- Communicate success and error messages through URL query parameters.
-
-Examples:
-
-```text
-?success=created
-?success=updated
-?error=invalid_input
-?error=unauthorized
-?error=slot_unavailable
-```
-
-- Use predefined status codes and map them to appropriate frontend messages.
-- Never place raw exception messages or sensitive information in URLs.
-- Do not introduce a separate Session Flash messaging system.
+- All backend endpoints return a standardized JSON envelope:
+  - Success: `{"ok": true, "data": {...}, "message": "..."}` with HTTP 200 or 201.
+  - Error: `{"ok": false, "error": "ERROR_CODE", "message": "..."}` with appropriate HTTP error codes (400, 401, 403, 422).
+- Frontend handles feedback dynamically (displaying inline error messages, updating table rows, or closing modals without page reloads).
+- Never return raw exception messages, stack traces, or sensitive database information in responses.
+- Do not introduce a separate Session Flash messaging system or URL query parameter error feedback.
 
 ## 7. Coding Standards & Team Consistency
 
@@ -226,7 +220,7 @@ declare(strict_types=1);
 - PHP functions and variables: `camelCase`.
 - Database tables and columns: `snake_case`.
 - Constants: `UPPER_SNAKE_CASE`.
-- PHP filenames: `snake_case.php`.
+- PHP filenames: `snake_case.php` or `kebab-case.php`.
 
 ### 7.2 File Paths
 
