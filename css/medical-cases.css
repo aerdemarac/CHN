@@ -27,7 +27,23 @@
 .medical-cases__metadata dd { margin: 4px 0 0; }
 .medical-cases__heading, .medical-cases__empty h3 { margin: 0 0 8px; font-size: 1.25rem; font-weight: 600; color: var(--color-primary); }
 .medical-cases__description { margin: 0; white-space: pre-wrap; }
-.medical-cases__diagnoses { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-border); }
+.medical-cases__appointments, .medical-cases__diagnoses { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-border); }
+.medical-cases__appointments [hidden] { display: none; }
+.medical-cases__appointments-header .btn { margin-inline-start: auto; }
+.medical-cases__appointments-header .medical-cases__heading { margin: 0; }
+.medical-cases__appointment-chevron { flex: none; transform: rotate(90deg); }
+.medical-cases__appointments [aria-expanded="true"] .medical-cases__appointment-chevron { transform: rotate(-90deg); }
+.medical-cases__appointment-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.medical-cases__appointment { padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); }
+.medical-cases__appointment dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+.medical-cases__appointment dt { color: var(--color-text-muted); font-size: 0.875rem; }
+.medical-cases__appointment dd { margin: 4px 0 0; }
 .medical-cases__empty { padding: 24px; margin: 0; background: var(--color-bg); border-radius: var(--radius); color: var(--color-text-muted); }
 .medical-cases__history { margin: 0; padding-left: 24px; }
 .medical-cases__history li { padding: 16px 0; border-bottom: 1px solid var(--color-border); }
@@ -42,6 +58,7 @@
 @media (max-width: 767px) {
     .medical-cases .card { padding: 16px; }
     .medical-cases__filters, .medical-cases__metadata { grid-template-columns: minmax(0, 1fr); }
+    .medical-cases__appointment dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .medical-cases__empty { padding: 16px; }
 }
 
@@ -64,13 +81,13 @@
 :is(.medical-cases__triage-editor, .medical-cases__status-editor) form { margin-top: 12px; }
 :is(.medical-cases__triage-editor, .medical-cases__status-editor) button { margin-top: 8px; }
 
-.medical-cases__diagnosis-header, .medical-cases__diagnosis-actions {
+.medical-cases__appointments-header, .medical-cases__diagnosis-header, .medical-cases__diagnosis-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 12px;
 }
-.medical-cases__diagnosis-header { justify-content: space-between; margin-bottom: 12px; }
+.medical-cases__appointments-header, .medical-cases__diagnosis-header { justify-content: space-between; margin-bottom: 12px; }
 .medical-cases__diagnosis-header .medical-cases__heading { margin: 0; }
 .medical-cases__diagnoses [hidden] { display: none; }
 .medical-cases__diagnosis-form {
