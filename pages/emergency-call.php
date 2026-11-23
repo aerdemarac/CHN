@@ -52,7 +52,9 @@ if ($isAuthenticated) {
 <?php else: ?>
     <header class="emergency__brand">
         <div class="emergency__brand-inner">
-            <img src="../assets/logos/chn-logo.png" width="136" height="40" alt="CHN – Cyprus Health-Care Network">
+            <a href="../index.php" class="emergency__brand-link" aria-label="CHN – Cyprus Health-Care Network">
+                <img src="../assets/logos/chn-logo.png" width="136" height="40" alt="CHN – Cyprus Health-Care Network">
+            </a>
             <?php require dirname(__DIR__) . '/include/auth-language.php'; ?>
         </div>
     </header>
