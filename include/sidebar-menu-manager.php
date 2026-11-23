@@ -27,27 +27,36 @@ if (!function_exists('chnSidebarItemsForRole')) {
         $items = [
             'dashboard' => ['label' => 'Dashboard', 'file' => 'pages/dashboard-test.php', 'icon' => 'dashboard'],
             'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'pages/appointments-test.php', 'icon' => 'appointments'],
-            'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'pages/patients-test.php', 'icon' => 'records'],
+            'patients' => ['label' => 'Patients', 'file' => 'patients.php', 'demo' => 'pages/patients-test.php', 'icon' => 'patients'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'pages/medical-cases.php', 'icon' => 'cases'],
-            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'cases'],
+            'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'pages/feedback.php', 'icon' => 'feedback'],
-            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'pages/user-management-test.php', 'icon' => 'records'],
+            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'pages/user-management-test.php', 'icon' => 'users'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'pages/complaints-test.php', 'icon' => 'feedback'],
-            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'cases'],
+            'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
         ];
 
         $byRole = [
             'patient' => [
-                'dashboard', 'appointments', 'cases', 'feedback',
+                'overview' => ['dashboard'],
+                'health' => ['appointments', 'cases'],
+                'support' => ['feedback'],
             ],
             'doctor' => [
-                'dashboard', 'appointments', 'patients', 'cases', 'feedback',
+                'overview' => ['dashboard'],
+                'clinical' => ['appointments', 'patients', 'cases'],
+                'support' => ['feedback'],
             ],
             'healthcare_staff' => [
-                'dashboard', 'alerts', 'appointments', 'patients', 'cases', 'feedback',
+                'overview' => ['dashboard'],
+                'emergency' => ['alerts'],
+                'clinical' => ['appointments', 'patients', 'cases'],
+                'support' => ['feedback'],
             ],
             'admin' => [
-                'dashboard', 'users', 'complaints', 'emergency_logs',
+                'overview' => ['dashboard'],
+                'management' => ['users', 'complaints'],
+                'security' => ['emergency_logs'],
             ],
         ];
 
@@ -57,7 +66,13 @@ if (!function_exists('chnSidebarItemsForRole')) {
         if ($normalized === 'staff') {
             $normalized = 'healthcare_staff';
         }
-        $keys = $byRole[$normalized] ?? []; // Unknown roles see no protected navigation.
-        return array_map(static fn(string $key): array => $items[$key] + ['key' => $key], $keys);
+        $groups = $byRole[$normalized] ?? []; // Unknown roles see no protected navigation.
+        $result = [];
+        foreach ($groups as $group => $keys) {
+            foreach ($keys as $key) {
+                $result[] = $items[$key] + ['key' => $key, 'group' => $group];
+            }
+        }
+        return $result;
     }
 }

@@ -456,9 +456,11 @@ a:hover { color: var(--color-secondary-hover); }
 }
 
 .sidebar__section-title {
-    margin: 24px 16px 8px;
+    margin: 24px 16px 4px;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--color-surface);
     opacity: 0.75;
 }
@@ -466,15 +468,21 @@ a:hover { color: var(--color-secondary-hover); }
 .sidebar__nav {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+}
+
+.sidebar__group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .sidebar__link {
-    min-height: 48px;
+    position: relative;
+    min-height: 56px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 8px;
+    padding: 8px 8px 8px 12px;
     border-radius: var(--radius);
     color: var(--color-surface);
     text-decoration: none;
@@ -495,7 +503,35 @@ a.sidebar__link:focus-visible {
 }
 
 .sidebar__link--disabled { opacity: 0.64; cursor: not-allowed; }
-.sidebar__link-text { flex: 1; }
+.sidebar__link-text { flex: 1; min-width: 0; line-height: 1.25; overflow-wrap: break-word; }
+
+.sidebar__link--active::before {
+    content: "";
+    position: absolute;
+    inset-block: 12px;
+    inset-inline-start: -16px;
+    width: 4px;
+    border-start-end-radius: 4px;
+    border-end-end-radius: 4px;
+    background: var(--color-surface);
+}
+
+.sidebar__icon-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.08);
+    transition: var(--transition);
+}
+
+a.sidebar__link:hover .sidebar__icon-box,
+.sidebar__link--active .sidebar__icon-box {
+    background: rgba(255, 255, 255, 0.2);
+}
 
 .sidebar__status {
     padding: 4px 8px;
@@ -522,6 +558,9 @@ a.sidebar__link:focus-visible {
 .sidebar__icon--cases        { --nav-icon: url("../assets/icons/clipboard2-pulse.svg"); }
 .sidebar__icon--feedback     { --nav-icon: url("../assets/icons/chat-left-text.svg"); }
 .sidebar__icon--preview      { --nav-icon: url("../assets/icons/layout-sidebar.svg"); }
+.sidebar__icon--patients     { --nav-icon: url("../assets/icons/people.svg"); }
+.sidebar__icon--users        { --nav-icon: url("../assets/icons/person-badge.svg"); }
+.sidebar__icon--emergency    { --nav-icon: url("../assets/icons/exclamation-triangle.svg"); }
 
 .sidebar__footer {
     margin-top: auto;
@@ -532,6 +571,14 @@ a.sidebar__link:focus-visible {
 }
 
 .sidebar__toggle, .sidebar__backdrop { display: none; }
+
+@media (max-height: 800px) {
+    .sidebar { padding-block: 16px; }
+    .sidebar__brand { padding: 8px 16px; }
+    .sidebar__section-title { margin-block-start: 12px; }
+    .sidebar__link { min-height: 48px; padding-block: 4px; }
+    .sidebar__footer { padding: 12px 0 0 16px; }
+}
 
 /* ==========================================================================
    4. Flexible Grid Helpers (Optional & Non-Restrictive)
@@ -1016,6 +1063,7 @@ textarea.form-control {
     a,
     .sidebar,
     .sidebar__link,
+    .sidebar__icon-box,
     .sidebar__toggle,
     .topbar__user,
     .topbar__caret,
