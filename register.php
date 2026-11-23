@@ -30,8 +30,19 @@ $pinnedCountries = ['XN', 'TR'];
                 <p class="auth-card__subtitle"><?= te('register.subtitle') ?></p>
             </header>
 
+            <div class="auth-notice" id="register-notice" role="alert" hidden></div>
+
+            <div class="auth-success" id="register-success" hidden>
+                <h2 class="auth-success__title" id="register-success-title" tabindex="-1"><?= te('register.success_title') ?></h2>
+                <p class="auth-success__text"><?= te('register.success_text') ?></p>
+                <a class="btn btn--primary" href="login.php"><?= te('register.log_in') ?></a>
+            </div>
+
             <form class="auth-form auth-form--wide" id="register-form" action="backend/register.php" method="post" novalidate
+                  data-endpoint="pages/auth-mock.php?action=register"
                   data-messages="<?= chnJsMessages([
+                      'server_error' => 'auth.server_error',
+                      'network_error' => 'auth.network_error',
                       'first_name_required' => 'register.first_name_required',
                       'first_name_invalid' => 'register.first_name_invalid',
                       'last_name_required' => 'register.last_name_required',
@@ -145,7 +156,7 @@ $pinnedCountries = ['XN', 'TR'];
                 <button class="btn btn--primary" type="submit"><?= te('register.submit') ?></button>
             </form>
 
-            <p class="auth-card__footer">
+            <p class="auth-card__footer" id="register-footer">
                 <?= te('register.has_account') ?>
                 <a class="auth-form__link" href="login.php"><?= te('register.log_in') ?></a>
             </p>

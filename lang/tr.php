@@ -94,6 +94,10 @@ return [
     'login.no_account' => 'Hesabınız yok mu?',
     'login.register' => 'Kayıt olun',
     'login.password_required' => 'Lütfen şifrenizi girin.',
+    'login.not_verified' => 'Bu hesap doğrulanmamış. Lütfen doğrulama e-postası için gelen kutunuzu kontrol edin.',
+    'login.invalid_credentials' => 'E-posta adresi veya şifre hatalı.',
+    'auth.server_error' => 'Bir sorun oluştu. Lütfen daha sonra tekrar deneyin.',
+    'auth.network_error' => 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.',
 
     'register.page_title' => 'Kayıt',
     'register.title' => 'Hesabınızı oluşturun',
@@ -127,4 +131,6 @@ return [
     'register.password_weak' => 'Şifre gereksinimleri karşılamıyor.',
     'register.password_confirm_required' => 'Lütfen şifrenizi tekrar girin.',
     'register.password_mismatch' => 'Şifreler eşleşmiyor.',
+    'register.success_title' => 'Kayıt başarılı',
+    'register.success_text' => 'Giriş yapmadan önce lütfen e-posta gelen kutunuzu kontrol edin.',
 ];
