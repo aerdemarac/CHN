@@ -166,7 +166,7 @@ $chnUserName = $complaintsNames[$complaintsRole];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CHN | <?= te('complaints.page_title') ?></title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=<?= filemtime(__DIR__ . '/../css/style.css') ?>">
     <link rel="stylesheet" href="../css/complaints.css">
     <script src="../js/sidebar.js" defer></script>
     <script src="../js/topbar.js" defer></script>
