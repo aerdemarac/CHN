@@ -60,6 +60,16 @@ foreach ($filtered as $case) {
 $canAddDiagnosis = $chnPrototypeRole === 'doctor' && $selected && $selected['case_state'] === 'open';
 $selectedDiagnoses = $selected && $clinicalView ? array_values(array_filter($diagnoses, static fn(array $diagnosis): bool => (string) $diagnosis['case_id'] === (string) $selected['case_id'])) : [];
 usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagnosed_at'], $a['diagnosed_at']));
+$appointmentBadges = ['pending' => 'warning', 'confirmed' => 'success', 'completed' => 'neutral'];
+$selectedAppointments = $selected && $clinicalView ? array_values(array_filter(
+    $preview['appointments'],
+    static fn(array $appointment): bool => $appointment['case_id'] === $selected['case_id']
+        && isset($appointmentBadges[$appointment['appointment_status']])
+)) : [];
+usort($selectedAppointments, static fn(array $a, array $b): int =>
+    [$b['appointment_date'], $b['appointment_time'], $b['appointment_id']]
+    <=> [$a['appointment_date'], $a['appointment_time'], $a['appointment_id']]
+);
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars(chnLang(), ENT_QUOTES, 'UTF-8') ?>">
@@ -67,11 +77,13 @@ usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagn
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= mcEscape($view['title']) ?> | CHN</title>
+
     <link rel="stylesheet" href="../css/style.css?v=<?= filemtime(__DIR__ . '/../css/style.css') ?>">
-    <link rel="stylesheet" href="../css/medical-cases.css">
+    <link rel="stylesheet" href="../css/medical-cases.css?v=<?= filemtime(dirname(__DIR__) . '/css/medical-cases.css') ?>">
+
     <script src="../js/sidebar.js" defer></script>
     <script src="../js/topbar.js" defer></script>
-    <script src="../js/medical-cases.js" defer></script>
+    <script src="../js/medical-cases.js?v=<?= filemtime(dirname(__DIR__) . '/js/medical-cases.js') ?>" defer></script>
 </head>
 <body>
 <?php require dirname(__DIR__) . '/include/left-sidebar.php'; ?>
@@ -183,6 +195,42 @@ usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagn
         </dl>
         <?php if ($clinicalView): ?>
         <h3 class="medical-cases__heading"><?= te('cases.case_title') ?></h3><p><?= mcEscape($selected['case_title'] ?? t('cases.no_title')) ?></p><h3 class="medical-cases__heading"><?= te('cases.case_description') ?></h3><p class="medical-cases__description"><?= mcEscape($selected['case_description'] ?? t('cases.no_description')) ?></p>
+        <section class="medical-cases__appointments" aria-labelledby="appointment-history-title">
+            <div class="medical-cases__appointments-header">
+                <div>
+                    <h3 class="medical-cases__heading" id="appointment-history-title"><?= te('cases.appointment_history') ?></h3>
+                    <p class="card__subtitle"><?= mcEscape(tn('cases.appointment_count', count($selectedAppointments))) ?></p>
+                </div>
+                <button class="btn btn--outline" type="button" id="toggle-appointments" aria-controls="case-appointments" aria-expanded="false" hidden>
+                    <span data-show-appointments><?= te('cases.view_appointments') ?></span>
+                    <span data-hide-appointments hidden><?= te('cases.hide_appointments') ?></span>
+                    <img class="medical-cases__appointment-chevron" src="../assets/icons/chevron-right.svg" width="16" height="16" alt="">
+                </button>
+            </div>
+            <div id="case-appointments" hidden>
+                <?php if ($selectedAppointments): ?>
+                <ul class="medical-cases__appointment-list" role="list">
+                    <?php foreach ($selectedAppointments as $appointment):
+                        $date = new DateTimeImmutable($appointment['appointment_date'] . ' ' . $appointment['appointment_time']);
+                        $appointmentStatus = $appointment['appointment_status'];
+                    ?>
+                    <li class="medical-cases__appointment">
+                        <dl>
+                            <div><dt><?= te('cases.appointment_id') ?></dt><dd>#<?= mcEscape($appointment['appointment_id']) ?></dd></div>
+                            <div><dt><?= te('appointments.date') ?></dt><dd><time datetime="<?= $date->format('Y-m-d') ?>"><?= mcEscape(chnDate($date, 'medium')) ?></time></dd></div>
+                            <div><dt><?= te('cases.appointment_time') ?></dt><dd><time datetime="<?= $date->format('H:i') ?>"><?= $date->format('H:i') ?></time></dd></div>
+                            <div><dt><?= te('appointments.col_doctor') ?></dt><dd><?= mcEscape($appointment['doctor_name']) ?></dd></div>
+                            <div><dt><?= te('appointments.department') ?></dt><dd><?= mcEscape($appointment['department_name']) ?></dd></div>
+                            <div><dt><?= te('appointments.status') ?></dt><dd><span class="badge badge--<?= $appointmentBadges[$appointmentStatus] ?>"><?= te('appointment_status.' . $appointmentStatus) ?></span></dd></div>
+                        </dl>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php else: ?>
+                <p class="medical-cases__empty"><?= te('cases.no_appointments') ?></p>
+                <?php endif; ?>
+            </div>
+        </section>
         <section class="medical-cases__diagnoses" aria-labelledby="diagnosis-history-title">
             <div class="medical-cases__diagnosis-header">
                 <h3 class="medical-cases__heading" id="diagnosis-history-title"><?= te('cases.diagnosis_history') ?></h3>

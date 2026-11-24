@@ -102,6 +102,10 @@ return [
     'login.no_account' => "Don't have an account?",
     'login.register' => 'Register',
     'login.password_required' => 'Please enter your password.',
+    'login.not_verified' => 'This account is not verified. Please check your inbox for the verification email.',
+    'login.invalid_credentials' => 'Incorrect email or password.',
+    'auth.server_error' => 'Something went wrong. Please try again later.',
+    'auth.network_error' => 'Could not reach the server. Check your connection and try again.',
 
     'register.page_title' => 'Register',
     'register.title' => 'Create your account',
@@ -135,4 +139,6 @@ return [
     'register.password_weak' => 'Password does not meet the requirements.',
     'register.password_confirm_required' => 'Please confirm your password.',
     'register.password_mismatch' => 'Passwords do not match.',
+    'register.success_title' => 'Registration successful',
+    'register.success_text' => 'Please check your email inbox before logging in.',
 ];
