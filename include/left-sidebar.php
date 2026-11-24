@@ -38,6 +38,11 @@ if (!empty($chnSidebarShowTestLink)) {
     array_unshift($chnSidebarItems,
         ['label' => 'UI Preview', 'file' => $chnPreviewFile, 'icon' => 'preview']);
 }
+
+$chnSidebarGroups = [];
+foreach ($chnSidebarItems as $chnItem) {
+    $chnSidebarGroups[$chnItem['group'] ?? 'overview'][] = $chnItem;
+}
 ?>
 <a class="chn-skip-link" href="#main-content"><?= te('sidebar.skip') ?></a>
 
@@ -54,13 +59,17 @@ if (!empty($chnSidebarShowTestLink)) {
 
 <aside class="sidebar" id="chn-sidebar" aria-label="<?= te('sidebar.main_nav') ?>">
     <div class="sidebar__brand">
-        <img src="<?= htmlspecialchars($chnBaseUrl . 'assets/logos/chn-logo.png', ENT_QUOTES, 'UTF-8') ?>"
-             alt="CHN – Cyprus Health-Care Network" class="sidebar__logo" width="186" height="55">
+        <a href="<?= htmlspecialchars($chnBaseUrl . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="sidebar__brand-link" aria-label="CHN – Cyprus Health-Care Network">
+            <img src="<?= htmlspecialchars($chnBaseUrl . 'assets/logos/chn-logo.png', ENT_QUOTES, 'UTF-8') ?>"
+                 alt="CHN – Cyprus Health-Care Network" class="sidebar__logo" width="186" height="55">
+        </a>
     </div>
 
-    <p class="sidebar__section-title"><?= te('sidebar.section') ?></p>
     <nav class="sidebar__nav" aria-label="<?= te('sidebar.primary_nav') ?>">
-        <?php foreach ($chnSidebarItems as $chnItem): ?>
+        <?php foreach ($chnSidebarGroups as $chnGroup => $chnGroupItems): ?>
+        <div class="sidebar__group" role="group" aria-labelledby="sidebar-group-<?= htmlspecialchars($chnGroup, ENT_QUOTES, 'UTF-8') ?>">
+        <p class="sidebar__section-title" id="sidebar-group-<?= htmlspecialchars($chnGroup, ENT_QUOTES, 'UTF-8') ?>"><?= te('sidebar.group_' . $chnGroup) ?></p>
+        <?php foreach ($chnGroupItems as $chnItem): ?>
             <?php
                 $chnFile = $chnItem['file'];
                 if (!is_file($chnProjectRoot . '/' . $chnFile) && isset($chnItem['demo'])
@@ -80,20 +89,29 @@ if (!empty($chnSidebarShowTestLink)) {
                 <a class="sidebar__link<?= $chnIsCurrent ? ' sidebar__link--active' : '' ?>"
                    href="<?= htmlspecialchars($chnHref, ENT_QUOTES, 'UTF-8') ?>"
                    <?= $chnIsCurrent ? 'aria-current="page"' : '' ?>>
-                    <span class="sidebar__icon sidebar__icon--<?= $chnIcon ?>" aria-hidden="true"></span>
+                    <span class="sidebar__icon-box" aria-hidden="true"><span class="sidebar__icon sidebar__icon--<?= $chnIcon ?>"></span></span>
                     <span class="sidebar__link-text"><?= $chnLabel ?></span>
                 </a>
             <?php else: ?>
                 <span class="sidebar__link sidebar__link--disabled"
                       aria-label="<?= te('common.under_development', ['label' => $chnLabelText]) ?>">
-                    <span class="sidebar__icon sidebar__icon--<?= $chnIcon ?>" aria-hidden="true"></span>
+                    <span class="sidebar__icon-box" aria-hidden="true"><span class="sidebar__icon sidebar__icon--<?= $chnIcon ?>"></span></span>
                     <span class="sidebar__link-text"><?= $chnLabel ?></span>
                     <span class="sidebar__status" aria-hidden="true"><?= te('common.soon') ?></span>
                 </span>
             <?php endif; ?>
         <?php endforeach; ?>
+        </div>
+        <?php endforeach; ?>
     </nav>
-    <div class="sidebar__footer"><?= te('sidebar.footer') ?></div>
+    <div class="sidebar__bottom">
+        <div class="sidebar__status-pill">
+            <span class="sidebar__status-dot" aria-hidden="true"></span>
+            <span><?= te('sidebar.status_online') ?></span>
+        </div>
+
+        <div class="sidebar__footer"><?= te('sidebar.footer') ?></div>
+    </div>
 </aside>
 
 <!-- Molehi-AI Chatbot (Gemini + LocalStorage) Component -->
