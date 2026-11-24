@@ -97,6 +97,10 @@ return [
     'login.no_account' => 'Нет аккаунта?',
     'login.register' => 'Зарегистрироваться',
     'login.password_required' => 'Введите пароль.',
+    'login.not_verified' => 'Этот аккаунт не подтверждён. Найдите во входящих письмо для подтверждения.',
+    'login.invalid_credentials' => 'Неверный адрес электронной почты или пароль.',
+    'auth.server_error' => 'Что-то пошло не так. Повторите попытку позже.',
+    'auth.network_error' => 'Не удалось связаться с сервером. Проверьте подключение и повторите попытку.',
 
     'register.page_title' => 'Регистрация',
     'register.title' => 'Создайте аккаунт',
@@ -130,4 +134,6 @@ return [
     'register.password_weak' => 'Пароль не соответствует требованиям.',
     'register.password_confirm_required' => 'Подтвердите пароль.',
     'register.password_mismatch' => 'Пароли не совпадают.',
+    'register.success_title' => 'Регистрация прошла успешно',
+    'register.success_text' => 'Прежде чем войти, проверьте входящие письма в электронной почте.',
 ];

@@ -28,8 +28,12 @@ function initLoginForm() {
     if (!form) return;
 
     const msg = getMessages(form);
+    const notice = document.getElementById('login-notice');
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        hideNotice(notice);
+
         const emailOk = validateField(form.email, 'email-error', (value) => {
             if (!value) return msg('email_required');
             if (!form.email.validity.valid) return msg('email_invalid');
@@ -42,8 +46,28 @@ function initLoginForm() {
         });
 
         if (!emailOk || !passwordOk) {
-            event.preventDefault();
             (emailOk ? form.password : form.email).focus();
+            return;
+        }
+
+        const result = await sendForm(form, {
+            email: form.email.value.trim(),
+            password: form.password.value,
+        });
+
+        if (result.ok) {
+            const target = safeRedirect(result.data?.redirect);
+            if (target) {
+                window.location.assign(target);
+                return;
+            }
+        }
+
+        const type = result.error === 'ACCOUNT_NOT_VERIFIED' ? 'warning' : 'danger';
+        showNotice(notice, type, msg(knownCode(result.error, ['ACCOUNT_NOT_VERIFIED', 'INVALID_CREDENTIALS', 'network_error'])));
+        if (result.error === 'INVALID_CREDENTIALS') {
+            form.password.value = '';
+            form.password.focus();
         }
     });
 }
@@ -84,7 +108,11 @@ function initRegisterForm() {
         return '';
     };
 
-    form.addEventListener('submit', (event) => {
+    const notice = document.getElementById('register-notice');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        hideNotice(notice);
         const password = form.password.value;
 
         const checks = [
@@ -145,15 +173,116 @@ function initRegisterForm() {
             .map(([input]) => input);
 
         if (invalid.length > 0) {
-            event.preventDefault();
             invalid[0].focus();
-        } else {
-            form.phone.value = normalizePhone(form.phone.value);
-            form.national_id.value = form.nationality.value === 'TR'
-                ? form.national_id.value.replace(/\s/g, '')
-                : form.national_id.value.trim();
+            return;
         }
+
+        form.phone.value = normalizePhone(form.phone.value);
+        form.national_id.value = form.nationality.value === 'TR'
+            ? form.national_id.value.replace(/\s/g, '')
+            : form.national_id.value.trim();
+
+        const result = await sendForm(form, {
+            first_name: form.first_name.value.trim(),
+            last_name: form.last_name.value.trim(),
+            birth_date: form.birth_date.value,
+            nationality: form.nationality.value,
+            national_id: form.national_id.value,
+            email: form.email.value.trim(),
+            phone: form.phone.value,
+            password: form.password.value,
+            password_confirm: form.password_confirm.value,
+        });
+
+        if (result.ok) {
+            showRegisterSuccess(form);
+            return;
+        }
+
+        showNotice(notice, 'danger', msg(knownCode(result.error, ['network_error'])));
     });
+}
+
+function showRegisterSuccess(form) {
+    const success = document.getElementById('register-success');
+    const footer = document.getElementById('register-footer');
+
+    form.reset();
+    form.hidden = true;
+    if (footer) footer.hidden = true;
+    if (!success) return;
+
+    success.hidden = false;
+    document.getElementById('register-success-title')?.focus();
+}
+
+async function sendForm(form, payload) {
+    const button = form.querySelector('button[type="submit"]');
+    const endpoint = form.dataset.endpoint || form.getAttribute('action');
+
+    form.setAttribute('aria-busy', 'true');
+    if (button) button.disabled = true;
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        let body = null;
+        try {
+            body = await response.json();
+        } catch {
+            body = null;
+        }
+
+        if (!body || typeof body !== 'object') {
+            return { ok: false, error: 'server_error' };
+        }
+        if (body.ok === true && response.ok) {
+            return { ok: true, data: body.data || {} };
+        }
+        return { ok: false, error: typeof body.error === 'string' ? body.error : 'server_error' };
+    } catch {
+        return { ok: false, error: 'network_error' };
+    } finally {
+        form.removeAttribute('aria-busy');
+        if (button) button.disabled = false;
+    }
+}
+
+function knownCode(code, allowed) {
+    return allowed.includes(code) ? code : 'server_error';
+}
+
+function safeRedirect(value) {
+    if (typeof value !== 'string' || value === '') return '';
+    try {
+        const url = new URL(value, window.location.href);
+        if (url.origin !== window.location.origin) return '';
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+        return url.href;
+    } catch {
+        return '';
+    }
+}
+
+function showNotice(notice, type, text) {
+    if (!notice) return;
+    notice.className = `auth-notice auth-notice--${type}`;
+    notice.hidden = false;
+    notice.textContent = text;
+}
+
+function hideNotice(notice) {
+    if (!notice) return;
+    notice.hidden = true;
+    notice.textContent = '';
 }
 
 function getMessages(form) {
