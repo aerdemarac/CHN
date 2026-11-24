@@ -3,6 +3,21 @@
  */
 (() => {
     'use strict';
+    const appointmentToggle = document.getElementById('toggle-appointments');
+    if (appointmentToggle) {
+        const panel = document.getElementById(appointmentToggle.getAttribute('aria-controls'));
+        const showLabel = appointmentToggle.querySelector('[data-show-appointments]');
+        const hideLabel = appointmentToggle.querySelector('[data-hide-appointments]');
+        appointmentToggle.addEventListener('click', () => {
+            const expanded = panel.hidden;
+            panel.hidden = !expanded;
+            appointmentToggle.setAttribute('aria-expanded', String(expanded));
+            showLabel.hidden = expanded;
+            hideLabel.hidden = !expanded;
+        });
+        appointmentToggle.hidden = false;
+    }
+
     const notice = document.getElementById('case-demo-result');
     const messages = JSON.parse((notice && notice.dataset.messages) || '{}');
     const msg = (key, params = {}) => (messages[key] || key).replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
