@@ -71,6 +71,7 @@ return [
     'sidebar.group_security' => 'Güvenlik',
     'sidebar.group_support' => 'Destek',
     'sidebar.primary_nav' => 'Birincil gezinme',
+    'sidebar.status_online' => 'CHN Ağı: Çevrimiçi',
     'sidebar.footer' => 'CHN · Akademik prototip',
 
     'nav.dashboard' => 'Ana Sayfa',

@@ -72,6 +72,7 @@ return [
     'sidebar.group_security' => 'Security',
     'sidebar.group_support' => 'Support',
     'sidebar.primary_nav' => 'Primary navigation',
+    'sidebar.status_online' => 'CHN Network: Online',
     'sidebar.footer' => 'CHN · Academic prototype',
 
     'nav.dashboard' => 'Dashboard',

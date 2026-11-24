@@ -74,6 +74,7 @@ return [
     'sidebar.group_security' => 'Безопасность',
     'sidebar.group_support' => 'Поддержка',
     'sidebar.primary_nav' => 'Главная навигация',
+    'sidebar.status_online' => 'Сеть CHN: В сети',
     'sidebar.footer' => 'CHN · Учебный прототип',
 
     'nav.dashboard' => 'Главная',

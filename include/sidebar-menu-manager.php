@@ -57,6 +57,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
                 'overview' => ['dashboard'],
                 'management' => ['users', 'complaints'],
                 'security' => ['emergency_logs'],
+                'support' => ['feedback'],
             ],
         ];
 

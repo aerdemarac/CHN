@@ -37,7 +37,7 @@ if ($isAuthenticated) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= te('emergency_call.page_title') ?> | CHN</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/style.css?v=<?= filemtime(__DIR__ . '/../css/style.css') ?>">
     <link rel="stylesheet" href="../css/emergency.css">
     <?php if ($isAuthenticated): ?>
     <script src="../js/sidebar.js" defer></script>

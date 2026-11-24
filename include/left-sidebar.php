@@ -59,8 +59,10 @@ foreach ($chnSidebarItems as $chnItem) {
 
 <aside class="sidebar" id="chn-sidebar" aria-label="<?= te('sidebar.main_nav') ?>">
     <div class="sidebar__brand">
-        <img src="<?= htmlspecialchars($chnBaseUrl . 'assets/logos/chn-logo.png', ENT_QUOTES, 'UTF-8') ?>"
-             alt="CHN – Cyprus Health-Care Network" class="sidebar__logo" width="186" height="55">
+        <a href="<?= htmlspecialchars($chnBaseUrl . 'index.php', ENT_QUOTES, 'UTF-8') ?>" class="sidebar__brand-link" aria-label="CHN – Cyprus Health-Care Network">
+            <img src="<?= htmlspecialchars($chnBaseUrl . 'assets/logos/chn-logo.png', ENT_QUOTES, 'UTF-8') ?>"
+                 alt="CHN – Cyprus Health-Care Network" class="sidebar__logo" width="186" height="55">
+        </a>
     </div>
 
     <nav class="sidebar__nav" aria-label="<?= te('sidebar.primary_nav') ?>">
@@ -102,7 +104,14 @@ foreach ($chnSidebarItems as $chnItem) {
         </div>
         <?php endforeach; ?>
     </nav>
-    <div class="sidebar__footer"><?= te('sidebar.footer') ?></div>
+    <div class="sidebar__bottom">
+        <div class="sidebar__status-pill">
+            <span class="sidebar__status-dot" aria-hidden="true"></span>
+            <span><?= te('sidebar.status_online') ?></span>
+        </div>
+
+        <div class="sidebar__footer"><?= te('sidebar.footer') ?></div>
+    </div>
 </aside>
 
 <!-- Molehi-AI Chatbot (Gemini + LocalStorage) Component -->
