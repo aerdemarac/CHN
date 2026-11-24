@@ -28,6 +28,23 @@
     gap: 16px;
 }
 
+.emergency__brand-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.emergency__brand-link:focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+}
+
+.emergency__brand-link:hover {
+    opacity: 0.9;
+}
+
 .emergency__brand img {
     display: block;
     max-width: 136px;
