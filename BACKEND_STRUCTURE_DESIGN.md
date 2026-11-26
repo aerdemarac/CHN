@@ -117,12 +117,25 @@ UNIQUE (doctor_id, appointment_date, appointment_time)
 - Cancellation uses Hard Delete (`DELETE FROM appointments`).
 - Cancelled appointments are permanently removed, making their time slots available again.
 
-### 5.2 Registration & User Management
+### 5.2 Registration, Email Verification & Login Flow
 
 - Public registration through `backend/register.php` creates `patient` accounts only.
 - Users must not be able to assign themselves privileged roles.
 - All other roles (`doctor`, `healthcare_staff`, `admin`) are created and managed exclusively through the Admin panel.
 - Role assignments must always be validated server-side.
+- **Registration (`backend/register.php`):**
+  - Validates all submitted fields server-side and checks for duplicate email.
+  - Inserts the `user` row with `role = 'patient'`, `verify = 0`, and a random `verify_token`, along with the linked `patient` row inside a PDO transaction.
+  - Sends a verification email containing a link to `verify-acc.php?token=...`.
+- **Email Verification (`verify-acc.php`):**
+  - Validates the `token` query parameter against `user.verify_token`.
+  - Sets `verify = 1` and clears `verify_token = NULL`, then displays a confirmation page with a link to `login.php`.
+- **Login (`backend/login.php`):**
+  - Validates credentials with `password_verify()` and enforces the 5-attempt / 15-minute lockout (`failed_attempts`, `locked_until`).
+  - If `verify !== 1`, rejects login with HTTP 403 (`ACCOUNT_NOT_VERIFIED`) so the frontend displays the verification notice.
+  - If `verify === 1`, resets `failed_attempts`, regenerates the session ID (`session_regenerate_id(true)`), stores `user_id`, `role`, `name`, `surname`, and `last_activity` in `$_SESSION`, and returns the role's dashboard `redirect` URL in JSON.
+- **Entry Point (`index.php`):**
+  - Checks the active PHP session; redirects authenticated users to their role's dashboard and unauthenticated users to `login.php`.
 
 ### 5.3 Emergency Reports
 

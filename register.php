@@ -39,7 +39,6 @@ $pinnedCountries = ['XN', 'TR'];
             </div>
 
             <form class="auth-form auth-form--wide" id="register-form" action="backend/register.php" method="post" novalidate
-                  data-endpoint="pages/auth-mock.php?action=register"
                   data-messages="<?= chnJsMessages([
                       'server_error' => 'auth.server_error',
                       'network_error' => 'auth.network_error',

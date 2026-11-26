@@ -104,6 +104,7 @@ return [
     'login.password_required' => 'Please enter your password.',
     'login.not_verified' => 'This account is not verified. Please check your inbox for the verification email.',
     'login.invalid_credentials' => 'Incorrect email or password.',
+    'login.account_locked' => 'Too many failed login attempts. Please try again in 15 minutes.',
     'auth.server_error' => 'Something went wrong. Please try again later.',
     'auth.network_error' => 'Could not reach the server. Check your connection and try again.',
 
