@@ -16,3 +16,7 @@ Desktop.ini
 *.njsproj
 *.sln
 *.sw?
+
+node_modules/
+dist/
+*.exe 
