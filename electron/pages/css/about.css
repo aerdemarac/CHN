@@ -1,0 +1,29 @@
+.about {
+    text-align: center;
+}
+
+.about__logo {
+    display: block;
+    width: 160px;
+    height: auto;
+    margin: 8px auto 16px;
+}
+
+.about__name {
+    margin-bottom: 4px;
+}
+
+.about__subtitle {
+    margin: 0 0 24px;
+    color: var(--color-text-muted);
+}
+
+.about__details {
+    text-align: start;
+}
+
+.about__project {
+    margin: 16px 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
