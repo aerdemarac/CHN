@@ -1,0 +1,14 @@
+{
+  "name": "chn-desktop",
+  "productName": "Cyprus Health-Care Network",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop client of the Cyprus Health-Care Network",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "45.5.0"
+  }
+}

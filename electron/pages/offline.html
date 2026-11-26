@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+    <title data-i18n="offline.title">Server unreachable</title>
+    <link rel="stylesheet" href="css/desktop.css">
+    <link rel="stylesheet" href="css/offline.css">
+    <script src="js/desktop.js" defer></script>
+    <script src="js/offline.js" defer></script>
+</head>
+<body class="is-loading">
+<main class="offline">
+    <section class="offline__card" aria-labelledby="offline-title">
+        <img class="offline__logo" src="../assets/chn-logo.png" alt="Cyprus Health-Care Network">
+        <span class="offline__icon" aria-hidden="true"><span class="icon icon--warning"></span></span>
+        <h1 class="offline__title" id="offline-title" data-i18n="offline.heading">The CHN server could not be reached</h1>
+        <p class="offline__text" data-i18n="offline.text">Check that the server is running and that this computer is connected to the network, then try again.</p>
+        <dl class="details offline__details">
+            <dt data-i18n="offline.server_label">Server</dt>
+            <dd id="offline-server"></dd>
+            <dt id="offline-error-label" data-i18n="offline.error_label">Error</dt>
+            <dd id="offline-error"></dd>
+        </dl>
+        <div class="offline__actions">
+            <button type="button" class="btn btn--primary" id="offline-retry" data-i18n="offline.retry">Try again</button>
+            <button type="button" class="btn btn--outline" id="offline-settings" data-i18n="offline.settings">Server settings</button>
+            <button type="button" class="btn btn--outline offline__quit" id="offline-quit" data-i18n="offline.quit">Quit</button>
+        </div>
+    </section>
+</main>
+</body>
+</html>

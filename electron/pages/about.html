@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+    <title data-i18n="about.title">About</title>
+    <link rel="stylesheet" href="css/desktop.css">
+    <link rel="stylesheet" href="css/about.css">
+    <script src="js/desktop.js" defer></script>
+    <script src="js/about.js" defer></script>
+</head>
+<body class="is-loading">
+<main class="dialog about">
+    <img class="about__logo" src="../assets/chn-logo.png" alt="">
+    <h1 class="dialog__title about__name" id="about-name">Cyprus Health-Care Network</h1>
+    <p class="about__subtitle" data-i18n="about.subtitle">Desktop client</p>
+    <dl class="details about__details">
+        <dt data-i18n="about.version">Version</dt>
+        <dd id="about-version"></dd>
+        <dt data-i18n="about.server">Server</dt>
+        <dd id="about-server"></dd>
+        <dt data-i18n="about.runtime">Runtime</dt>
+        <dd id="about-runtime"></dd>
+        <dt data-i18n="about.support">Support</dt>
+        <dd><a id="about-support" href="#"></a></dd>
+    </dl>
+    <p class="about__project" data-i18n="about.project">Graduation project, Eastern Mediterranean University</p>
+    <div class="dialog__actions">
+        <button type="button" class="btn btn--primary" id="about-close" data-i18n="about.close">Close</button>
+    </div>
+</main>
+</body>
+</html>

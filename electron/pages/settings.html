@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'none'">
+    <title data-i18n="settings.title">Server settings</title>
+    <link rel="stylesheet" href="css/desktop.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <script src="js/desktop.js" defer></script>
+    <script src="js/settings.js" defer></script>
+</head>
+<body class="is-loading">
+<main class="dialog">
+    <h1 class="dialog__title" data-i18n="settings.heading">Server settings</h1>
+    <p class="dialog__text" data-i18n="settings.text">The desktop app opens the CHN web application from this address.</p>
+    <p class="settings__locked" id="settings-locked" role="note" hidden data-i18n="settings.env_locked">The address is set by the CHN_SERVER_URL environment variable and cannot be changed here.</p>
+    <form class="settings__form" id="settings-form" novalidate>
+        <div class="form-group">
+            <label class="form-label" for="settings-url" data-i18n="settings.url_label">Server address</label>
+            <input class="form-control" type="url" id="settings-url" name="server_url" required maxlength="2048" autocomplete="off" spellcheck="false" inputmode="url" aria-describedby="settings-url-hint">
+            <p class="form-hint" id="settings-url-hint" data-i18n="settings.url_hint">Remote servers must use https://. http:// is allowed only for this computer (localhost).</p>
+            <p class="form-error" id="settings-url-error" role="alert" hidden></p>
+        </div>
+        <div class="settings__default">
+            <span><span data-i18n="settings.default_label">Default address</span>: <span class="settings__default-url" id="settings-default"></span></span>
+            <button type="button" class="btn btn--outline btn--sm" id="settings-restore" data-i18n="settings.restore_default">Restore default</button>
+        </div>
+        <div class="dialog__actions">
+            <button type="button" class="btn btn--outline" id="settings-cancel" data-i18n="settings.cancel">Cancel</button>
+            <button type="submit" class="btn btn--primary" id="settings-save" data-i18n="settings.save">Save and reconnect</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>
