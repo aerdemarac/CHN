@@ -48,6 +48,7 @@ $pinnedCountries = ['XN', 'TR'];
                       'last_name_invalid' => 'register.last_name_invalid',
                       'birth_date_required' => 'register.birth_date_required',
                       'birth_date_invalid' => 'register.birth_date_invalid',
+                      'gender_required' => 'register.gender_required',
                       'nationality_required' => 'register.nationality_required',
                       'national_id_required' => 'register.national_id_required',
                       'national_id_invalid' => 'register.national_id_invalid',
@@ -62,14 +63,14 @@ $pinnedCountries = ['XN', 'TR'];
                       'password_mismatch' => 'register.password_mismatch',
                   ]) ?>">
                 <div class="auth-form__grid">
-                    <div class="auth-form__field auth-form__field--third">
+                    <div class="auth-form__field auth-form__field--quarter">
                         <label class="auth-form__label" for="first-name"><?= te('register.first_name') ?></label>
                         <input class="auth-form__input" type="text" id="first-name" name="first_name"
                                autocomplete="given-name" maxlength="50" required>
                         <p class="auth-form__error" id="first-name-error" role="alert"></p>
                     </div>
 
-                    <div class="auth-form__field auth-form__field--third">
+                    <div class="auth-form__field auth-form__field--quarter">
                         <label class="auth-form__label" for="last-name"><?= te('register.last_name') ?></label>
                         <input class="auth-form__input" type="text" id="last-name" name="last_name"
                                autocomplete="family-name" maxlength="50" required>
@@ -77,11 +78,21 @@ $pinnedCountries = ['XN', 'TR'];
                     </div>
                 </div>
 
-                <div class="auth-form__field auth-form__field--third">
+                <div class="auth-form__field auth-form__field--quarter">
                     <label class="auth-form__label" for="birth-date"><?= te('register.birth_date') ?></label>
                     <input class="auth-form__input" type="date" id="birth-date" name="birth_date"
                            autocomplete="bday" min="1900-01-01" max="<?= date('Y-m-d') ?>" required>
                     <p class="auth-form__error" id="birth-date-error" role="alert"></p>
+                </div>
+
+                <div class="auth-form__field auth-form__field--quarter">
+                    <label class="auth-form__label" for="gender"><?= te('register.gender') ?></label>
+                    <select class="auth-form__input" id="gender" name="gender" autocomplete="sex" required>
+                        <option value=""><?= te('register.gender_placeholder') ?></option>
+                        <option value="female"><?= te('register.gender_female') ?></option>
+                        <option value="male"><?= te('register.gender_male') ?></option>
+                    </select>
+                    <p class="auth-form__error" id="gender-error" role="alert"></p>
                 </div>
 
                 <div class="auth-form__field">

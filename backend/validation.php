@@ -6,6 +6,8 @@ declare(strict_types=1);
  */
 const CHN_ALLOWED_LETTERS = 'A-Za-zçÇğĞıİöÖşŞüÜ';
 
+const CHN_GENDERS = ['female', 'male'];
+
 /**
  * Extract a trimmed string field from a decoded JSON payload.
  */

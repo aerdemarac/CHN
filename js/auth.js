@@ -124,6 +124,10 @@ function initRegisterForm() {
                 if (!form.birth_date.validity.valid) return msg('birth_date_invalid');
                 return '';
             }],
+            [form.gender, 'gender-error', (value) => {
+                if (value !== 'female' && value !== 'male') return msg('gender_required');
+                return '';
+            }],
             [form.nationality, 'nationality-error', (value) => {
                 if (!value) return msg('nationality_required');
                 return '';
@@ -186,6 +190,7 @@ function initRegisterForm() {
             first_name: form.first_name.value.trim(),
             last_name: form.last_name.value.trim(),
             birth_date: form.birth_date.value,
+            gender: form.gender.value,
             nationality: form.nationality.value,
             national_id: form.national_id.value,
             email: form.email.value.trim(),

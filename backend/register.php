@@ -11,6 +11,7 @@ $input = chnRequireJsonPost();
 $firstName = chnInputString($input, 'first_name');
 $lastName = chnInputString($input, 'last_name');
 $birthDate = chnInputString($input, 'birth_date');
+$gender = chnInputString($input, 'gender');
 $nationality = strtoupper(chnInputString($input, 'nationality'));
 $nationalId = chnInputString($input, 'national_id');
 $email = strtolower(chnInputString($input, 'email'));
@@ -24,6 +25,7 @@ if (
     !chnIsValidName($firstName) ||
     !chnIsValidName($lastName) ||
     !chnIsValidBirthDate($birthDate) ||
+    !in_array($gender, CHN_GENDERS, true) ||
     !isset($countries[$nationality]) ||
     !chnIsValidNationalId($nationalId, $nationality) ||
     !chnIsValidEmail($email) ||
@@ -56,11 +58,11 @@ try {
     $insertUserStmt = $pdo->prepare(
         'INSERT INTO `user` (
             email, password, role, name, surname,
-            birth_date, nationality, national_id, phone,
+            gender, birth_date, nationality, national_id, phone,
             verify, verify_token
         ) VALUES (
             :email, :password, :role, :name, :surname,
-            :birth_date, :nationality, :national_id, :phone,
+            :gender, :birth_date, :nationality, :national_id, :phone,
             0, :verify_token
         )'
     );
@@ -71,6 +73,7 @@ try {
         ':role' => 'patient',
         ':name' => $firstName,
         ':surname' => $lastName,
+        ':gender' => $gender,
         ':birth_date' => $birthDate,
         ':nationality' => $nationality,
         ':national_id' => $normalizedNationalId,
