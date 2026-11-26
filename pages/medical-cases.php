@@ -16,17 +16,16 @@ $view = [
     'patient' => ['title' => t('cases.patient_title'), 'subtitle' => t('cases.patient_subtitle'), 'overview' => t('cases.patient_overview'), 'action' => t('cases.patient_action'), 'action_aria' => 'cases.patient_action_aria'],
     'doctor' => ['title' => t('cases.doctor_title'), 'subtitle' => t('cases.doctor_subtitle'), 'overview' => t('cases.doctor_overview'), 'action' => t('cases.doctor_action'), 'action_aria' => 'cases.doctor_action_aria'],
     'healthcare_staff' => ['title' => t('cases.staff_title'), 'subtitle' => t('cases.staff_subtitle'), 'overview' => t('cases.staff_overview'), 'action' => t('cases.staff_action'), 'action_aria' => 'cases.staff_action_aria'],
-    'staff' => ['title' => t('cases.staff_title'), 'subtitle' => t('cases.staff_subtitle'), 'overview' => t('cases.staff_overview'), 'action' => t('cases.staff_action'), 'action_aria' => 'cases.staff_action_aria'],
     'admin' => ['title' => t('cases.admin_title'), 'subtitle' => t('cases.admin_subtitle'), 'overview' => '', 'action' => '', 'action_aria' => ''],
 ][$chnPrototypeRole];
-$clinicalView = in_array($chnPrototypeRole, ['patient', 'doctor'], true);
+$canViewClinicalDetails = in_array($chnPrototypeRole, ['patient', 'doctor', 'healthcare_staff'], true);
+$canSearchClinicalText = in_array($chnPrototypeRole, ['patient', 'doctor'], true);
 // Illustrative fixture scopes only. Real authorization must be enforced by the backend.
 $cases = array_values(array_filter($cases, static function (array $case) use ($chnPrototypeRole, $preview): bool {
     switch ($chnPrototypeRole) {
         case 'patient': return $case['patient_id'] === $preview['context']['patient_id'];
         case 'doctor': return $case['doctor_id'] === $preview['context']['doctor_id'];
-        case 'healthcare_staff':
-        case 'staff': return $case['department_id'] === $preview['context']['staff_department_id'];
+        case 'healthcare_staff': return $case['department_id'] === $preview['context']['staff_department_id'];
         default: return false;
     }
 }));
@@ -47,8 +46,8 @@ $status = in_array(mcParam('status'), ['open', 'closed'], true) ? mcParam('statu
 $department = mcParam('department');
 $departments = array_column($cases, 'department_name', 'department_id');
 if (!isset($departments[$department])) $department = '';
-$filtered = array_values(array_filter($cases, static function (array $case) use ($query, $status, $department, $clinicalView, $chnPrototypeRole, $casePrefix): bool {
-    $search = implode(' ', [$casePrefix . $case['case_id'], $case['department_name'], $case['doctor_name'] ?? '', $clinicalView ? (($case['case_title'] ?? '') . ' ' . ($case['case_description'] ?? '')) : '', $chnPrototypeRole === 'doctor' ? $case['patient_name'] : '', $chnPrototypeRole !== 'patient' ? 'DEMO-P-' . $case['patient_id'] : '']);
+$filtered = array_values(array_filter($cases, static function (array $case) use ($query, $status, $department, $canSearchClinicalText, $chnPrototypeRole, $casePrefix): bool {
+    $search = implode(' ', [$casePrefix . $case['case_id'], $case['department_name'], $case['doctor_name'] ?? '', $canSearchClinicalText ? (($case['case_title'] ?? '') . ' ' . ($case['case_description'] ?? '')) : '', $chnPrototypeRole === 'doctor' ? $case['patient_name'] : '', $chnPrototypeRole !== 'patient' ? 'DEMO-P-' . $case['patient_id'] : '']);
     return ($status === '' || $case['case_state'] === $status)
         && ($department === '' || (string) $case['department_id'] === $department)
         && ($query === '' || stripos($search, $query) !== false);
@@ -58,10 +57,10 @@ foreach ($filtered as $case) {
     if ((string) $case['case_id'] === mcParam('case')) $selected = $case;
 }
 $canAddDiagnosis = $chnPrototypeRole === 'doctor' && $selected && $selected['case_state'] === 'open';
-$selectedDiagnoses = $selected && $clinicalView ? array_values(array_filter($diagnoses, static fn(array $diagnosis): bool => (string) $diagnosis['case_id'] === (string) $selected['case_id'])) : [];
+$selectedDiagnoses = $selected && $canViewClinicalDetails ? array_values(array_filter($diagnoses, static fn(array $diagnosis): bool => (string) $diagnosis['case_id'] === (string) $selected['case_id'])) : [];
 usort($selectedDiagnoses, static fn(array $a, array $b): int => strcmp($b['diagnosed_at'], $a['diagnosed_at']));
 $appointmentBadges = ['pending' => 'warning', 'confirmed' => 'success', 'completed' => 'neutral'];
-$selectedAppointments = $selected && $clinicalView ? array_values(array_filter(
+$selectedAppointments = $selected && $canViewClinicalDetails ? array_values(array_filter(
     $preview['appointments'],
     static fn(array $appointment): bool => $appointment['case_id'] === $selected['case_id']
         && isset($appointmentBadges[$appointment['appointment_status']])
@@ -138,10 +137,10 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
     </div>
     <section class="card" aria-labelledby="cases-title">
         <header class="card__header"><div><h2 class="card__title" id="cases-title"><?= mcEscape($view['overview']) ?></h2>
-        <p class="card__subtitle"><?= $clinicalView ? te('cases.overview_clinical') : te('cases.overview_staff') ?></p></div></header>
+        <p class="card__subtitle"><?= $chnPrototypeRole === 'healthcare_staff' ? te('cases.overview_staff') : te('cases.overview_clinical') ?></p></div></header>
         <form method="get" action="<?= mcEscape(chnPrototypeUrl('medical-cases.php', $chnPrototypeRole)) ?>" class="medical-cases__filters" role="search" aria-label="<?= te('cases.filter_label') ?>">
             <input type="hidden" name="role" value="<?= mcEscape($chnPrototypeRole) ?>">
-            <div><label class="form-label" for="case-search"><?= te('cases.search_label') ?></label><input class="form-control" type="search" name="q" id="case-search" value="<?= mcEscape($query) ?>" placeholder="<?= $clinicalView ? te('cases.search_placeholder_clinical') : te('cases.search_placeholder_staff') ?>"></div>
+            <div><label class="form-label" for="case-search"><?= te('cases.search_label') ?></label><input class="form-control" type="search" name="q" id="case-search" value="<?= mcEscape($query) ?>" placeholder="<?= $canSearchClinicalText ? te('cases.search_placeholder_clinical') : te('cases.search_placeholder_staff') ?>"></div>
             <div><label class="form-label" for="case-status"><?= te('cases.status_label') ?></label><select class="form-control" name="status" id="case-status"><option value=""><?= te('cases.all_statuses') ?></option><?php foreach ($stateLabels as $value => $label): ?><option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>><?= mcEscape($label) ?></option><?php endforeach; ?></select></div>
             <div><label class="form-label" for="case-department"><?= te('cases.department') ?></label><select class="form-control" name="department" id="case-department"><option value=""><?= te('cases.all_departments') ?></option><?php foreach ($departments as $id => $label): ?><option value="<?= $id ?>" <?= $department === (string) $id ? 'selected' : '' ?>><?= mcEscape($label) ?></option><?php endforeach; ?></select></div>
             <div class="medical-cases__filter-actions"><button class="btn btn--primary" type="submit"><?= te('cases.apply_filters') ?></button><a class="btn btn--outline" href="<?= mcEscape(chnPrototypeUrl('medical-cases.php', $chnPrototypeRole)) ?>"><?= te('cases.reset') ?></a></div>
@@ -166,7 +165,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
         <header class="card__header"><h2 class="card__title" id="case-details-title"><?= $selected ? te('cases.case_heading', ['id' => $casePrefix . $selected['case_id']]) : te('cases.case_details') ?></h2><?php if ($selected): ?><span class="badge badge--info"><?= te('cases.demo_case_badge') ?></span><?php endif; ?></header>
         <?php if ($selected): ?>
         <dl class="medical-cases__metadata">
-            <?php if ($chnPrototypeRole !== 'patient'): ?><div><dt><?= in_array($chnPrototypeRole, ['healthcare_staff', 'staff'], true) ? te('cases.col_patient_ref') : te('cases.col_patient') ?></dt><dd><?= $chnPrototypeRole === 'doctor' ? mcEscape($selected['patient_name']) . ' · ' : '' ?>DEMO-P-<?= $selected['patient_id'] ?></dd></div><?php endif; ?>
+            <?php if ($chnPrototypeRole !== 'patient'): ?><div><dt><?= $chnPrototypeRole === 'healthcare_staff' ? te('cases.col_patient_ref') : te('cases.col_patient') ?></dt><dd><?= $chnPrototypeRole === 'doctor' ? mcEscape($selected['patient_name']) . ' · ' : '' ?>DEMO-P-<?= $selected['patient_id'] ?></dd></div><?php endif; ?>
             <div><dt><?= te('cases.department') ?></dt><dd><?= mcEscape($selected['department_name']) ?></dd></div>
             <div><dt><?= te('cases.responsible_doctor') ?></dt><dd><?= mcEscape($selected['doctor_name'] ?? t('cases.not_assigned')) ?></dd></div>
             <div><dt><?= te('cases.created') ?></dt><dd><?= mcEscape(mcDate($selected['created_at'])) ?></dd></div>
@@ -183,7 +182,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
             <?php else: ?><?= mcEscape($stateLabels[$selected['case_state']] ?? $selected['case_state']) ?><?php endif; ?>
             </dd></div>
             <div><dt><?= te('cases.triage') ?></dt><dd data-current-triage>
-            <?php if (in_array($chnPrototypeRole, ['doctor','healthcare_staff','staff'], true)): ?>
+            <?php if (in_array($chnPrototypeRole, ['doctor', 'healthcare_staff'], true)): ?>
             <details class="medical-cases__triage-editor">
                 <summary aria-label="<?= te('cases.edit_triage') ?>"><span><?= te('tier.' . $selected['tier_color']) ?></span><span class="medical-cases__edit-pencil" aria-hidden="true">&#9998;</span><span class="medical-cases__edit-label"><?= te('cases.edit') ?></span></summary>
         <form method="post" action="<?= mcEscape(chnPrototypeUrl('medical-cases.php#case-details', $chnPrototypeRole, ['case' => $selected['case_id']])) ?>" data-case-demo data-original-state="<?= mcEscape($selected['case_state']) ?>">
@@ -193,7 +192,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
             <?php else: ?><?= te('tier.' . $selected['tier_color']) ?><?php endif; ?>
             </dd></div>
         </dl>
-        <?php if ($clinicalView): ?>
+        <?php if ($canViewClinicalDetails): ?>
         <h3 class="medical-cases__heading"><?= te('cases.case_title') ?></h3><p><?= mcEscape($selected['case_title'] ?? t('cases.no_title')) ?></p><h3 class="medical-cases__heading"><?= te('cases.case_description') ?></h3><p class="medical-cases__description"><?= mcEscape($selected['case_description'] ?? t('cases.no_description')) ?></p>
         <section class="medical-cases__appointments" aria-labelledby="appointment-history-title">
             <div class="medical-cases__appointments-header">
@@ -276,8 +275,8 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
             </ol>
             <p class="medical-cases__empty" id="diagnosis-empty" <?= $selectedDiagnoses ? 'hidden' : '' ?>><?= te('cases.no_diagnoses') ?></p>
         </section>
-        <?php else: ?><p class="medical-cases__empty"><?= te('cases.staff_limited') ?></p><?php endif; ?>
-        <?php else: ?><p class="medical-cases__empty"><?= mcParam('case') !== '' ? te('cases.case_not_found') : ($clinicalView ? te('cases.select_clinical') : te('cases.select_staff')) ?></p><?php endif; ?>
+        <?php endif; ?>
+        <?php else: ?><p class="medical-cases__empty"><?= mcParam('case') !== '' ? te('cases.case_not_found') : ($chnPrototypeRole === 'healthcare_staff' ? te('cases.select_staff') : te('cases.select_clinical')) ?></p><?php endif; ?>
     </section>
     <?php endif; ?>
     <noscript><p class="card__subtitle"><?= te('cases.noscript') ?></p></noscript>

@@ -1,6 +1,6 @@
 # Medical Cases visual demo
 
-Open `http://localhost/CHN/test-endpoints/medical-cases.php?role=patient` (or doctor/staff/admin). Feedback lives at `http://localhost/CHN/test-endpoints/feedback.php?role=patient`. Each feature has one shared page; Sidebar/dashboard links preserve prototype roles. Missing/invalid roles default to patient. URL roles are presentation only, never authentication.
+Open `http://localhost/CHN/pages/medical-cases.php?role=patient` (or doctor/healthcare_staff/admin). Feedback lives at `http://localhost/CHN/test-endpoints/feedback.php?role=patient`. Each feature has one shared page; Sidebar/dashboard links preserve prototype roles. Missing/invalid roles default to patient. URL roles are presentation only, never authentication.
 
 The pages render fictional fixtures. There is no case API, database connection, session identity, Python backend/test runner, or persistence. The local database adapter, setup scripts, HTTP/database test endpoints and proposed executable migrations have been removed. Existing databases were not modified or deleted during this simplification. The previously started case development server has been stopped; normal XAMPP preview is sufficient.
 
@@ -16,7 +16,7 @@ The future server must validate all fields and relationships independently: requ
 
 The canonical schema currently has no case_title and requires doctor attribution on closure. The backend team must review additive title storage and accurate patient closure attribution before integration; no migrations or database changes are executed by this demo. Do not fabricate a doctor closure actor for patient actions.
 
-List/detail DTOs should keep joined display names and diagnoses related by case_id, with diagnosis entries newest first. Apply authorization before returning any data; never fetch a broad dataset and rely on URL role/client filtering. Staff displays routing metadata only; admin clinical permissions remain undefined.
+List/detail DTOs should keep joined display names. Relate appointments and diagnoses to the selected case_id and return diagnosis entries newest first. Apply authorization before returning any data; never fetch a broad dataset and rely on URL role/client filtering. Healthcare Staff can read the case title, description, and both histories within their assigned department. Diagnosis entry remains Doctor-only. Admin clinical permissions remain undefined.
 
 ## Add Diagnosis preview
 
