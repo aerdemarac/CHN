@@ -30,9 +30,14 @@ CREATE TABLE `user` (
   `nationality` CHAR(2) NULL,
   `national_id` VARCHAR(50) NULL,
   `phone` VARCHAR(16) NULL,
+  `verify` TINYINT(1) NOT NULL DEFAULT 0,
+  `verify_token` VARCHAR(64) NULL,
+  `failed_attempts` TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  `locked_until` DATETIME NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
-  UNIQUE KEY `uq_user_email` (`email`)
+  UNIQUE KEY `uq_user_email` (`email`),
+  KEY `idx_user_verify_token` (`verify_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. HOSPITAL: `hospital_type` cannot contain private/non-public values.

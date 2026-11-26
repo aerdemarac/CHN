@@ -31,7 +31,6 @@ require_once __DIR__ . '/include/i18n.php';
             <div class="auth-notice" id="login-notice" role="alert" hidden></div>
 
             <form class="auth-form" id="login-form" action="backend/login.php" method="post" novalidate
-                  data-endpoint="pages/auth-mock.php?action=login"
                   data-messages="<?= chnJsMessages([
                       'email_required' => 'auth.email_required',
                       'email_invalid' => 'auth.email_invalid',
