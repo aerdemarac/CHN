@@ -81,7 +81,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
     <link rel="stylesheet" href="../css/medical-cases.css?v=<?= filemtime(dirname(__DIR__) . '/css/medical-cases.css') ?>">
 
     <script src="../js/sidebar.js" defer></script>
-    <script src="../js/topbar.js" defer></script>
+    <script src="../js/topbar.js?v=<?= filemtime(__DIR__ . '/../js/topbar.js') ?>" defer></script>
     <script src="../js/medical-cases.js?v=<?= filemtime(dirname(__DIR__) . '/js/medical-cases.js') ?>" defer></script>
 </head>
 <body>

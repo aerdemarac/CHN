@@ -1,6 +1,6 @@
 # CHN — Register, E-posta Doğrulama, Login, Cookie & Session Akış Detayları
 
-Bu doküman, CHN projesindeki **kayıt → e-posta doğrulama → giriş → cookie/session → yönlendirme** döngüsünün teknik işleyişini adım adım açıklar.
+Bu doküman, CHN projesindeki **kayıt → e-posta doğrulama → giriş → cookie/session → yönlendirme → çıkış** döngüsünün teknik işleyişini adım adım açıklar.
 
 ---
 
@@ -138,3 +138,26 @@ Bu doküman, CHN projesindeki **kayıt → e-posta doğrulama → giriş → coo
 - `backend/auth.php` içinde tanımlı `requireRole(array $allowedRoles, bool $isApi = true)`:
   - Oturum yoksa: API ise `401 UNAUTHORIZED` JSON, HTML sayfası ise `login.php`'ye yönlendirme yapar.
   - Oturum var ama rol yetkisizse: API ise `403 FORBIDDEN` JSON, HTML sayfası ise kullanıcının kendi rolünün dashboard'una yönlendirme yapar.
+
+---
+
+## 6. Çıkış Akışı (Logout Cycle)
+
+### A. Ön Yüz (`include/top-bar.php` + `js/topbar.js`)
+1. `include/top-bar.php`, `backend/logout.php` dosyasının mevcut olduğunu (`$chnHasLogoutEndpoint`) doğruladığında kullanıcı açılır menüsünde `.topbar__menu-item.topbar__menu-item--danger` sınıfıyla `<button type="button" id="chn-logout-btn" data-logout-button>` butonunu render eder (`data-logout-url` ve `data-login-url` öznitelikleriyle).
+2. `pages/*.php` sayfaları `js/topbar.js?v=<?= filemtime(...) ?>` ile scriptin güncel sürümünü yükler.
+3. Kullanıcı çıkış butonuna tıkladığında `js/topbar.js` içindeki `initLogoutButton()` çift gönderimi önlemek için butonu geçici olarak devre dışı bırakır (`disabled = true`, `aria-busy="true"`) ve `fetch(logoutUrl, ...)` isteğini atar:
+   - **Method:** `POST`
+   - **Credentials:** `credentials: 'same-origin'`
+   - **Headers:** `Content-Type: application/json`, `Accept: application/json`
+   - **Body:** `{}`
+4. Sunucudan `response.ok && body.ok === true` yanıtı alındığında `safeRedirect(body.data?.redirect) || safeRedirect(button.dataset.loginUrl)` ile URL'nin aynı origin'de olduğu doğrulanır ve `window.location.assign(target)` ile kullanıcı `login.php` sayfasına yönlendirilir. İstek başarısız olursa buton yeniden aktif edilir.
+
+### B. Arka Yüz (`backend/logout.php`)
+1. `chnStartSession()` ile mevcut oturum yüklenir.
+2. `chnRequireJsonPost()` ile isteğin `POST` ve gövdesinin geçerli JSON olduğu doğrulanır (GET istekleri veya geçersiz JSON reddedilir).
+3. `chnDestroySession()` (`backend/auth.php`) çalıştırılır:
+   - `$_SESSION = []` ile sunucu belleğindeki oturum dizisi temizlenir.
+   - `setcookie(session_name(), '', ['expires' => time() - 42000, ...])` ile tarayıcıdaki `PHPSESSID` cookie'si geçersiz kılınarak silinir.
+   - `session_destroy()` ile sunucudaki session dosyası kalıcı olarak silinir.
+4. `chnJsonSuccess(['redirect' => $baseUrl . 'login.php'], 'Logged out.', 200)` ile `200 OK` JSON yanıtı döndürülür; yönlendirme istemci tarafında yapılır.

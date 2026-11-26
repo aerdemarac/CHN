@@ -159,7 +159,7 @@ $chnUserName = $usersNames[$usersRole];
     <link rel="stylesheet" href="../css/style.css?v=<?= filemtime(__DIR__ . '/../css/style.css') ?>">
     <link rel="stylesheet" href="../css/user-management.css">
     <script src="../js/sidebar.js" defer></script>
-    <script src="../js/topbar.js" defer></script>
+    <script src="../js/topbar.js?v=<?= filemtime(__DIR__ . '/../js/topbar.js') ?>" defer></script>
     <script src="../js/user-management.js" defer></script>
 </head>
 <body>

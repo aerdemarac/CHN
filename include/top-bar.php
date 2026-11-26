@@ -257,12 +257,12 @@ $chnActiveLang = chnLang();
                 <div class="topbar__menu-divider" role="separator"></div>
 
                 <?php if ($chnHasLogoutEndpoint): ?>
-                    <a class="topbar__menu-item topbar__menu-item--danger" role="menuitem"
-                       href="<?= htmlspecialchars(isset($chnPrototypeRole)
-                           ? chnPrototypeUrl($chnBaseUrl . 'backend/logout.php', $chnPrototypeRole)
-                           : $chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>">
+                    <button type="button" class="topbar__menu-item topbar__menu-item--danger"
+                            id="chn-logout-btn" data-logout-button role="menuitem"
+                            data-logout-url="<?= htmlspecialchars($chnBaseUrl . 'backend/logout.php', ENT_QUOTES, 'UTF-8') ?>"
+                            data-login-url="<?= htmlspecialchars($chnBaseUrl . 'login.php', ENT_QUOTES, 'UTF-8') ?>">
                         <span><?= te('topbar.log_out') ?></span>
-                    </a>
+                    </button>
                 <?php else: ?>
                     <button type="button" class="topbar__menu-item topbar__menu-item--danger"
                             role="menuitem" disabled aria-label="<?= te('common.under_development', ['label' => t('topbar.log_out')]) ?>">

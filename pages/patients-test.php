@@ -168,7 +168,7 @@ $chnUserName = t('patients.user_name', ['role' => $patientsRoles[$patientsRole]]
     <link rel="stylesheet" href="../css/style.css?v=<?= filemtime(__DIR__ . '/../css/style.css') ?>">
     <link rel="stylesheet" href="../css/patients.css">
     <script src="../js/sidebar.js" defer></script>
-    <script src="../js/topbar.js" defer></script>
+    <script src="../js/topbar.js?v=<?= filemtime(__DIR__ . '/../js/topbar.js') ?>" defer></script>
     <script src="../js/patients.js" defer></script>
 </head>
 <body>
