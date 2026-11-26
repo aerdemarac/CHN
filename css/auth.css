@@ -493,7 +493,7 @@ a.btn {
 
     .auth-form--wide {
         display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-columns: repeat(12, minmax(0, 1fr));
     }
 
     .auth-form--wide .auth-form__grid {
@@ -501,11 +501,11 @@ a.btn {
     }
 
     .auth-form--wide .auth-form__field {
-        grid-column: span 3;
+        grid-column: span 6;
     }
 
-    .auth-form--wide .auth-form__field--third {
-        grid-column: span 2;
+    .auth-form--wide .auth-form__field--quarter {
+        grid-column: span 3;
     }
 
     .auth-form--wide .btn {

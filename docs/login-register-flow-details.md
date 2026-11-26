@@ -23,6 +23,7 @@ Bu doküman, CHN projesindeki **kayıt → e-posta doğrulama → giriş → coo
 2. Tarayıcı tarafında ön doğrulama yapılır:
    - Ad / soyad formatı
    - Doğum tarihi aralığı (`1900-01-01` – bugün)
+   - Cinsiyet (`female` / `male`)
    - Ülke kodu
    - Kimlik numarası (`TR` seçiliyse 11 haneli TC Kimlik No algoritması; diğer ülkeler için pasaport/kimlik formatı)
    - E-posta formatı
@@ -32,7 +33,7 @@ Bu doküman, CHN projesindeki **kayıt → e-posta doğrulama → giriş → coo
    - **Method:** `POST`
    - **Credentials:** `credentials: 'same-origin'`
    - **Headers:** `Content-Type: application/json`, `Accept: application/json`
-   - **Body:** `first_name`, `last_name`, `birth_date`, `nationality`, `national_id`, `email`, `phone`, `password`, `password_confirm` alanlarını içeren JSON.
+   - **Body:** `first_name`, `last_name`, `birth_date`, `gender`, `nationality`, `national_id`, `email`, `phone`, `password`, `password_confirm` alanlarını içeren JSON.
 
 ### B. Arka Yüz (`backend/register.php`)
 1. `chnRequireJsonPost()`:
