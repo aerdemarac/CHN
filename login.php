@@ -36,6 +36,7 @@ require_once __DIR__ . '/include/i18n.php';
                       'email_invalid' => 'auth.email_invalid',
                       'password_required' => 'login.password_required',
                       'ACCOUNT_NOT_VERIFIED' => 'login.not_verified',
+                      'ACCOUNT_LOCKED' => 'login.account_locked',
                       'INVALID_CREDENTIALS' => 'login.invalid_credentials',
                       'server_error' => 'auth.server_error',
                       'network_error' => 'auth.network_error',

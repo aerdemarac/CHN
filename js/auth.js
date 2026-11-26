@@ -64,8 +64,8 @@ function initLoginForm() {
         }
 
         const type = result.error === 'ACCOUNT_NOT_VERIFIED' ? 'warning' : 'danger';
-        showNotice(notice, type, msg(knownCode(result.error, ['ACCOUNT_NOT_VERIFIED', 'INVALID_CREDENTIALS', 'network_error'])));
-        if (result.error === 'INVALID_CREDENTIALS') {
+        showNotice(notice, type, msg(knownCode(result.error, ['ACCOUNT_NOT_VERIFIED', 'ACCOUNT_LOCKED', 'INVALID_CREDENTIALS', 'network_error'])));
+        if (result.error === 'INVALID_CREDENTIALS' || result.error === 'ACCOUNT_LOCKED') {
             form.password.value = '';
             form.password.focus();
         }

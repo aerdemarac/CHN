@@ -40,12 +40,13 @@ try {
 
     if ($user['locked_until'] !== null && strtotime((string) $user['locked_until']) > time()) {
         $pdo->commit();
-        chnJsonError('INVALID_CREDENTIALS', 'Incorrect email or password.', 401);
+        chnJsonError('ACCOUNT_LOCKED', 'Too many failed login attempts. Please try again in 15 minutes.', 429);
     }
 
     if (!password_verify($password, (string) $user['password'])) {
         $attempts = (int) $user['failed_attempts'] + 1;
-        $lockedUntil = $attempts >= $maxAttempts
+        $isNowLocked = $attempts >= $maxAttempts;
+        $lockedUntil = $isNowLocked
             ? date('Y-m-d H:i:s', time() + $lockoutSeconds)
             : null;
 
@@ -61,6 +62,9 @@ try {
         ]);
 
         $pdo->commit();
+        if ($isNowLocked) {
+            chnJsonError('ACCOUNT_LOCKED', 'Too many failed login attempts. Please try again in 15 minutes.', 429);
+        }
         chnJsonError('INVALID_CREDENTIALS', 'Incorrect email or password.', 401);
     }
 

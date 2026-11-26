@@ -103,6 +103,7 @@ return [
     'login.password_required' => 'Lütfen şifrenizi girin.',
     'login.not_verified' => 'Bu hesap doğrulanmamış. Lütfen doğrulama e-postası için gelen kutunuzu kontrol edin.',
     'login.invalid_credentials' => 'E-posta adresi veya şifre hatalı.',
+    'login.account_locked' => 'Çok fazla başarısız giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin.',
     'auth.server_error' => 'Bir sorun oluştu. Lütfen daha sonra tekrar deneyin.',
     'auth.network_error' => 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edip tekrar deneyin.',
 
