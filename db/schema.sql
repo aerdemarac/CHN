@@ -76,7 +76,7 @@ CREATE TABLE `patient` (
   PRIMARY KEY (`patient_id`),
   UNIQUE KEY `uq_patient_user_id` (`user_id`),
   CONSTRAINT `fk_patient_user` FOREIGN KEY (`user_id`)
-    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT
+    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. DOCTOR: hospital is determined through the linked department.
@@ -91,7 +91,7 @@ CREATE TABLE `doctor` (
   CONSTRAINT `fk_doctor_department` FOREIGN KEY (`department_id`)
     REFERENCES `department` (`department_id`) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_doctor_user` FOREIGN KEY (`user_id`)
-    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT
+    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. STAFF: nullable assignments permit migrating existing records without fake hospitals.
@@ -107,7 +107,7 @@ CREATE TABLE `staff` (
   KEY `idx_staff_hospital` (`hospital_id`),
   KEY `idx_staff_department_hospital` (`department_id`, `hospital_id`),
   CONSTRAINT `fk_staff_user` FOREIGN KEY (`user_id`)
-    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT,
+    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT `fk_staff_hospital` FOREIGN KEY (`hospital_id`)
     REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_staff_department_hospital` FOREIGN KEY (`department_id`, `hospital_id`)
@@ -121,7 +121,7 @@ CREATE TABLE `admin` (
   PRIMARY KEY (`admin_id`),
   UNIQUE KEY `uq_admin_user_id` (`user_id`),
   CONSTRAINT `fk_admin_user` FOREIGN KEY (`user_id`)
-    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT
+    REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. FEEDBACK
