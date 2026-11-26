@@ -36,7 +36,7 @@ function accountEscape($value): string { return htmlspecialchars((string) $value
     <link rel="stylesheet" href="<?= accountEscape($chnBaseUrl . 'css/style.css') ?>">
     <link rel="stylesheet" href="<?= accountEscape($chnBaseUrl . 'css/account-settings.css') ?>">
     <script src="<?= accountEscape($chnBaseUrl . 'js/sidebar.js') ?>" defer></script>
-    <script src="<?= accountEscape($chnBaseUrl . 'js/topbar.js') ?>" defer></script>
+    <script src="<?= accountEscape($chnBaseUrl . 'js/topbar.js?v=' . filemtime($chnProjectRoot . '/js/topbar.js')) ?>" defer></script>
     <script src="<?= accountEscape($chnBaseUrl . 'js/account-settings.js') ?>" defer></script>
 </head>
 <body>

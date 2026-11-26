@@ -41,7 +41,7 @@ if ($isAuthenticated) {
     <link rel="stylesheet" href="../css/emergency.css">
     <?php if ($isAuthenticated): ?>
     <script src="../js/sidebar.js" defer></script>
-    <script src="../js/topbar.js" defer></script>
+    <script src="../js/topbar.js?v=<?= filemtime(__DIR__ . '/../js/topbar.js') ?>" defer></script>
     <?php endif; ?>
     <script src="../js/emergency.js" defer></script>
 </head>
