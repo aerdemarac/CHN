@@ -217,6 +217,13 @@
     min-width: 176px;
 }
 
+.users-table__actions {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+}
+
 .users-table__delete {
     color: var(--color-danger);
 }

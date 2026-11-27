@@ -31,7 +31,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'cases' => ['label' => 'Medical Cases', 'file' => 'pages/medical-cases.php', 'icon' => 'cases'],
             'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'pages/feedback.php', 'icon' => 'feedback'],
-            'users' => ['label' => 'User Management', 'file' => 'admin/user-management.php', 'demo' => 'pages/user-management-test.php', 'icon' => 'users'],
+            'users' => ['label' => 'User Management', 'file' => 'pages/user-management.php', 'icon' => 'users'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'pages/complaints-test.php', 'icon' => 'feedback'],
             'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
         ];
