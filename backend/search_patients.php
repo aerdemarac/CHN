@@ -27,9 +27,10 @@ if ($rawQuery === '') {
     }
     $normalized = chnNormalizePhone($rawQuery);
     $digits = preg_replace('/\D/', '', $normalized) ?? '';
-    $whereSearch = "(u.phone = :phone_exact OR REPLACE(u.phone, '+', '') = :phone_digits OR RIGHT(REPLACE(u.phone, '+', ''), LENGTH(:phone_tail)) = :phone_tail)";
+    $whereSearch = "(u.phone = :phone_exact OR REPLACE(u.phone, '+', '') = :phone_digits OR RIGHT(REPLACE(u.phone, '+', ''), LENGTH(:phone_tail_len)) = :phone_tail)";
     $searchParams[':phone_exact'] = $normalized;
     $searchParams[':phone_digits'] = $digits;
+    $searchParams[':phone_tail_len'] = $digits;
     $searchParams[':phone_tail'] = $digits;
 } elseif ($searchBy === 'email') {
     $email = strtolower($rawQuery);
