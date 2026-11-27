@@ -28,13 +28,22 @@
     }
 
     function showNotice(message, type) {
-        if (!notice) {
-            return;
-        }
+        if (!notice) return;
         notice.className = 'alert alert--' + (type || 'info') + ' appointments-notice';
         notice.textContent = message;
         notice.hidden = false;
         notice.scrollIntoView({ block: 'nearest' });
+    }
+
+    var flashRaw = sessionStorage.getItem('chn_appointments_flash');
+    if (flashRaw) {
+        sessionStorage.removeItem('chn_appointments_flash');
+        try {
+            var flash = JSON.parse(flashRaw);
+            showNotice(flash.message, flash.type || 'success');
+        } catch (e) {
+            showNotice(flashRaw, 'success');
+        }
     }
 
     function pad(value) {
@@ -54,11 +63,25 @@
         return fromKey(key).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
     }
 
+    async function postJson(url, payload) {
+        var response = await fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        var body = null;
+        try {
+            body = await response.json();
+        } catch (e) {
+            body = null;
+        }
+        return { ok: response.ok && body && body.ok === true, body: body };
+    }
+
     function initBooking() {
         var form = document.getElementById('appointments-form');
-        if (!form) {
-            return;
-        }
+        if (!form) return;
 
         var doctorHint = document.getElementById('appointments-doctor-hint');
         var doctorChoices = Array.prototype.slice.call(document.querySelectorAll('#appointments-doctors .appointments-choice'));
@@ -90,6 +113,7 @@
         var todayKey = toKey(new Date());
         var viewMonth = fromKey(minKey);
         var renderCalendar = function () {};
+        var slotRequestSeq = 0;
         viewMonth.setDate(1);
 
         function checked(name) {
@@ -111,27 +135,39 @@
             setError('time', '');
         }
 
-        function isTaken(doctorId, dateKey, slot) {
-            var text = doctorId + '|' + dateKey + '|' + slot;
-            var hash = 0;
-            for (var i = 0; i < text.length; i += 1) {
-                hash = (hash * 31 + text.charCodeAt(i)) % 1000003;
-            }
-            return hash % 3 === 0;
-        }
-
-        function updateSlots() {
+        async function updateSlots() {
             var doctor = checked('doctor_id');
             var dateKey = dateInput.value;
             var ready = doctor !== null && dateKey !== '';
 
             slotsHint.hidden = ready;
-            slotInputs.forEach(function (input) {
-                input.disabled = !ready || isTaken(doctor.value, dateKey, input.value);
-                if (input.disabled) {
+            if (!ready) {
+                slotInputs.forEach(function (input) {
+                    input.disabled = true;
                     input.checked = false;
-                }
-            });
+                });
+                return;
+            }
+
+            var seq = ++slotRequestSeq;
+            var slotsUrl = form.dataset.slotsUrl + '?doctor_id=' + encodeURIComponent(doctor.value) + '&date=' + encodeURIComponent(dateKey);
+            if (appointmentId.value) {
+                slotsUrl += '&exclude_appointment_id=' + encodeURIComponent(appointmentId.value);
+            }
+
+            try {
+                var res = await fetch(slotsUrl, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } });
+                var body = await res.json();
+                if (seq !== slotRequestSeq) return;
+                var taken = (res.ok && body && body.ok && Array.isArray(body.data.taken_slots)) ? body.data.taken_slots : [];
+                slotInputs.forEach(function (input) {
+                    input.disabled = taken.indexOf(input.value) !== -1;
+                    if (input.disabled) input.checked = false;
+                });
+            } catch (e) {
+                if (seq !== slotRequestSeq) return;
+                slotInputs.forEach(function (input) { input.disabled = false; });
+            }
         }
 
         function updateCase() {
@@ -163,18 +199,10 @@
             var caseId = checked('case_id');
             var time = checked('appointment_time');
 
-            if (caseId) {
-                parts.push(caseId.getAttribute('data-label'));
-            }
-            if (doctor) {
-                parts.push(doctor.getAttribute('data-label'));
-            }
-            if (dateInput.value !== '') {
-                parts.push(formatDay(dateInput.value));
-            }
-            if (time) {
-                parts.push(time.value);
-            }
+            if (caseId) parts.push(caseId.getAttribute('data-label'));
+            if (doctor) parts.push(doctor.getAttribute('data-label'));
+            if (dateInput.value !== '') parts.push(formatDay(dateInput.value));
+            if (time) parts.push(time.value);
 
             summary.textContent = parts.length ? parts.join(' · ') : msg('nothingSelected');
         }
@@ -259,9 +287,7 @@
                 prev.disabled = year === minMonth.getFullYear() && month === minMonth.getMonth();
                 next.disabled = year === maxMonth.getFullYear() && month === maxMonth.getMonth();
 
-                while (body.firstChild) {
-                    body.removeChild(body.firstChild);
-                }
+                while (body.firstChild) body.removeChild(body.firstChild);
 
                 for (var i = 0; i < offset; i += 1) {
                     row.appendChild(document.createElement('td'));
@@ -291,9 +317,7 @@
                 }
 
                 if (row.children.length) {
-                    while (row.children.length < 7) {
-                        row.appendChild(document.createElement('td'));
-                    }
+                    while (row.children.length < 7) row.appendChild(document.createElement('td'));
                     body.appendChild(row);
                 }
             }
@@ -310,16 +334,12 @@
 
             body.addEventListener('click', function (event) {
                 var button = event.target.closest('.appointments-calendar__day');
-                if (!button || button.disabled) {
-                    return;
-                }
+                if (!button || button.disabled) return;
                 dateInput.value = button.getAttribute('data-date');
                 setError('date', '');
                 render();
                 var selected = body.querySelector('[data-date="' + dateInput.value + '"]');
-                if (selected) {
-                    selected.focus();
-                }
+                if (selected) selected.focus();
                 updateSlots();
                 updateSummary();
             });
@@ -330,22 +350,17 @@
 
         function setRescheduleMode(button) {
             var id = button.getAttribute('data-appointment-reschedule');
-
             form.reset();
             clearErrors();
             dateInput.value = '';
             appointmentId.value = id;
 
             var caseId = form.querySelector('input[name="case_id"][value="' + button.getAttribute('data-case-id') + '"]');
-            if (caseId) {
-                caseId.checked = true;
-            }
+            if (caseId) caseId.checked = true;
             updateCase();
 
             var doctor = form.querySelector('input[name="doctor_id"][value="' + button.getAttribute('data-doctor-id') + '"]');
-            if (doctor) {
-                doctor.checked = true;
-            }
+            if (doctor) doctor.checked = true;
 
             title.textContent = msg('rescheduleTitle', { id: id });
             subtitle.textContent = msg('rescheduleSubtitle');
@@ -391,8 +406,9 @@
 
         resetButton.addEventListener('click', leaveRescheduleMode);
 
-        form.addEventListener('submit', function (event) {
+        form.addEventListener('submit', async function (event) {
             event.preventDefault();
+            if (submit.disabled) return;
             clearErrors();
 
             var doctor = checked('doctor_id');
@@ -424,25 +440,45 @@
                 return;
             }
 
-            var params = {
-                id: appointmentId.value,
-                date: formatDay(dateInput.value),
-                time: time.value,
-                doctor: doctor.getAttribute('data-label')
+            var payload = {
+                appointment_id: appointmentId.value ? Number(appointmentId.value) : 0,
+                case_id: Number(caseId.value),
+                doctor_id: Number(doctor.value),
+                appointment_date: dateInput.value,
+                appointment_time: time.value
             };
 
-            if (appointmentId.value !== '') {
-                showNotice(msg('noticeReschedule', params), 'success');
-            } else {
-                showNotice(msg('noticeBook', params), 'success');
+            submit.disabled = true;
+            submit.setAttribute('aria-busy', 'true');
+
+            try {
+                var res = await postJson(form.dataset.bookUrl, payload);
+                if (res.ok) {
+                    var params = {
+                        id: appointmentId.value || (res.body.data && res.body.data.appointment_id),
+                        date: formatDay(dateInput.value),
+                        time: time.value,
+                        doctor: doctor.getAttribute('data-label')
+                    };
+                    var successMsg = appointmentId.value !== ''
+                        ? msg('noticeReschedule', params)
+                        : msg('noticeBook', params);
+                    sessionStorage.setItem('chn_appointments_flash', JSON.stringify({ message: successMsg, type: 'success' }));
+                    window.location.assign('appointments.php?view=upcoming#appointments-list');
+                    return;
+                }
+                showNotice((res.body && res.body.message) || msg('requestFailed'), 'danger');
+            } catch (e) {
+                showNotice(msg('requestFailed'), 'danger');
+            } finally {
+                submit.disabled = false;
+                submit.removeAttribute('aria-busy');
             }
         });
 
         document.addEventListener('click', function (event) {
             var button = event.target.closest('[data-appointment-reschedule]');
-            if (button) {
-                setRescheduleMode(button);
-            }
+            if (button) setRescheduleMode(button);
         });
 
         buildCalendar();
@@ -450,35 +486,45 @@
     }
 
     function initRowActions() {
-        document.addEventListener('click', function (event) {
+        document.addEventListener('click', async function (event) {
             var cancel = event.target.closest('[data-appointment-cancel]');
-            var start = event.target.closest('[data-appointment-start]');
+            var completeBtn = event.target.closest('[data-appointment-complete]');
 
             if (cancel) {
-                var id = cancel.getAttribute('data-appointment-cancel');
-                if (!window.confirm(cancel.getAttribute('data-appointment-confirm'))) {
-                    return;
+                var id = Number(cancel.getAttribute('data-appointment-cancel'));
+                if (!window.confirm(cancel.getAttribute('data-appointment-confirm'))) return;
+                cancel.disabled = true;
+                try {
+                    var res = await postJson('../backend/manage_appointment.php', { action: 'cancel', appointment_id: id });
+                    if (res.ok) {
+                        sessionStorage.setItem('chn_appointments_flash', JSON.stringify({ message: msg('noticeCancel', { id: id }), type: 'warning' }));
+                        window.location.reload();
+                        return;
+                    }
+                    showNotice((res.body && res.body.message) || msg('requestFailed'), 'danger');
+                } catch (e) {
+                    showNotice(msg('requestFailed'), 'danger');
+                } finally {
+                    cancel.disabled = false;
                 }
-
-                var row = cancel.closest('[data-appointment-row]');
-                var statusCell = row.querySelector('[data-appointment-status]');
-                var actions = row.querySelector('[data-appointment-actions]');
-                var badge = document.createElement('span');
-                var none = document.createElement('span');
-
-                badge.className = 'badge badge--danger';
-                badge.textContent = msg('cancelled');
-                statusCell.replaceChildren(badge);
-
-                none.className = 'appointments-actions__none';
-                none.textContent = '—';
-                actions.replaceChildren(none);
-
-                showNotice(msg('noticeCancel', { id: id }), 'warning');
             }
 
-            if (start) {
-                showNotice(msg('noticeStart', { name: start.getAttribute('data-appointment-start') }), 'info');
+            if (completeBtn) {
+                var compId = Number(completeBtn.getAttribute('data-appointment-complete'));
+                completeBtn.disabled = true;
+                try {
+                    var compRes = await postJson('../backend/manage_appointment.php', { action: 'complete', appointment_id: compId });
+                    if (compRes.ok) {
+                        sessionStorage.setItem('chn_appointments_flash', JSON.stringify({ message: msg('noticeStart', { id: compId }), type: 'info' }));
+                        window.location.reload();
+                        return;
+                    }
+                    showNotice((compRes.body && compRes.body.message) || msg('requestFailed'), 'danger');
+                } catch (e) {
+                    showNotice(msg('requestFailed'), 'danger');
+                } finally {
+                    completeBtn.disabled = false;
+                }
             }
         });
     }

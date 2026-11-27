@@ -219,7 +219,7 @@ CREATE TABLE `appointment` (
   `department_id` INT NOT NULL,
   `appointment_date` DATE NOT NULL,
   `appointment_time` TIME NOT NULL,
-  `appointment_status` ENUM('pending','confirmed','cancelled','completed') NOT NULL DEFAULT 'pending',
+  `appointment_status` ENUM('confirmed','cancelled','completed') NOT NULL DEFAULT 'confirmed',
   PRIMARY KEY (`appointment_id`),
   KEY `idx_appointment_case_id` (`case_id`),
   KEY `idx_appointment_patient_id` (`patient_id`),
