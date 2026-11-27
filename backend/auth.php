@@ -179,3 +179,74 @@ function requireRole(array $allowedRoles, bool $isApi = true): array
         'surname' => (string) ($_SESSION['surname'] ?? ''),
     ];
 }
+
+/**
+ * Resolve the authenticated user's island-wide vs hospital/department scope.
+ */
+function chnGetUserHospitalScope(PDO $pdo, array $sessionUser): array
+{
+    $role = (string) ($sessionUser['role'] ?? '');
+    $userId = (int) ($sessionUser['user_id'] ?? 0);
+
+    if ($role === 'admin' || $role === 'patient') {
+        return [
+            'is_island_wide' => true,
+            'hospital_id' => null,
+            'department_id' => null,
+            'hospital_name' => null,
+            'department_name' => null,
+        ];
+    }
+
+    if ($role === 'doctor') {
+        $stmt = $pdo->prepare(
+            'SELECT dep.hospital_id, d.department_id, h.hospital_name, dep.department_name
+             FROM `doctor` d
+             INNER JOIN `department` dep ON dep.department_id = d.department_id
+             INNER JOIN `hospital` h ON h.hospital_id = dep.hospital_id
+             WHERE d.user_id = :user_id
+             LIMIT 1'
+        );
+        $stmt->execute([':user_id' => $userId]);
+        $row = $stmt->fetch();
+        if ($row !== false) {
+            return [
+                'is_island_wide' => false,
+                'hospital_id' => (int) $row['hospital_id'],
+                'department_id' => (int) $row['department_id'],
+                'hospital_name' => (string) $row['hospital_name'],
+                'department_name' => (string) $row['department_name'],
+            ];
+        }
+    }
+
+    if ($role === 'healthcare_staff') {
+        $stmt = $pdo->prepare(
+            'SELECT s.hospital_id, s.department_id, h.hospital_name, dep.department_name
+             FROM `staff` s
+             LEFT JOIN `hospital` h ON h.hospital_id = s.hospital_id
+             LEFT JOIN `department` dep ON dep.department_id = s.department_id
+             WHERE s.user_id = :user_id
+             LIMIT 1'
+        );
+        $stmt->execute([':user_id' => $userId]);
+        $row = $stmt->fetch();
+        if ($row !== false) {
+            return [
+                'is_island_wide' => $row['hospital_id'] === null,
+                'hospital_id' => $row['hospital_id'] !== null ? (int) $row['hospital_id'] : null,
+                'department_id' => $row['department_id'] !== null ? (int) $row['department_id'] : null,
+                'hospital_name' => $row['hospital_name'] !== null ? (string) $row['hospital_name'] : null,
+                'department_name' => $row['department_name'] !== null ? (string) $row['department_name'] : null,
+            ];
+        }
+    }
+
+    return [
+        'is_island_wide' => false,
+        'hospital_id' => null,
+        'department_id' => null,
+        'hospital_name' => null,
+        'department_name' => null,
+    ];
+}

@@ -82,6 +82,7 @@ return [
     'nav.alerts' => 'Acil Durum Uyarıları',
     'nav.feedback' => 'Geri Bildirim ve Destek',
     'nav.users' => 'Kullanıcı Yönetimi',
+'nav.hospitals' => 'Hastaneler',
     'nav.complaints' => 'Şikâyet Yönetimi',
     'nav.emergency_logs' => 'Acil Durum Kayıtları',
     'nav.settings' => 'Ayarlar',

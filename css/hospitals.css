@@ -1,0 +1,82 @@
+.hospitals-notice {
+    margin: 0 0 24px;
+}
+
+.hospitals-forms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.hospitals-form__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+    gap: 16px;
+}
+
+.hospitals-form__grid .form-group + .form-group {
+    margin-top: 0;
+}
+
+.hospitals-directory__title {
+    margin: 0 0 16px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.hospitals-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+    gap: 24px;
+}
+
+.hospital-card__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hospital-card__address,
+.hospital-card__meta,
+.hospital-card__empty {
+    margin: 0 0 12px;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.hospital-card__depts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hospital-card__dept {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.hospital-card__dept-stats {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.hospital-card__dept-delete {
+    color: var(--color-danger);
+}
+
+.hospital-card__dept-delete:hover {
+    color: var(--color-danger-hover);
+    border-color: var(--color-danger);
+}

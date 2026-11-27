@@ -15,7 +15,8 @@ START TRANSACTION;
 INSERT INTO `hospital` (`hospital_id`, `hospital_name`, `hospital_type`, `city`, `address`, `phone`) VALUES
   (1, 'Dr. Burhan Nalbantoğlu State Hospital', 'public', 'Lefkoşa', 'Atatürk Caddesi, Yenişehir, Lefkoşa', '+903922285441'),
   (2, 'Gazimağusa State Hospital', 'public', 'Gazimağusa', 'İsmet İnönü Bulvarı, Gazimağusa', '+903923665328'),
-  (3, 'Girne Dr. Akçiçek State Hospital', 'public', 'Girne', 'Mustafa Çağatay Caddesi, Girne', '+903928152266');
+  (3, 'Girne Dr. Akçiçek State Hospital', 'public', 'Girne', 'Mustafa Çağatay Caddesi, Girne', '+903928152266'),
+  (4, 'Cengiz Topel State Hospital', 'public', 'Güzelyurt', 'Yeşilyurt Yolu, Lefke / Güzelyurt', '+903927236351');
 
 -- 2. Departments
 INSERT INTO `department` (`department_id`, `department_name`, `hospital_id`) VALUES
@@ -24,7 +25,9 @@ INSERT INTO `department` (`department_id`, `department_name`, `hospital_id`) VAL
   (3, 'Orthopedics', 1),
   (4, 'Emergency Medicine', 1),
   (5, 'Pediatrics', 2),
-  (6, 'Dermatology', 3);
+  (6, 'Dermatology', 3),
+  (7, 'Internal Medicine', 2),
+  (8, 'General Surgery', 4);
 
 -- 3. Users (4 role-test accounts + 5 supporting doctors + 50 random patients)
 INSERT INTO `user` (`user_id`, `email`, `password`, `role`, `name`, `surname`, `gender`, `birth_date`, `nationality`, `national_id`, `phone`, `verify`, `verify_token`, `failed_attempts`, `locked_until`) VALUES
@@ -506,10 +509,10 @@ INSERT INTO `response` (`response_id`, `feedback_id`, `response_msg`, `response_
   (15, 28, 'We appreciate the suggestion; SMS reminder integration is on our roadmap.', DATE_SUB(CURDATE(), INTERVAL 5 DAY));
 
 -- 14. Emergency Logs
-INSERT INTO `emergency_log` (`emergency_id`, `user_id`, `ip_address`, `emergency_date`, `emergency_time`, `emergency_location`, `status`, `handled_by_staff_id`, `handled_at`, `created_at`) VALUES
-  (1, 1, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 4 DAY), '14:20:00', '35.1856, 33.3823 (Lefkoşa)', 'resolved', 1, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
-  (2, NULL, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 1 DAY), '21:10:00', '35.3364, 33.3182 (Girne)', 'in_progress', 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
-  (3, 12, '127.0.0.1', CURDATE(), '08:45:00', '35.1250, 33.9417 (Gazimağusa)', 'pending', NULL, NULL, NOW());
+INSERT INTO `emergency_log` (`emergency_id`, `user_id`, `hospital_id`, `ip_address`, `emergency_date`, `emergency_time`, `emergency_location`, `status`, `handled_by_staff_id`, `handled_at`, `created_at`) VALUES
+  (1, 1, 1, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 4 DAY), '14:20:00', '35.1856, 33.3823 (Lefkoşa)', 'resolved', 1, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  (2, NULL, 3, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 1 DAY), '21:10:00', '35.3364, 33.3182 (Girne)', 'in_progress', 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  (3, 12, 2, '127.0.0.1', CURDATE(), '08:45:00', '35.1250, 33.9417 (Gazimağusa)', 'pending', NULL, NULL, NOW());
 
 -- 15. Notifications
 INSERT INTO `notification` (`notification_id`, `user_id`, `message`) VALUES

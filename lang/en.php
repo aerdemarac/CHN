@@ -83,6 +83,7 @@ return [
     'nav.alerts' => 'Emergency Alerts',
     'nav.feedback' => 'Feedback & Support',
     'nav.users' => 'User Management',
+'nav.hospitals' => 'Hospitals',
     'nav.complaints' => 'Complaint Management',
     'nav.emergency_logs' => 'Emergency Logs',
     'nav.settings' => 'Settings',

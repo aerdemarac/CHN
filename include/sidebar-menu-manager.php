@@ -32,6 +32,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
             'feedback' => ['label' => 'Feedback & Support', 'file' => 'pages/feedback.php', 'icon' => 'feedback'],
             'users' => ['label' => 'User Management', 'file' => 'pages/user-management.php', 'icon' => 'users'],
+            'hospitals' => ['label' => 'Hospitals', 'file' => 'pages/hospitals.php', 'icon' => 'dashboard'],
             'complaints' => ['label' => 'Complaint Management', 'file' => 'pages/complaints-test.php', 'icon' => 'feedback'],
             'emergency_logs' => ['label' => 'Emergency Logs', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
         ];
@@ -55,7 +56,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
             ],
             'admin' => [
                 'overview' => ['dashboard'],
-                'management' => ['users', 'complaints'],
+                'management' => ['users', 'hospitals', 'complaints'],
                 'security' => ['emergency_logs'],
                 'support' => ['feedback'],
             ],

@@ -85,6 +85,7 @@ return [
     'nav.alerts' => 'Экстренные оповещения',
     'nav.feedback' => 'Отзывы и поддержка',
     'nav.users' => 'Пользователи',
+'nav.hospitals' => 'Больницы',
     'nav.complaints' => 'Жалобы',
     'nav.emergency_logs' => 'Журнал вызовов',
     'nav.settings' => 'Настройки',
