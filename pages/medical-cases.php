@@ -232,7 +232,7 @@ if ($selected !== null && $canViewClinicalDetails && isset($pdo)) {
 }
 
 $canAddDiagnosis = $role === 'doctor' && $selected !== null && $selected['case_state'] === 'open';
-$appointmentBadges = ['pending' => 'warning', 'confirmed' => 'success', 'completed' => 'neutral', 'cancelled' => 'danger'];
+$appointmentBadges = ['confirmed' => 'success', 'completed' => 'neutral', 'cancelled' => 'danger'];
 
 $scopeContextParts = array_filter([
     $scope['hospital_name'] ?? null,

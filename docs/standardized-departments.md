@@ -33,4 +33,4 @@ This document explains the standardized clinic department hash-map (`#63`) and h
 ## 3. Integrated Pages
 - **Admin Hospitals & Departments (`pages/hospitals.php`, `js/hospitals.js`):** Replaces free-text department input with a standardized `<select name="department_key">` populated from `chnDepartmentCatalog()`.
 - **User Management (`pages/user-management.php`):** Displays localized department names in workplace dropdowns and table rows.
-- **Medical Cases & Appointments (`pages/medical-cases.php`, `pages/appointments-test.php`):** Renders all department filters, dropdowns, and labels through `chnDepartmentLabel()`.
+- **Medical Cases & Appointments (`pages/medical-cases.php`, `pages/appointments.php`):** Renders all department filters, dropdowns, and labels through `chnDepartmentLabel()`.

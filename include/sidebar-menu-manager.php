@@ -26,7 +26,7 @@ if (!function_exists('chnSidebarItemsForRole')) {
         // Routes are project-root relative; unimplemented routes display Soon.
         $items = [
             'dashboard' => ['label' => 'Dashboard', 'file' => 'pages/dashboard-test.php', 'icon' => 'dashboard'],
-            'appointments' => ['label' => 'Appointments', 'file' => 'appointments.php', 'demo' => 'pages/appointments-test.php', 'icon' => 'appointments'],
+            'appointments' => ['label' => 'Appointments', 'file' => 'pages/appointments.php', 'icon' => 'appointments'],
             'patients' => ['label' => 'Patients', 'file' => 'pages/patients.php', 'icon' => 'patients'],
             'cases' => ['label' => 'Medical Cases', 'file' => 'pages/medical-cases.php', 'icon' => 'cases'],
             'alerts' => ['label' => 'Emergency Alerts', 'file' => 'pages/emergency-audit.php', 'demo' => 'pages/emergency-demo.php', 'icon' => 'emergency'],
