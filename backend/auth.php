@@ -155,7 +155,9 @@ function requireRole(array $allowedRoles, bool $isApi = true): array
         if ($isApi) {
             chnJsonError('UNAUTHORIZED', 'Authentication is required.', 401);
         }
-        header('Location: login.php');
+        $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
+        $baseUrl = str_ends_with($scriptDir, '/pages') ? '../' : '';
+        header('Location: ' . $baseUrl . 'login.php');
         exit;
     }
 
@@ -164,7 +166,9 @@ function requireRole(array $allowedRoles, bool $isApi = true): array
         if ($isApi) {
             chnJsonError('FORBIDDEN', 'You do not have permission to perform this action.', 403);
         }
-        header('Location: ' . chnDashboardUrlForRole($role));
+        $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
+        $baseUrl = str_ends_with($scriptDir, '/pages') ? '../' : '';
+        header('Location: ' . $baseUrl . chnDashboardUrlForRole($role));
         exit;
     }
 

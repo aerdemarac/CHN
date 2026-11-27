@@ -8,7 +8,7 @@
     document.getElementById('about-name').textContent = context.productName;
     document.getElementById('about-version').textContent = context.version;
     document.getElementById('about-server').textContent = context.serverUrl;
-    document.getElementById('about-runtime').textContent = `Electron ${context.electronVersion} · Chromium ${context.chromeVersion}`;
+    document.getElementById('about-runtime').textContent = `Electron ${context.electronVersion} · Native Desktop Applicaton`;
     support.textContent = context.supportEmail;
     support.href = `mailto:${context.supportEmail}`;
 
