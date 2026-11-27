@@ -1,27 +1,60 @@
-# Medical Cases visual demo
+# Medical Cases — Backend Integration, Multi-Hospital Scoping & Clinical Workflows
 
-Open `http://localhost/CHN/pages/medical-cases.php?role=patient` (or doctor/healthcare_staff/admin). Feedback lives at `http://localhost/CHN/test-endpoints/feedback.php?role=patient`. Each feature has one shared page; Sidebar/dashboard links preserve prototype roles. Missing/invalid roles default to patient. URL roles are presentation only, never authentication.
+This document describes the live Medical Cases implementation in CHN (`pages/medical-cases.php`, `js/medical-cases.js`, `backend/create_case.php`, `backend/update_case.php`, `backend/manage_treatment.php`, and `backend/add_diagnosis.php`).
 
-The pages render fictional fixtures. There is no case API, database connection, session identity, Python backend/test runner, or persistence. The local database adapter, setup scripts, HTTP/database test endpoints and proposed executable migrations have been removed. Existing databases were not modified or deleted during this simplification. The previously started case development server has been stopped; normal XAMPP preview is sufficient.
+---
 
-Case creation checks required title, detailed description, patient doctor selection and (for the doctor view) a fictional National ID. It displays a demo confirmation only; it neither resolves a real patient nor creates a record. Doctor assignment is illustrated by the demo doctor context. Department/doctor options are explicitly fictional lookup fixtures, including a no-doctor department. Replacing these fixtures with authorized lookup responses is a future integration task.
+## 1. Authorization & Multi-Hospital Scoping
 
-Patient/doctor status pencils and clinician triage pencils update only the currently displayed DOM, including the visible table and status counts. Reloading, switching roles or applying filters restores fixture values. No fetch, POST, localStorage or cookies are used by these demo actions. Mutation buttons start disabled and are enabled by JavaScript; without JavaScript, they cannot submit. A manually submitted POST renders a “nothing saved” notice and performs no mutation. Search/filter/detail selection remains GET-based. Feedback keeps its existing draft-only validation/history preview.
+1. **Page Access (`pages/medical-cases.php`):**
+   - Protected by `requireRole(['patient', 'doctor', 'healthcare_staff', 'admin'], false)`.
+   - Unauthenticated users are redirected to `../login.php`.
+2. **Role Scope (`chnGetUserHospitalScope()`):**
+   - **`patient`:** Sees only their own cases (`p.user_id = $userId`) across all public hospitals, with a Hospital filter and cascading **Hospital → Department → Doctor** selectors when opening a new case.
+   - **`doctor`:** Scoped to cases in their assigned `department_id` (within their hospital). Can create cases (resolving patient by `national_id`), open/close cases, update triage, add/complete treatments, and add diagnoses on open cases.
+   - **`healthcare_staff`:** Scoped to cases in their assigned `hospital_id` (`dep.hospital_id`). Can view case routing, descriptions, appointments, treatments, and diagnoses, and update medical triage (`green`, `yellow`, `orange`).
+   - **`admin`:** Displays the administrative notice card (no clinical case actions).
+3. **Standardized Departments:** All department labels in tables, filters, dropdowns, and appointment histories are localized through `chnDepartmentLabel()` (`include/departments.php`).
 
-## Future backend contract
+---
 
-Preserve the schema-aligned field names: case_id, case_title, case_description, department_id, doctor_id, case_state and tier_color. Creation intent names are patient_create/create_doctor; separate update intents are update_status/update_doctor_status/update_triage. These are form labels for future wiring, not implemented endpoints. Backend integration should replace the demo submit handler with an authenticated adapter and a documented error/success response contract; no endpoint URLs have been invented.
+## 2. Backend Endpoints (`POST` + JSON)
 
-The future server must validate all fields and relationships independently: required title (1–160 Unicode characters), detailed description (up to 65,535 UTF-8 bytes), required patient doctor selection in the selected department, and National ID resolution through user/patient for doctor creation. Doctor identity and department must come from trusted authentication. New records start green/open. Status is open/closed; triage is green/yellow/orange. Recheck patient ownership, assigned doctor scope and approved staff permissions for every request. Enforce CSRF, replay protection and active-treatment closure rules on the backend; browser validation is presentation only.
+All endpoints enforce `requireRole(..., true)`, `chnRequireJsonPost()`, PDO prepared statements, and `CHN_ALLOWED_LETTERS` character validation.
 
-The canonical schema currently has no case_title and requires doctor attribution on closure. The backend team must review additive title storage and accurate patient closure attribution before integration; no migrations or database changes are executed by this demo. Do not fabricate a doctor closure actor for patient actions.
+### A. `backend/create_case.php`
+- **Roles:** `patient`, `doctor`
+- **Behavior:**
+  - `patient`: Validates `hospital_id`, `department_id`, `doctor_id` (verifying `doctor` belongs to `department` and `department` belongs to `hospital`) and `case_description`.
+  - `doctor`: Resolves `patient_id` from `user.national_id` (`role = 'patient'`) and auto-assigns the doctor's `doctor_id` and `department_id`.
+  - Inserts into `case` with `case_state = 'open'` and `tier_color = 'green'`.
+- **Responses:** `201 Created` (`{"ok": true, "data": {"case_id": ...}}`), `400`/`422 INVALID_INPUT`, `404 PATIENT_NOT_FOUND`, `403 FORBIDDEN`.
 
-List/detail DTOs should keep joined display names. Relate appointments and diagnoses to the selected case_id and return diagnosis entries newest first. Apply authorization before returning any data; never fetch a broad dataset and rely on URL role/client filtering. Healthcare Staff can read the case title, description, and both histories within their assigned department. Diagnosis entry remains Doctor-only. Admin clinical permissions remain undefined.
+### B. `backend/update_case.php`
+- **Roles:** `doctor` (`update_status`, `update_triage`), `healthcare_staff` (`update_triage` only)
+- **Behavior:**
+  - Enforces `department_id` scope for `doctor` and `hospital_id` scope for `healthcare_staff`.
+  - `update_status`: Sets `closed_by_doctor_id` and `closed_at = NOW()` when closing (`closed`), or clears them when reopening (`open`).
+  - Catches SQL trigger `tr_case_bu` (`SQLSTATE 45000`) when active treatments exist and returns `409 ACTIVE_TREATMENTS`.
+- **Responses:** `200 OK`, `403 FORBIDDEN`, `404 CASE_NOT_FOUND`, `409 ACTIVE_TREATMENTS`, `422 INVALID_INPUT`.
 
-## Add Diagnosis preview
+### C. `backend/manage_treatment.php`
+- **Roles:** `doctor` only (scoped to `case.department_id`)
+- **Actions:**
+  - `add`: Adds an `active` treatment (`treatment_desc` up to 255 chars) to an `open` case (`201 Created`).
+  - `deactivate`: Marks an active treatment `inactive` with `deactivated_by_doctor_id` and `completed_at = NOW()` (`200 OK`), allowing the case to be closed.
+- **Note:** `patient` and `healthcare_staff` have read-only visibility of treatments on the case detail view.
 
-Open `pages/medical-cases.php?role=doctor` and select an assigned case from the case list. Diagnosis History offers Add Diagnosis for a case that was open when selected and remains open in the preview. Changing its status to closed hides the action and discards any draft. Cases loaded as closed stay read-only for diagnosis entry, even after a preview-only status change. The team must approve production rules for closed and reopened cases before connecting the form to a backend.
+### D. `backend/add_diagnosis.php`
+- **Roles:** `doctor` only (scoped to `case.department_id`)
+- **Behavior:**
+  - Requires `case_state === 'open'` (`409 CASE_CLOSED` if closed).
+  - Validates `diagnosis_text` (up to 65,535 bytes, allowed Latin charset) and optional `icd_code` (up to 20 chars).
+  - Inserts into `diagnosis` and returns `201 Created`.
 
-The form carries `case_id`, required `diagnosis_text` (up to 65,535 UTF-8 bytes for MySQL TEXT), and optional `icd_code` (up to 20 characters; blank maps to NULL on integration). Preview entries are added to the current page in newest-first order. They have no generated record ID or authoritative timestamp. The Russian interface follows the same input policy as English and Turkish, so Cyrillic clinical input is currently rejected.
+---
 
-On integration, derive `doctor_id` from the authenticated PHP session. Verify doctor role, assignment, case state, CSRF protection and field validity on the server, and prevent replayed writes. The backend generates `diagnosis_id` and `diagnosed_at`. Replace the temporary entry with the authorized server response.
+## 3. Frontend & Localization (`pages/medical-cases.php`, `js/medical-cases.js`)
+- Uses `fetch()` with `credentials: 'same-origin'` and `POST` JSON payloads for case creation, status/triage updates, treatment management, and diagnosis entry.
+- **Add treatment** and **Add diagnosis** toggle buttons (`#open-treatment`, `#open-diagnosis`) are rendered only for `doctor` on `open` cases (matching database trigger rules `tr_treatment_bi`).
+- Localization files: `lang/en/cases.php`, `lang/tr/cases.php`, `lang/ru/cases.php`.
