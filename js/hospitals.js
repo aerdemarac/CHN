@@ -179,14 +179,13 @@
             var first = null;
             var eHosp = !dHosp.value ? msg('required') : '';
             var dVal = dName.value.trim();
-            var eName = !dVal ? msg('required') : (!deptPattern.test(dVal) ? msg('invalid_chars') : '');
+            var eName = !dVal ? msg('required') : '';
             setError(dHosp, eHosp); if (eHosp && !first) first = dHosp;
             setError(dName, eName); if (eName && !first) first = dName;
             return first;
         }
 
-        dName.addEventListener('input', validateDept);
-        dName.addEventListener('paste', function () { setTimeout(validateDept, 0); });
+        dName.addEventListener('change', validateDept);
         dHosp.addEventListener('change', validateDept);
 
         departmentForm.addEventListener('submit', async function (event) {
@@ -198,7 +197,7 @@
             try {
                 var res = await postJson(departmentForm.dataset.createUrl, {
                     hospital_id: Number(dHosp.value),
-                    department_name: dName.value.trim()
+                    department_key: dName.value.trim()
                 });
                 if (res.ok) {
                     sessionStorage.setItem('chn_hospitals_flash', msg('department_created'));

@@ -19,6 +19,7 @@ return [
     'hospitals.department_subtitle' => 'Assign a clinical department to a public hospital.',
     'hospitals.hospital' => 'Hospital',
     'hospitals.select_hospital' => 'Select a hospital',
+    'hospitals.select_department' => 'Select a department',
     'hospitals.department_name' => 'Department name',
     'hospitals.save_department' => 'Save department',
     'hospitals.directory_title' => 'Public Hospitals Directory',

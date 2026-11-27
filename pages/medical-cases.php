@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__) . '/include/i18n.php';
+require_once dirname(__DIR__) . '/include/departments.php';
 // Visual demo only: fixtures and URL view selection, no persistence or backend calls.
 $preview = require dirname(__DIR__) . '/include/medical-cases-preview-data.php';
 $cases = $preview['cases'];
@@ -44,7 +45,10 @@ $stateLabels = ['open' => t('cases.state_open'), 'closed' => t('cases.state_clos
 $query = mcParam('q');
 $status = in_array(mcParam('status'), ['open', 'closed'], true) ? mcParam('status') : '';
 $department = mcParam('department');
-$departments = array_column($cases, 'department_name', 'department_id');
+$departments = [];
+foreach ($cases as $c) {
+    $departments[$c['department_id']] = chnDepartmentLabel($c['department_name']);
+}
 if (!isset($departments[$department])) $department = '';
 $filtered = array_values(array_filter($cases, static function (array $case) use ($query, $status, $department, $canSearchClinicalText, $chnPrototypeRole, $casePrefix): bool {
     $search = implode(' ', [$casePrefix . $case['case_id'], $case['department_name'], $case['doctor_name'] ?? '', $canSearchClinicalText ? (($case['case_title'] ?? '') . ' ' . ($case['case_description'] ?? '')) : '', $chnPrototypeRole === 'doctor' ? $case['patient_name'] : '', $chnPrototypeRole !== 'patient' ? 'DEMO-P-' . $case['patient_id'] : '']);
@@ -112,7 +116,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
             <div><label class="form-label" for="create-national_id"><?= te('cases.national_id') ?></label><input class="form-control" id="create-national_id" name="national_id" required minlength="3" maxlength="50" pattern="[A-Za-z0-9-]{3,50}" autocomplete="off"><p class="form-hint"><?= te('cases.national_id_hint') ?></p></div>
             <?php endif; ?>
             <div><label class="form-label" for="create-department_id"><?= te('cases.department') ?></label>
-            <select class="form-control" id="create-department_id" name="department_id" required><option value=""><?= te('cases.select_department') ?></option><?php foreach ($options['departments'] as $option): ?><option value="<?= (int) $option['department_id'] ?>"<?= $chnPrototypeRole === 'doctor' ? ' selected' : '' ?>><?= mcEscape($option['department_name']) ?></option><?php endforeach; ?></select></div>
+            <select class="form-control" id="create-department_id" name="department_id" required><option value=""><?= te('cases.select_department') ?></option><?php foreach ($options['departments'] as $option): ?><option value="<?= (int) $option['department_id'] ?>"<?= $chnPrototypeRole === 'doctor' ? ' selected' : '' ?>><?= mcEscape(chnDepartmentLabel($option['department_name'])) ?></option><?php endforeach; ?></select></div>
             <?php if ($chnPrototypeRole === 'patient'): ?>
             <div><label class="form-label" for="create-doctor_id"><?= te('cases.preferred_doctor') ?></label>
             <select class="form-control" id="create-doctor_id" name="doctor_id" required><option value=""><?= te('cases.select_doctor') ?></option><?php foreach ($options['doctors'] as $option): ?><option data-department="<?= (int) $option['department_id'] ?>" value="<?= (int) $option['doctor_id'] ?>"><?= mcEscape($option['doctor_name']) ?></option><?php endforeach; ?></select><p id="doctor-availability" class="form-hint"><?= te('cases.doctor_hint') ?></p></div>
@@ -154,7 +158,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
         <tr data-case-id="<?= (int) $case['case_id'] ?>" class="<?= $selected && $selected['case_id'] === $case['case_id'] ? 'medical-cases__selected' : '' ?>">
             <th scope="row"><?= mcEscape($casePrefix) ?><?= $case['case_id'] ?></th>
             <?php if ($chnPrototypeRole !== 'patient'): ?><td><?= $chnPrototypeRole === 'doctor' ? mcEscape($case['patient_name']) . '<br>' : '' ?>DEMO-P-<?= $case['patient_id'] ?></td><?php endif; ?>
-            <td><?= mcEscape($case['department_name']) ?></td><td><?= mcEscape($case['doctor_name'] ?? t('cases.not_assigned')) ?></td><td><?= mcEscape(mcDate($case['created_at'])) ?></td>
+            <td><?= mcEscape(chnDepartmentLabel($case['department_name'])) ?></td><td><?= mcEscape($case['doctor_name'] ?? t('cases.not_assigned')) ?></td><td><?= mcEscape(mcDate($case['created_at'])) ?></td>
             <td><span data-case-state class="badge <?= $case['case_state'] === 'open' ? 'badge--info' : 'badge--neutral' ?>"><?= mcEscape($stateLabels[$case['case_state']] ?? $case['case_state']) ?></span></td>
             <td><span data-case-triage class="badge medical-cases__triage medical-cases__triage--<?= mcEscape($case['tier_color']) ?>"><?= te('tier.' . $case['tier_color']) ?></span></td>
             <td><a class="btn btn--outline btn--sm" href="<?= mcEscape(chnPrototypeUrl('medical-cases.php#case-details', $chnPrototypeRole, ['q' => $query, 'status' => $status, 'department' => $department, 'case' => $case['case_id']])) ?>" <?= $selected && $selected['case_id'] === $case['case_id'] ? 'aria-current="true"' : '' ?> aria-label="<?= te($view['action_aria'], ['id' => $casePrefix . $case['case_id']]) ?>"><?= mcEscape($view['action']) ?></a></td>
@@ -166,7 +170,7 @@ usort($selectedAppointments, static fn(array $a, array $b): int =>
         <?php if ($selected): ?>
         <dl class="medical-cases__metadata">
             <?php if ($chnPrototypeRole !== 'patient'): ?><div><dt><?= $chnPrototypeRole === 'healthcare_staff' ? te('cases.col_patient_ref') : te('cases.col_patient') ?></dt><dd><?= $chnPrototypeRole === 'doctor' ? mcEscape($selected['patient_name']) . ' · ' : '' ?>DEMO-P-<?= $selected['patient_id'] ?></dd></div><?php endif; ?>
-            <div><dt><?= te('cases.department') ?></dt><dd><?= mcEscape($selected['department_name']) ?></dd></div>
+            <div><dt><?= te('cases.department') ?></dt><dd><?= mcEscape(chnDepartmentLabel($selected['department_name'])) ?></dd></div>
             <div><dt><?= te('cases.responsible_doctor') ?></dt><dd><?= mcEscape($selected['doctor_name'] ?? t('cases.not_assigned')) ?></dd></div>
             <div><dt><?= te('cases.created') ?></dt><dd><?= mcEscape(mcDate($selected['created_at'])) ?></dd></div>
             <div><dt><?= te('cases.status_label') ?></dt><dd data-current-status>
