@@ -54,12 +54,11 @@ CREATE TABLE `hospital` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. DEPARTMENT: can have the same name in different hospitals.
--- NULL hospital_id is permitted ONLY for old/unassigned departments.
--- The backend must require a real hospital when creating/assigning departments.
+-- Every department belongs to a real public hospital.
 CREATE TABLE `department` (
   `department_id` INT NOT NULL AUTO_INCREMENT,
   `department_name` VARCHAR(255) NOT NULL,
-  `hospital_id` INT NULL,
+  `hospital_id` INT NOT NULL,
   PRIMARY KEY (`department_id`),
   UNIQUE KEY `uq_department_hospital_name` (`hospital_id`, `department_name`),
   UNIQUE KEY `uq_department_id_hospital` (`department_id`, `hospital_id`),
@@ -153,6 +152,7 @@ CREATE TABLE `response` (
 CREATE TABLE `emergency_log` (
   `emergency_id` INT NOT NULL AUTO_INCREMENT,
   `user_id` INT NULL,
+  `hospital_id` INT NULL,
   `ip_address` VARCHAR(45) NULL,
   `emergency_date` DATE NULL,
   `emergency_time` TIME NULL,
@@ -163,10 +163,13 @@ CREATE TABLE `emergency_log` (
   `created_at` DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`emergency_id`),
   KEY `idx_emergency_user_id` (`user_id`),
+  KEY `idx_emergency_hospital_id` (`hospital_id`),
   KEY `idx_emergency_status_created` (`status`, `created_at`),
   KEY `idx_emergency_handled_by` (`handled_by_staff_id`),
   CONSTRAINT `fk_emergency_user` FOREIGN KEY (`user_id`)
     REFERENCES `user` (`user_id`) ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT `fk_emergency_hospital` FOREIGN KEY (`hospital_id`)
+    REFERENCES `hospital` (`hospital_id`) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT `fk_emergency_handled_by_staff` FOREIGN KEY (`handled_by_staff_id`)
     REFERENCES `staff` (`staff_id`) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
