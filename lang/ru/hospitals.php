@@ -19,6 +19,7 @@ return [
     'hospitals.department_subtitle' => 'Добавьте клиническое отделение к государственной больнице.',
     'hospitals.hospital' => 'Больница',
     'hospitals.select_hospital' => 'Выберите больницу',
+    'hospitals.select_department' => 'Выберите отделение',
     'hospitals.department_name' => 'Название отделения',
     'hospitals.save_department' => 'Сохранить отделение',
     'hospitals.directory_title' => 'Справочник государственных больниц',

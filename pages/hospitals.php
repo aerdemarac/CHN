@@ -5,8 +5,10 @@ $chnProjectRoot = dirname(__DIR__);
 require_once $chnProjectRoot . '/backend/auth.php';
 require_once $chnProjectRoot . '/backend/db.php';
 require_once $chnProjectRoot . '/include/i18n.php';
+require_once $chnProjectRoot . '/include/departments.php';
 
 $sessionUser = requireRole(['admin'], false);
+$departmentCatalog = chnDepartmentCatalog();
 
 function hospitalsEscape(string $value): string
 {
@@ -172,7 +174,12 @@ require $chnProjectRoot . '/include/top-bar.php';
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="dept-name"><?= te('hospitals.department_name') ?> *</label>
-                            <input class="form-control" id="dept-name" name="department_name" type="text" maxlength="255" required>
+                            <select class="form-control" id="dept-name" name="department_key" required>
+                                <option value=""><?= te('hospitals.select_department') ?></option>
+                                <?php foreach ($departmentCatalog as $deptKey => $deptCanonical): ?>
+                                    <option value="<?= hospitalsEscape($deptKey) ?>"><?= hospitalsEscape(chnDepartmentLabel($deptKey)) ?></option>
+                                <?php endforeach; ?>
+                            </select>
                             <p class="form-error" id="dept-name-error" hidden></p>
                         </div>
                     </div>
@@ -226,7 +233,7 @@ require $chnProjectRoot . '/include/top-bar.php';
                                 <?php foreach ($h['departments'] as $dept): ?>
                                     <li class="hospital-card__dept">
                                         <div>
-                                            <strong><?= hospitalsEscape($dept['department_name']) ?></strong>
+                                            <strong><?= hospitalsEscape(chnDepartmentLabel($dept['department_name'])) ?></strong>
                                             <span class="hospital-card__dept-stats">
                                                 <?= te('hospitals.doctor_count', ['count' => $dept['doctor_count']]) ?> ·
                                                 <?= te('hospitals.case_count', ['count' => $dept['case_count']]) ?>

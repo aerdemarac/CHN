@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../include/i18n.php';
+require_once __DIR__ . '/../include/departments.php';
 
 $appointmentsRoles = [
     'patient'          => t('role.patient'),
@@ -121,12 +122,12 @@ $appointmentsUsers = [
 $appointmentsUser = $appointmentsUsers[$appointmentsRole];
 
 $appointmentsDepartments = [
-    1 => ['department_name' => 'Cardiology',        'hospital_name' => 'Nicosia State Hospital'],
-    2 => ['department_name' => 'Dermatology',       'hospital_name' => 'Nicosia State Hospital'],
-    3 => ['department_name' => 'Internal Medicine', 'hospital_name' => 'Nicosia State Hospital'],
-    4 => ['department_name' => 'Pediatrics',        'hospital_name' => 'Nicosia State Hospital'],
-    5 => ['department_name' => 'Neurology',         'hospital_name' => 'Nicosia State Hospital'],
-    6 => ['department_name' => 'Cardiology',        'hospital_name' => 'Famagusta State Hospital'],
+    1 => ['department_name' => chnDepartmentLabel('cardiology'),        'hospital_name' => 'Nicosia State Hospital'],
+    2 => ['department_name' => chnDepartmentLabel('dermatology'),       'hospital_name' => 'Nicosia State Hospital'],
+    3 => ['department_name' => chnDepartmentLabel('internal_medicine'), 'hospital_name' => 'Nicosia State Hospital'],
+    4 => ['department_name' => chnDepartmentLabel('pediatrics'),        'hospital_name' => 'Nicosia State Hospital'],
+    5 => ['department_name' => chnDepartmentLabel('neurology'),         'hospital_name' => 'Nicosia State Hospital'],
+    6 => ['department_name' => chnDepartmentLabel('cardiology'),        'hospital_name' => 'Famagusta State Hospital'],
 ];
 
 $appointmentsDoctors = [

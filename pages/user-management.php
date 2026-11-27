@@ -5,6 +5,7 @@ $chnProjectRoot = dirname(__DIR__);
 require_once $chnProjectRoot . '/backend/auth.php';
 require_once $chnProjectRoot . '/backend/db.php';
 require_once $chnProjectRoot . '/include/i18n.php';
+require_once $chnProjectRoot . '/include/departments.php';
 
 $sessionUser = requireRole(['admin'], false);
 $usersCurrentUserId = $sessionUser['user_id'];
@@ -78,7 +79,7 @@ function usersWorkplace(array $user, array $hospitals, array $departments): stri
         return '';
     }
 
-    return ($department !== null ? $department['department_name'] . ' · ' : '') . $hospitals[$hospitalId];
+    return ($department !== null ? chnDepartmentLabel($department['department_name']) . ' · ' : '') . $hospitals[$hospitalId];
 }
 
 $usersHospitals = [];
@@ -302,7 +303,7 @@ require $chnProjectRoot . '/include/top-bar.php';
                             <option value=""><?= te('users.department_placeholder') ?></option>
                             <?php foreach ($usersDepartments as $usersDepartmentId => $usersDepartment): ?>
                                 <option value="<?= (int) $usersDepartmentId ?>" data-hospital-id="<?= (int) $usersDepartment['hospital_id'] ?>">
-                                    <?= usersEscape($usersDepartment['department_name']) ?>
+                                    <?= usersEscape(chnDepartmentLabel($usersDepartment['department_name'])) ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

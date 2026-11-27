@@ -19,6 +19,7 @@ return [
     'hospitals.department_subtitle' => 'Bir kamu hastanesine klinik bölüm ekleyin.',
     'hospitals.hospital' => 'Hastane',
     'hospitals.select_hospital' => 'Bir hastane seçin',
+    'hospitals.select_department' => 'Bir bölüm seçin',
     'hospitals.department_name' => 'Bölüm adı',
     'hospitals.save_department' => 'Bölümü kaydet',
     'hospitals.directory_title' => 'Kamu Hastaneleri Rehberi',

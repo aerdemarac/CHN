@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth.php';
+require_once dirname(__DIR__) . '/include/departments.php';
 
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
     header('Allow: GET');
@@ -60,7 +61,9 @@ try {
         $did = (int) $d['department_id'];
         $dept = [
             'department_id' => $did,
+            'department_key' => chnDepartmentKey((string) $d['department_name']),
             'department_name' => (string) $d['department_name'],
+            'department_label' => chnDepartmentLabel((string) $d['department_name']),
             'hospital_id' => $hid,
             'doctors' => [],
         ];

@@ -4,20 +4,25 @@ declare(strict_types=1);
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/validation.php';
+require_once dirname(__DIR__) . '/include/departments.php';
 
 requireRole(['admin'], true);
 $input = chnRequireJsonPost();
 
 $hospitalId = (int) ($input['hospital_id'] ?? 0);
-$departmentName = chnInputString($input, 'department_name');
+$departmentRaw = chnInputString($input, 'department_key');
+if ($departmentRaw === '') {
+    $departmentRaw = chnInputString($input, 'department_name');
+}
 
 if ($hospitalId <= 0) {
     chnJsonError('INVALID_INPUT', 'Select a hospital.', 422);
 }
 
-$namePattern = '/^[' . CHN_ALLOWED_LETTERS . '0-9\s,.\-\/&()]+$/u';
-if ($departmentName === '' || mb_strlen($departmentName, 'UTF-8') > 255 || preg_match($namePattern, $departmentName) !== 1) {
-    chnJsonError('INVALID_INPUT', 'Enter a valid department name using Latin characters.', 400);
+$departmentKey = chnDepartmentKey($departmentRaw);
+$departmentName = $departmentKey !== null ? chnDepartmentCanonicalName($departmentKey) : null;
+if ($departmentName === null) {
+    chnJsonError('INVALID_INPUT', 'Select a valid standardized clinic department.', 422);
 }
 
 try {
@@ -52,4 +57,8 @@ try {
     chnJsonError('SERVER_ERROR', 'Unable to create department.', 500);
 }
 
-chnJsonSuccess(['department_id' => $departmentId], 'Department created.', 201);
+chnJsonSuccess([
+    'department_id' => $departmentId,
+    'department_key' => $departmentKey,
+    'department_name' => $departmentName,
+], 'Department created.', 201);
