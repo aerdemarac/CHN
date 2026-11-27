@@ -22,6 +22,15 @@
     text-align: start;
 }
 
+.about__section {
+    margin: 24px 0 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--color-primary);
+    text-align: start;
+}
+
 .about__project {
     margin: 16px 0 0;
     font-size: 0.875rem;

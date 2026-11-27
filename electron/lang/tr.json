@@ -56,6 +56,12 @@
     "about.server": "Sunucu",
     "about.runtime": "Çalışma ortamı",
     "about.support": "Destek",
+    "about.team": "Geliştirme ekibi",
+    "about.role_frontend": "Front-End",
+    "about.role_backend": "Back-End ve veritabanı",
+    "about.role_qa": "QA ve test",
+    "about.role_api": "API ve yardımcı işler",
+    "about.role_lead": "Geliştirme lideri",
     "about.project": "Bitirme projesi, Doğu Akdeniz Üniversitesi",
     "about.close": "Kapat"
 }
