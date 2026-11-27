@@ -56,6 +56,12 @@
     "about.server": "Server",
     "about.runtime": "Runtime",
     "about.support": "Support",
+    "about.team": "Development team",
+    "about.role_frontend": "Front-End",
+    "about.role_backend": "Back-End & Database",
+    "about.role_qa": "QA & Testing",
+    "about.role_api": "API & Auxiliary",
+    "about.role_lead": "Development Leader",
     "about.project": "Graduation project, Eastern Mediterranean University",
     "about.close": "Close"
 }

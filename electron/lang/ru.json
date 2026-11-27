@@ -56,6 +56,12 @@
     "about.server": "Сервер",
     "about.runtime": "Среда выполнения",
     "about.support": "Поддержка",
+    "about.team": "Команда разработчиков",
+    "about.role_frontend": "Фронтенд",
+    "about.role_backend": "Бэкенд и база данных",
+    "about.role_qa": "QA и тестирование",
+    "about.role_api": "API и вспомогательные задачи",
+    "about.role_lead": "Руководитель разработки",
     "about.project": "Дипломный проект, Восточно-Средиземноморский университет",
     "about.close": "Закрыть"
 }
