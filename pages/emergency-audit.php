@@ -48,10 +48,12 @@ try {
                    u.name AS user_first_name, u.surname AS user_last_name,
                    u.phone AS user_phone, u.birth_date AS user_dob,
                    u.role AS user_role, u.is_banned AS user_is_banned,
+                   p.full_address AS account_address,
                    h.hospital_name,
                    su.name AS staff_first_name, su.surname AS staff_last_name
             FROM `emergency_log` e
             LEFT JOIN `user` u ON u.user_id = e.user_id
+            LEFT JOIN `patient` p ON p.user_id = e.user_id
             LEFT JOIN `hospital` h ON h.hospital_id = e.hospital_id
             LEFT JOIN `staff` s ON s.staff_id = e.handled_by_staff_id
             LEFT JOIN `user` su ON su.user_id = s.user_id";
@@ -269,10 +271,10 @@ $fraudCount = count(array_filter($records, static fn(array $r): bool => $r['stat
                         ? $typeLabels[$record['emergency_type']]
                         : t('emergency.not_available');
                     $gpsText = trim((string) ($record['gps_location'] ?? ''));
+                    $accountAddrText = trim((string) ($record['account_address'] ?? ''));
                     $manualText = trim((string) ($record['manual_address'] ?? ''));
-                    $locationSummary = $gpsText !== '' && $manualText !== ''
-                        ? $gpsText . ' · ' . $manualText
-                        : ($gpsText !== '' ? $gpsText : ($manualText !== '' ? $manualText : t('emergency.not_available')));
+                    $locationParts = array_values(array_unique(array_filter([$gpsText, $manualText, $accountAddrText], static fn(string $v): bool => $v !== '')));
+                    $locationSummary = $locationParts !== [] ? implode(' · ', $locationParts) : t('emergency.not_available');
                     $staffFullName = trim((string) ($record['staff_first_name'] ?? '') . ' ' . (string) ($record['staff_last_name'] ?? ''));
                     $hospitalName = trim((string) ($record['hospital_name'] ?? ''));
                     $assignmentSummary = $record['handled_by_staff_id'] === null && $hospitalName === ''
@@ -315,6 +317,7 @@ $fraudCount = count(array_filter($records, static fn(array $r): bool => $r['stat
                                     <div><dt><?= te('emergency.handled_at') ?></dt><dd data-role="detail-handled-at"><?= emergencyEscape(emergencyDate($record['handled_at'], 'Y-m-d H:i:s', 'medium_time')) ?></dd></div>
                                     <div><dt><?= te('emergency.col_type') ?></dt><dd><?= emergencyEscape($typeLabel) ?></dd></div>
                                     <div><dt><?= te('emergency.gps_location') ?></dt><dd><?= emergencyEscape(emergencyValue($record['gps_location'])) ?></dd></div>
+                                    <div><dt><?= te('emergency.account_address') ?></dt><dd><?= emergencyEscape(emergencyValue($record['account_address'])) ?></dd></div>
                                     <div><dt><?= te('emergency.manual_address') ?></dt><dd><?= emergencyEscape(emergencyValue($record['manual_address'])) ?></dd></div>
                                     <div><dt><?= te('emergency.hospital') ?></dt><dd data-role="detail-hospital"><?= emergencyEscape(emergencyValue($hospitalName)) ?></dd></div>
                                     <div><dt><?= te('emergency.col_staff') ?></dt><dd data-role="detail-staff"><?= emergencyEscape($staffFullName !== '' ? $staffFullName : ($record['handled_by_staff_id'] === null ? t('emergency.unassigned') : t('emergency.staff_ref', ['id' => $record['handled_by_staff_id']]))) ?></dd></div>

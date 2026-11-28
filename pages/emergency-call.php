@@ -39,7 +39,7 @@ try {
             $isAuthenticated = false;
         } else {
             $accountUser = $row;
-            if (empty($_COOKIE['chn_last_acct'])) {
+            if (chnGetLastAccountUserId() !== (int) $row['user_id']) {
                 chnSetLastAccountCookie((int) $row['user_id']);
             }
         }
