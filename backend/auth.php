@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/env.php';
+require_once __DIR__ . '/db.php';
 
 /**
  * Escape untrusted values for safe HTML output.
@@ -172,12 +173,115 @@ function requireRole(array $allowedRoles, bool $isApi = true): array
         exit;
     }
 
+    try {
+        $pdo = chnGetPdo();
+        $banStmt = $pdo->prepare('SELECT is_banned FROM `user` WHERE user_id = :user_id LIMIT 1');
+        $banStmt->execute([':user_id' => (int) $_SESSION['user_id']]);
+        $banRow = $banStmt->fetch();
+        if ($banRow === false || (int) $banRow['is_banned'] === 1) {
+            chnDestroySession();
+            if ($isApi) {
+                $code = $banRow === false ? 'UNAUTHORIZED' : 'ACCOUNT_BANNED';
+                $msg = $banRow === false ? 'Authentication is required.' : 'This account has been suspended by an administrator.';
+                chnJsonError($code, $msg, $banRow === false ? 401 : 403);
+            }
+            $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/index.php'));
+            $baseUrl = str_ends_with($scriptDir, '/pages') ? '../' : '';
+            header('Location: ' . $baseUrl . 'login.php');
+            exit;
+        }
+    } catch (Throwable $e) {
+        chnLogError('Session verification error: ' . $e->getMessage());
+    }
+
     return [
         'user_id' => (int) $_SESSION['user_id'],
         'role' => $role,
         'name' => (string) ($_SESSION['name'] ?? ''),
         'surname' => (string) ($_SESSION['surname'] ?? ''),
     ];
+}
+
+/**
+ * Derive an application signing key for HMAC-protected device cookies.
+ */
+function chnSigningKey(): string
+{
+    loadChnEnv();
+    $configured = getenv('APP_SECRET');
+    if (is_string($configured) && $configured !== '') {
+        return $configured;
+    }
+
+    return hash(
+        'sha256',
+        __DIR__ . '|' . (string) getenv('DB_NAME') . '|' . (string) getenv('DB_PASS') . '|' . (string) getenv('SMTP_PASSWORD')
+    );
+}
+
+/**
+ * Persist an HMAC-signed HttpOnly cookie remembering the last authenticated user_id on this device.
+ */
+function chnSetLastAccountCookie(int $userId): void
+{
+    if ($userId <= 0) {
+        return;
+    }
+
+    $expires = time() + 60 * 60 * 24 * 30;
+    $payload = $userId . '.' . $expires;
+    $signature = hash_hmac('sha256', $payload, chnSigningKey());
+    $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+
+    setcookie('chn_last_acct', $payload . '.' . $signature, [
+        'expires' => $expires,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
+/**
+ * Verify and return the last authenticated user_id from the HMAC-signed device cookie, or null.
+ */
+function chnGetLastAccountUserId(): ?int
+{
+    $raw = $_COOKIE['chn_last_acct'] ?? null;
+    if (!is_string($raw) || preg_match('/^([1-9]\d*)\.(\d+)\.([a-f0-9]{64})$/', $raw, $m) !== 1) {
+        return null;
+    }
+
+    $userId = (int) $m[1];
+    $expires = (int) $m[2];
+    $sig = $m[3];
+    if ($expires < time()) {
+        return null;
+    }
+
+    $expected = hash_hmac('sha256', $userId . '.' . $expires, chnSigningKey());
+    if (!hash_equals($expected, $sig)) {
+        return null;
+    }
+
+    return $userId;
+}
+
+/**
+ * Clear the last active account cookie on this device.
+ */
+function chnClearLastAccountCookie(): void
+{
+    $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    setcookie('chn_last_acct', '', [
+        'expires' => time() - 42000,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
 }
 
 /**

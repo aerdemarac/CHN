@@ -8,6 +8,20 @@ const CHN_ALLOWED_LETTERS = 'A-Za-zçÇğĞıİöÖşŞüÜ';
 
 const CHN_GENDERS = ['female', 'male'];
 
+const CHN_EMERGENCY_TYPES = [
+    'cardiac_chest_pain',
+    'breathing_difficulty',
+    'severe_bleeding_trauma',
+    'unconscious_fainting',
+    'stroke_neurological',
+    'traffic_accident',
+    'burn_electric_shock',
+    'poisoning_overdose',
+    'allergic_reaction',
+    'obstetric_emergency',
+    'other',
+];
+
 /**
  * Extract a trimmed string field from a decoded JSON payload.
  */
@@ -145,4 +159,48 @@ function chnIsValidPassword(string $value): bool
     $hasLetter = preg_match('/[' . CHN_ALLOWED_LETTERS . ']/u', $value) === 1;
     $hasDigit = preg_match('/\d/', $value) === 1;
     return $hasLetter && $hasDigit;
+}
+
+/**
+ * Validate a street/location address against the permitted character set and max length.
+ */
+function chnIsValidAddress(string $value): bool
+{
+    $len = mb_strlen($value, 'UTF-8');
+    if ($len < 1 || $len > 255) {
+        return false;
+    }
+
+    $pattern = '/^[' . CHN_ALLOWED_LETTERS . '0-9\s,.\-\/:#\'()]+$/u';
+    return preg_match($pattern, $value) === 1;
+}
+
+/**
+ * Validate a full name for optional guest emergency reports.
+ */
+function chnIsValidAnonFullName(string $value): bool
+{
+    $len = mb_strlen($value, 'UTF-8');
+    if ($len < 1 || $len > 100) {
+        return false;
+    }
+
+    $pattern = '/^[' . CHN_ALLOWED_LETTERS . '][' . CHN_ALLOWED_LETTERS . ' \'.-]*$/u';
+    return preg_match($pattern, $value) === 1;
+}
+
+/**
+ * Validate numeric GPS latitude and longitude bounds.
+ */
+function chnIsValidGpsCoords(mixed $lat, mixed $lng): bool
+{
+    if (!is_numeric($lat) || !is_numeric($lng)) {
+        return false;
+    }
+    $latFloat = (float) $lat;
+    $lngFloat = (float) $lng;
+    if (!is_finite($latFloat) || !is_finite($lngFloat)) {
+        return false;
+    }
+    return $latFloat >= -90.0 && $latFloat <= 90.0 && $lngFloat >= -180.0 && $lngFloat <= 180.0;
 }
