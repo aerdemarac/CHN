@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../backend/mailer.php';
 
 $result = sendEmail(
-    'aerdemarac@gmail.com',
+    'izgihanizgi@hotmail.com',
     'Welcome!',
     '<h1>Welcome to CHN!</h1>'
 );
