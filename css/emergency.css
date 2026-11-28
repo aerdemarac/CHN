@@ -1015,3 +1015,185 @@
         flex-shrink: 0;
     }
 }
+
+/* 13. Emergency Workflow Subcards, Guest Inputs, Type & Confirmation */
+.emergency__subcard {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 0 0 16px;
+}
+
+.emergency__subcard--warning {
+    background: rgba(229, 151, 0, 0.08);
+    border-color: rgba(229, 151, 0, 0.35);
+    border-inline-start: 4px solid var(--color-warning);
+}
+
+.emergency__subcard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.emergency__subcard-title {
+    margin: 0;
+    padding: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.emergency__subcard-hint {
+    margin: 0 0 12px;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+}
+
+.emergency__clear-btn {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+}
+
+.emergency__radio-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.emergency__radio-option,
+.emergency__checkbox-option {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: var(--transition);
+}
+
+.emergency__checkbox-option {
+    display: flex;
+}
+
+.emergency__radio-option:hover,
+.emergency__checkbox-option:hover {
+    border-color: var(--color-secondary);
+}
+
+.emergency__radio-option input,
+.emergency__checkbox-option input {
+    margin-top: 3px;
+    accent-color: var(--color-secondary);
+    flex-shrink: 0;
+}
+
+.emergency__caller-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin: 8px 0 0;
+    padding: 0;
+}
+
+.emergency__caller-summary dt {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    margin-bottom: 2px;
+}
+
+.emergency__caller-summary dd {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    overflow-wrap: anywhere;
+}
+
+.emergency__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+.emergency__field {
+    display: flex;
+    flex-direction: column;
+}
+
+.emergency__field label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.emergency__field input,
+.emergency__field select,
+.emergency__field textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.emergency__field input:focus,
+.emergency__field select:focus,
+.emergency__field textarea:focus {
+    outline: none;
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 2px rgba(22, 125, 141, 0.2);
+}
+
+.emergency__field input[aria-invalid="true"],
+.emergency__field textarea[aria-invalid="true"] {
+    border-color: var(--color-danger);
+}
+
+.emergency__field-error {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: var(--color-danger);
+    min-height: 1em;
+}
+
+.emergency__field-error:empty {
+    display: none;
+}
+
+.emergency__warning-type-label {
+    margin-top: 12px;
+}
+
+.emergency__result-ref {
+    display: inline-block;
+    margin: 0 0 12px;
+    padding: 6px 14px;
+    background: rgba(22, 125, 141, 0.1);
+    border: 1px solid rgba(22, 125, 141, 0.25);
+    border-radius: var(--radius);
+    color: var(--color-secondary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.emergency__result-ref:empty {
+    display: none;
+}

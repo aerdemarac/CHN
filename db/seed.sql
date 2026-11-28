@@ -509,10 +509,10 @@ INSERT INTO `response` (`response_id`, `feedback_id`, `response_msg`, `response_
   (15, 28, 'We appreciate the suggestion; SMS reminder integration is on our roadmap.', DATE_SUB(CURDATE(), INTERVAL 5 DAY));
 
 -- 14. Emergency Logs
-INSERT INTO `emergency_log` (`emergency_id`, `user_id`, `hospital_id`, `ip_address`, `emergency_date`, `emergency_time`, `emergency_location`, `status`, `handled_by_staff_id`, `handled_at`, `created_at`) VALUES
-  (1, 1, 1, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 4 DAY), '14:20:00', '35.1856, 33.3823 (Lefkoşa)', 'resolved', 1, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
-  (2, NULL, 3, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 1 DAY), '21:10:00', '35.3364, 33.3182 (Girne)', 'in_progress', 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
-  (3, 12, 2, '127.0.0.1', CURDATE(), '08:45:00', '35.1250, 33.9417 (Gazimağusa)', 'pending', NULL, NULL, NOW());
+INSERT INTO `emergency_log` (`emergency_id`, `user_id`, `hospital_id`, `ip_address`, `emergency_date`, `emergency_time`, `gps_location`, `manual_address`, `emergency_type`, `anon_name`, `anon_phone`, `anon_dob`, `status`, `handled_by_staff_id`, `handled_at`, `created_at`) VALUES
+  (1, 1, 1, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 4 DAY), '14:20:00', '35.1856, 33.3823 (Lefkoşa)', NULL, 'cardiac_chest_pain', NULL, NULL, NULL, 'resolved', 1, DATE_SUB(NOW(), INTERVAL 4 DAY), DATE_SUB(NOW(), INTERVAL 4 DAY)),
+  (2, NULL, 1, '127.0.0.1', DATE_SUB(CURDATE(), INTERVAL 1 DAY), '21:10:00', '35.3364, 33.3182 (Girne)', 'Near Girne Harbour Gate', 'traffic_accident', 'Kaan Demirci', '+905338990011', '1991-07-12', 'in_progress', 1, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  (3, 12, NULL, '127.0.0.1', CURDATE(), '08:45:00', '35.1250, 33.9417 (Gazimağusa)', NULL, 'breathing_difficulty', NULL, NULL, NULL, 'pending', NULL, NULL, NOW());
 
 -- 15. Notifications
 INSERT INTO `notification` (`notification_id`, `user_id`, `message`) VALUES

@@ -24,7 +24,7 @@ try {
     $pdo->beginTransaction();
 
     $stmt = $pdo->prepare(
-        'SELECT user_id, email, password, role, name, surname, verify, failed_attempts, locked_until
+        'SELECT user_id, email, password, role, name, surname, verify, is_banned, failed_attempts, locked_until
          FROM `user`
          WHERE email = :email
          LIMIT 1
@@ -68,6 +68,11 @@ try {
         chnJsonError('INVALID_CREDENTIALS', 'Incorrect email or password.', 401);
     }
 
+    if ((int) $user['is_banned'] === 1) {
+        $pdo->commit();
+        chnJsonError('ACCOUNT_BANNED', 'This account has been suspended by an administrator.', 403);
+    }
+
     if ((int) $user['verify'] !== 1) {
         $pdo->commit();
         chnJsonError('ACCOUNT_NOT_VERIFIED', 'This account is not verified.', 403);
@@ -93,6 +98,7 @@ $_SESSION['role'] = (string) $user['role'];
 $_SESSION['name'] = (string) $user['name'];
 $_SESSION['surname'] = (string) $user['surname'];
 $_SESSION['last_activity'] = time();
+chnSetLastAccountCookie((int) $user['user_id']);
 
 chnJsonSuccess(
     ['redirect' => chnDashboardUrlForRole((string) $user['role'])],
