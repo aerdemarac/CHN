@@ -4,7 +4,7 @@ This document describes the live Emergency Request (`pages/emergency-call.php`) 
 
 ---
 
-## 1. Database Changes (`db/schema.sql`, `db/upgrade_v7_to_v8.sql`, `db/seed.sql`)
+## 1. Database Changes (`db/schema.sql`, `db/seed.sql`)
 
 - **`emergency_log`:**
   - Renamed `emergency_location` → `gps_location` (`VARCHAR(255) NULL`).
